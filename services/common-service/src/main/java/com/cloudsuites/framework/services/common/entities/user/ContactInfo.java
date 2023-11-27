@@ -1,11 +1,18 @@
-package com.cloudsuites.framework.services.common.entities.property;
+package com.cloudsuites.framework.services.common.entities.user;
 
+import com.cloudsuites.framework.services.common.entities.user.User;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Data
 @Table(name = "contact_info")
+@NoArgsConstructor
+@AllArgsConstructor
 public class ContactInfo {
 
     @Id
@@ -19,8 +26,5 @@ public class ContactInfo {
     @Column(name = "email")
     private String email;
 
-    // Constructors, getters, and setters
-
-    // Additional methods if needed
 }
 

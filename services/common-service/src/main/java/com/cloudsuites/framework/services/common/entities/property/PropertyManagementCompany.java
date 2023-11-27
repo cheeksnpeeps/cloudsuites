@@ -1,11 +1,20 @@
 package com.cloudsuites.framework.services.common.entities.property;
 
+import com.cloudsuites.framework.services.common.entities.user.ContactInfo;
+import com.cloudsuites.framework.services.common.entities.user.User;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Entity
 @Table(name = "property_management_company")
+@NoArgsConstructor
+@AllArgsConstructor
 public class PropertyManagementCompany {
 
     @Id
@@ -16,6 +25,13 @@ public class PropertyManagementCompany {
     @Column(name = "name")
     private String name;
 
+    @Column(name = "website")
+    private String website;
+
+    @Column(name = "buildings")
+    @OneToMany(mappedBy = "propertyManagementCompany", cascade = CascadeType.ALL)
+    private List<Building> buildings;
+
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "address_id")
     private Address address;
@@ -24,9 +40,27 @@ public class PropertyManagementCompany {
     @JoinColumn(name = "contact_info_id")
     private ContactInfo contactInfo;
 
-    // Other attributes and relationships can be added based on your requirements
+    @Column(name = "created_by")
+    @OneToOne(cascade = CascadeType.ALL)
+    private User createdBy;
 
-    // Constructors, getters, and setters
+    @Column(name = "last_modified_by")
+    @OneToOne(cascade = CascadeType.ALL)
+    private User lastModifiedBy;
 
-    // Additional methods if needed
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "last_modified_at")
+    private LocalDateTime lastModifiedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.lastModifiedAt = LocalDateTime.now();
+    }
 }

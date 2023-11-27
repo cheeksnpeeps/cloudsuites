@@ -4,15 +4,15 @@
 		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>com.cloudsuites</groupId>
-		<artifactId>framework</artifactId>
+		<groupId>com.cloudsuites.framework</groupId>
+		<artifactId>modules</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
-		<relativePath>../../pom.xml</relativePath>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<groupId>com.cloudsuites.framework.modules</groupId>
 	<artifactId>common-module</artifactId>
 	<packaging>jar</packaging>
-	<name>CloudSuites - Framework - Comon Service implementation</name>
+	<name>CloudSuites - Framework - Common Service implementation</name>
 	<description>Module that contains API of all project services. Depends of Model Module.</description>
 	<dependencies>
 		<dependency>

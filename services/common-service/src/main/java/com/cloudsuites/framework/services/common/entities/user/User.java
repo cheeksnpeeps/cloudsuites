@@ -1,41 +1,56 @@
 package com.cloudsuites.framework.services.common.entities.user;
 
-import com.cloudsuites.framework.services.common.entities.Status;
+import jakarta.persistence.*;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Data
+
+@Entity
+@Table(name = "users")
 public class User {
 
-	private String uid;
-	
-	/**
-	 * Property ID
-	 */
-	private int pid;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-	/**
-	 * Unit ID
-	 */
-	private int unid;
-	
-	private String firstName; 
-	
-	private String lastName;
-	
+	@Column(nullable = false, unique = true)
+	private String username;
+
+	@Column(nullable = false, unique = true)
 	private Gender gender;
-	
-	private Status status;
-	
-	private Role role;
-	
-	private Date created;
-	
-	private Date updated;
-	
-	private String email;
-	
-	private String phone;
-	
+
+	@ManyToOne
+	@JoinColumn(name = "contact_info_id")
+	private ContactInfo contactInfo;
+
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	private UserType userType;
+
+	@Column(name = "created_by")
+	@OneToOne(cascade = CascadeType.ALL)
+	private User createdBy;
+
+	@Column(name = "last_modified_by")
+	@OneToOne(cascade = CascadeType.ALL)
+	private User lastModifiedBy;
+
+	@Column(name = "created_at", nullable = false, updatable = false)
+	private LocalDateTime createdAt;
+
+	@Column(name = "last_modified_at")
+	private LocalDateTime lastModifiedAt;
+
+	@PrePersist
+	protected void onCreate() {
+		this.createdAt = LocalDateTime.now();
+	}
+
+	@PreUpdate
+	protected void onUpdate() {
+		this.lastModifiedAt = LocalDateTime.now();
+	}
 }
+

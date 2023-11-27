@@ -30,6 +30,18 @@
             <artifactId>user-service</artifactId>
             <version>${core.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.cloudsuites.framework.modules</groupId>
+            <artifactId>user-module</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.cloudsuites.framework.modules</groupId>
+            <artifactId>property-module</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
     <build>
         <plugins>

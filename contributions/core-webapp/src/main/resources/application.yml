@@ -1,0 +1,7 @@
+logging:
+  level:
+    root: INFO
+    org.springframework.context.annotation.ClassPathBeanDefinitionScanner: TRACE
+    org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n"

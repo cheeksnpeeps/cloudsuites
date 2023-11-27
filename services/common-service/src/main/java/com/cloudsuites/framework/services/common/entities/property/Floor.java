@@ -1,13 +1,17 @@
 package com.cloudsuites.framework.services.common.entities.property;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Data
 @Entity
 @Table(name = "floor")
+@NoArgsConstructor
+@AllArgsConstructor
 public class Floor {
 
     @Id
@@ -26,7 +30,4 @@ public class Floor {
     @Column(name = "floor_number")
     private Integer floorNumber;
 
-    // Constructors, getters, and setters
-
-    // Additional methods if needed
 }

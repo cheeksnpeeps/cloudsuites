@@ -1,13 +1,19 @@
 package com.cloudsuites.framework.services.common.entities.property;
 
+import com.cloudsuites.framework.services.common.entities.user.User;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
 @Entity
 @Table(name = "building")
+@NoArgsConstructor
+@AllArgsConstructor
 public class Building {
 
 	@Id
@@ -36,7 +42,27 @@ public class Building {
 	@Column(name = "year_built")
 	private Integer yearBuilt;
 
-	// Constructors, getters, and setters
+	@Column(name = "created_by")
+	@OneToOne(cascade = CascadeType.ALL)
+	private User createdBy;
 
-	// Additional methods if needed
+	@Column(name = "last_modified_by")
+	@OneToOne(cascade = CascadeType.ALL)
+	private User lastModifiedBy;
+
+	@Column(name = "created_at", nullable = false, updatable = false)
+	private LocalDateTime createdAt;
+
+	@Column(name = "last_modified_at")
+	private LocalDateTime lastModifiedAt;
+
+	@PrePersist
+	protected void onCreate() {
+		this.createdAt = LocalDateTime.now();
+	}
+
+	@PreUpdate
+	protected void onUpdate() {
+		this.lastModifiedAt = LocalDateTime.now();
+	}
 }

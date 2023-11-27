@@ -1,11 +1,15 @@
 package com.cloudsuites.framework.services.common.entities.property;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Entity
 @Table(name = "unit")
+@NoArgsConstructor
+@AllArgsConstructor
 public class Unit {
 
 	@Id
