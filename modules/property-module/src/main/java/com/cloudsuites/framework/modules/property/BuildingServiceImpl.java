@@ -1,13 +1,14 @@
 package com.cloudsuites.framework.modules.property;
+import com.cloudsuites.framework.modules.property.repository.BuildingRepository;
 import com.cloudsuites.framework.services.common.entities.property.Building;
 import com.cloudsuites.framework.services.property.BuildingService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 
 import java.util.List;
-
+@Component
 @Transactional
 public class BuildingServiceImpl implements BuildingService {
 

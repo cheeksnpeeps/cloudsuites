@@ -5,5 +5,6 @@ public enum UserType {
     TENANT,
     PROPERTY_MANAGER,
     STAFF,
+    ADMIN
     // Add more user types as needed
 }

@@ -1,4 +1,4 @@
-package com.cloudsuites.framework.modules.property;
+package com.cloudsuites.framework.modules.property.repository;
 
 import com.cloudsuites.framework.services.common.entities.property.Building;
 import org.springframework.data.jpa.repository.JpaRepository;

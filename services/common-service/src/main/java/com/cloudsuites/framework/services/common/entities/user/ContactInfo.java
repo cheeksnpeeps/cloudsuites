@@ -11,8 +11,6 @@ import java.time.LocalDateTime;
 @Entity
 @Data
 @Table(name = "contact_info")
-@NoArgsConstructor
-@AllArgsConstructor
 public class ContactInfo {
 
     @Id

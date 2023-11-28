@@ -1,5 +1,6 @@
 package com.cloudsuites.framework.services.common.entities.property;
 
+import com.cloudsuites.framework.services.common.entities.Address;
 import com.cloudsuites.framework.services.common.entities.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -12,8 +13,6 @@ import java.util.List;
 @Data
 @Entity
 @Table(name = "building")
-@NoArgsConstructor
-@AllArgsConstructor
 public class Building {
 
 	@Id
@@ -42,11 +41,11 @@ public class Building {
 	@Column(name = "year_built")
 	private Integer yearBuilt;
 
-	@Column(name = "created_by")
+	@JoinColumn(name = "created_by")
 	@OneToOne(cascade = CascadeType.ALL)
 	private User createdBy;
 
-	@Column(name = "last_modified_by")
+	@JoinColumn(name = "last_modified_by")
 	@OneToOne(cascade = CascadeType.ALL)
 	private User lastModifiedBy;
 

@@ -6,7 +6,6 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-
 @Entity
 @Table(name = "users")
 public class User {
@@ -15,10 +14,10 @@ public class User {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(nullable = false, unique = true)
+	@Column
 	private String username;
 
-	@Column(nullable = false, unique = true)
+	@Column
 	private Gender gender;
 
 	@ManyToOne
@@ -29,11 +28,11 @@ public class User {
 	@Column(nullable = false)
 	private UserType userType;
 
-	@Column(name = "created_by")
+	@JoinColumn(name = "created_by")
 	@OneToOne(cascade = CascadeType.ALL)
 	private User createdBy;
 
-	@Column(name = "last_modified_by")
+	@JoinColumn(name = "last_modified_by")
 	@OneToOne(cascade = CascadeType.ALL)
 	private User lastModifiedBy;
 

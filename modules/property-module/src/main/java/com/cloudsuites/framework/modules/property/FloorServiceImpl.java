@@ -1,13 +1,14 @@
 package com.cloudsuites.framework.modules.property;
 
+import com.cloudsuites.framework.modules.property.repository.FloorRepository;
 import com.cloudsuites.framework.services.common.entities.property.Floor;
 import com.cloudsuites.framework.services.property.FloorService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-
+@Component
 @Transactional
 public class FloorServiceImpl implements FloorService {
 

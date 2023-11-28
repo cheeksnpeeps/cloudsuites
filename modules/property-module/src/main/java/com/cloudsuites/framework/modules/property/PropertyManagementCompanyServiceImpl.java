@@ -1,5 +1,6 @@
 package com.cloudsuites.framework.modules.property;
 
+import com.cloudsuites.framework.modules.property.repository.PropertyManagementCompanyRepository;
 import com.cloudsuites.framework.services.common.entities.property.PropertyManagementCompany;
 import com.cloudsuites.framework.services.property.PropertyManagementCompanyService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
-
+@Component
 @Transactional
 public class PropertyManagementCompanyServiceImpl implements PropertyManagementCompanyService {
 

@@ -10,8 +10,6 @@ import java.util.List;
 @Data
 @Entity
 @Table(name = "floor")
-@NoArgsConstructor
-@AllArgsConstructor
 public class Floor {
 
     @Id

@@ -3,5 +3,18 @@ logging:
     root: INFO
     org.springframework.context.annotation.ClassPathBeanDefinitionScanner: TRACE
     org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider: TRACE
+    com.cloudsuites.framework.webapp.rest: TRACE
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n"
+spring:
+  sql:
+    init:
+      mode: embedded
+  datasource:
+    url: jdbc:postgresql://localhost:5432/cloudsuites
+    username: csuser
+    password: cspassword
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update

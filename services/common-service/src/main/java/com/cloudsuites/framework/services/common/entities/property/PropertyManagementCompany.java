@@ -1,5 +1,6 @@
 package com.cloudsuites.framework.services.common.entities.property;
 
+import com.cloudsuites.framework.services.common.entities.Address;
 import com.cloudsuites.framework.services.common.entities.user.ContactInfo;
 import com.cloudsuites.framework.services.common.entities.user.User;
 import jakarta.persistence.*;
@@ -13,8 +14,6 @@ import java.util.List;
 @Data
 @Entity
 @Table(name = "property_management_company")
-@NoArgsConstructor
-@AllArgsConstructor
 public class PropertyManagementCompany {
 
     @Id
@@ -28,8 +27,7 @@ public class PropertyManagementCompany {
     @Column(name = "website")
     private String website;
 
-    @Column(name = "buildings")
-    @OneToMany(mappedBy = "propertyManagementCompany", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "propertyManagementCompany", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Building> buildings;
 
     @OneToOne(cascade = CascadeType.ALL)
@@ -40,11 +38,11 @@ public class PropertyManagementCompany {
     @JoinColumn(name = "contact_info_id")
     private ContactInfo contactInfo;
 
-    @Column(name = "created_by")
+    @JoinColumn(name = "created_by")
     @OneToOne(cascade = CascadeType.ALL)
     private User createdBy;
 
-    @Column(name = "last_modified_by")
+    @JoinColumn(name = "last_modified_by")
     @OneToOne(cascade = CascadeType.ALL)
     private User lastModifiedBy;
 

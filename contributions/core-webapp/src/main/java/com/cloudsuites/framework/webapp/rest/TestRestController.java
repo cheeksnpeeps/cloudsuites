@@ -1,18 +1,17 @@
 package com.cloudsuites.framework.webapp.rest;
-import com.cloudsuites.framework.modules.property.BuildingServiceImpl;
-import com.cloudsuites.framework.modules.property.FloorServiceImpl;
-import com.cloudsuites.framework.modules.property.PropertyManagementCompanyServiceImpl;
-import com.cloudsuites.framework.modules.property.UnitServiceImpl;
-import com.cloudsuites.framework.modules.user.UserServiceImpl;
+import com.cloudsuites.framework.services.common.entities.Address;
 import com.cloudsuites.framework.services.common.entities.property.*;
 import com.cloudsuites.framework.services.common.entities.user.ContactInfo;
+import com.cloudsuites.framework.services.common.entities.user.Gender;
 import com.cloudsuites.framework.services.common.entities.user.User;
+import com.cloudsuites.framework.services.common.entities.user.UserType;
 import com.cloudsuites.framework.services.property.BuildingService;
 import com.cloudsuites.framework.services.property.FloorService;
 import com.cloudsuites.framework.services.property.PropertyManagementCompanyService;
 import com.cloudsuites.framework.services.property.UnitService;
 import com.cloudsuites.framework.services.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,7 +32,7 @@ public class TestRestController {
 
 	@Autowired
 	public TestRestController(
-			PropertyManagementCompanyService companyService,
+			@Qualifier("propertyManagementCompanyService") PropertyManagementCompanyService companyService,
 			BuildingService buildingService,
 			FloorService floorService,
 			UnitService unitService,
@@ -58,9 +57,6 @@ public class TestRestController {
 		address.setStreetNumber("123");
 		address.setStreetName("Main St");
 		address.setCity("Your City");
-		// Set other address properties as needed
-		address.setCreatedBy(createDefaultUser());
-		address.setLastModifiedBy(createDefaultUser());
 
 		// Set the Address for the PropertyManagementCompany
 		company.setAddress(address);
@@ -82,10 +78,6 @@ public class TestRestController {
 		building.setCreatedBy(createDefaultUser());
 		building.setLastModifiedBy(createDefaultUser());
 
-		// Set the Building for the PropertyManagementCompany
-		ArrayList<Building> buildings = new ArrayList<>();
-		buildings.add(building);
-		company.setBuildings(buildings);
 
 		// Create a Floor
 		Floor floor = new Floor();
@@ -96,7 +88,6 @@ public class TestRestController {
 		// Add the Floor to the Building's list of floors
 		List<Floor> floors = new ArrayList<>();
 		floors.add(floor);
-		building.setFloors(floors);
 
 		// Create a Unit
 		Unit unit = new Unit();
@@ -109,6 +100,13 @@ public class TestRestController {
 		List<Unit> units = new ArrayList<>();
 		units.add(unit);
 		floor.setUnits(units);
+
+		building.setFloors(floors);
+		building.setPropertyManagementCompany(company);
+		// Set the Building for the PropertyManagementCompany
+		ArrayList<Building> buildings = new ArrayList<>();
+		buildings.add(building);
+		company.setBuildings(buildings);
 
 		// Set audit fields
 		company.setCreatedBy(createDefaultUser());
@@ -132,6 +130,8 @@ public class TestRestController {
 		User user = new User();
 		// Set user properties
 		user.setUsername("default_user");
+		user.setGender(Gender.MALE);
+		user.setUserType(UserType.ADMIN);
 		// Set other user properties as needed
 		return user;
 	}
