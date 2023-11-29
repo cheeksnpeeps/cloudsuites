@@ -1,12 +1,10 @@
-package com.cloudsuites.framework.services.common.entities.property;
+package com.cloudsuites.framework.services.entities.property;
 
 import com.cloudsuites.framework.services.common.entities.Address;
 import com.cloudsuites.framework.services.common.entities.user.ContactInfo;
 import com.cloudsuites.framework.services.common.entities.user.User;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -61,4 +59,5 @@ public class PropertyManagementCompany {
     protected void onUpdate() {
         this.lastModifiedAt = LocalDateTime.now();
     }
+
 }

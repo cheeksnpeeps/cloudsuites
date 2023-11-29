@@ -1,9 +1,7 @@
-package com.cloudsuites.framework.services.common.entities.property;
+package com.cloudsuites.framework.services.entities.property;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
 @Entity
@@ -18,6 +16,10 @@ public class Unit {
 	@ManyToOne
 	@JoinColumn(name = "floor_id")
 	private Floor floor;
+
+	@ManyToOne
+	@JoinColumn(name = "building_id")
+	private Building building;
 
 	// Other unit attributes
 	@Column(name = "unit_number")

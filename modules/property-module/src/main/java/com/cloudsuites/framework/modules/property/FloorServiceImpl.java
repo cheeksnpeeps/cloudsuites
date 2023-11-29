@@ -1,7 +1,7 @@
 package com.cloudsuites.framework.modules.property;
 
 import com.cloudsuites.framework.modules.property.repository.FloorRepository;
-import com.cloudsuites.framework.services.common.entities.property.Floor;
+import com.cloudsuites.framework.services.entities.property.Floor;
 import com.cloudsuites.framework.services.property.FloorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -20,22 +20,22 @@ public class FloorServiceImpl implements FloorService {
     }
 
     @Override
-    public Floor getFloorById(Long floorId) {
+    public Floor getFloorById(Long buildingId, Long floorId) {
         return floorRepository.findById(floorId).orElse(null);
     }
 
     @Override
-    public List<Floor> getAllFloors() {
+    public List<Floor> getAllFloors(Long buildingId) {
         return floorRepository.findAll();
     }
 
     @Override
-    public Floor saveFloor(Floor floor) {
+    public Floor saveFloor(Long buildingId, Floor floor) {
         return floorRepository.save(floor);
     }
 
     @Override
-    public void deleteFloorById(Long floorId) {
+    public void deleteFloorById(Long buildingId, Long floorId) {
         floorRepository.deleteById(floorId);
     }
 }

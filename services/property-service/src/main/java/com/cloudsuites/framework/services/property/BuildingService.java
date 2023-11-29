@@ -1,6 +1,7 @@
 package com.cloudsuites.framework.services.property;
 
-import com.cloudsuites.framework.services.common.entities.property.Building;
+import com.cloudsuites.framework.services.entities.property.Building;
+import com.cloudsuites.framework.services.entities.property.Floor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,6 +11,8 @@ public interface BuildingService {
     // Find a building by its ID
     public Building getBuildingById(Long buildingId);
 
+    List<Building> getBuildingByPropertyManagementCompanyId(Long propertyManagementCompanyId);
+
     // Find all buildings
     public List<Building> getAllBuildings();
 
@@ -18,4 +21,6 @@ public interface BuildingService {
 
     // Delete a building by its ID
     public void deleteBuildingById(Long buildingId);
+
+    public void addFloor(Long buildingId, Floor floor);
 }

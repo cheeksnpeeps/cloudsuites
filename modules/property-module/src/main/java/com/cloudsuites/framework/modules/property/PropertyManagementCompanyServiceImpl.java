@@ -1,14 +1,13 @@
 package com.cloudsuites.framework.modules.property;
 
 import com.cloudsuites.framework.modules.property.repository.PropertyManagementCompanyRepository;
-import com.cloudsuites.framework.services.common.entities.property.PropertyManagementCompany;
+import com.cloudsuites.framework.services.entities.property.PropertyManagementCompany;
 import com.cloudsuites.framework.services.property.PropertyManagementCompanyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 @Component
 @Transactional
 public class PropertyManagementCompanyServiceImpl implements PropertyManagementCompanyService {
@@ -21,30 +20,24 @@ public class PropertyManagementCompanyServiceImpl implements PropertyManagementC
     }
 
     @Override
-    public PropertyManagementCompany getCompanyById(Long companyId) {
+    public PropertyManagementCompany getPropertyManagementCompanyById(Long companyId) {
         return companyRepository.findById(companyId).orElse(null);
     }
 
     @Override
-    public List<PropertyManagementCompany> getAllCompanies() {
+    public List<PropertyManagementCompany> getAllPropertyManagementCompanies() {
         return companyRepository.findAll();
     }
 
     @Override
-    public PropertyManagementCompany saveCompany(PropertyManagementCompany company) {
+    public PropertyManagementCompany savePropertyManagementCompany(PropertyManagementCompany company) {
         return companyRepository.save(company);
     }
 
     @Override
-    public void deleteCompanyById(Long companyId) {
+    public void deletePropertyManagementCompanyById(Long companyId) {
         companyRepository.deleteById(companyId);
     }
 
-    @Override
-    public PropertyManagementCompany getCompanyWithAssociations(Long companyId) {
-        // Retrieve a PropertyManagementCompany with associated sub-entities
-        Optional<PropertyManagementCompany> companyOptional = companyRepository.findById(companyId);
-        return companyOptional.orElse(null);
-    }
 }
 

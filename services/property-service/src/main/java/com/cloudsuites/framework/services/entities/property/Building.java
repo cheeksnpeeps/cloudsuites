@@ -1,13 +1,12 @@
-package com.cloudsuites.framework.services.common.entities.property;
+package com.cloudsuites.framework.services.entities.property;
 
 import com.cloudsuites.framework.services.common.entities.Address;
 import com.cloudsuites.framework.services.common.entities.user.User;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -31,8 +30,11 @@ public class Building {
 	@JoinColumn(name = "address_id")
 	private Address address;
 
-	@OneToMany(mappedBy = "building", cascade = CascadeType.ALL)
+	@OneToMany(mappedBy = "building", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private List<Floor> floors;
+
+	@OneToMany(mappedBy = "units", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private List<Unit> units;
 
 	// Other building attributes
 	@Column(name = "total_floors")
@@ -63,5 +65,13 @@ public class Building {
 	@PreUpdate
 	protected void onUpdate() {
 		this.lastModifiedAt = LocalDateTime.now();
+	}
+
+	public void addFloor(Floor floor) {
+		if (floors == null) {
+			floors = new ArrayList<>();
+		}
+		floors.add(floor);
+		floor.setBuilding(this);
 	}
 }

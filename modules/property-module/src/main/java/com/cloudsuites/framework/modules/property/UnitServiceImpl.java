@@ -1,7 +1,7 @@
 package com.cloudsuites.framework.modules.property;
 
 import com.cloudsuites.framework.modules.property.repository.UnitRepository;
-import com.cloudsuites.framework.services.common.entities.property.Unit;
+import com.cloudsuites.framework.services.entities.property.Unit;
 import com.cloudsuites.framework.services.property.UnitService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

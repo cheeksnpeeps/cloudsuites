@@ -15,6 +15,7 @@
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <dependencies>
+
         <dependency>
             <groupId>com.cloudsuites.framework.services</groupId>
             <artifactId>parking-service</artifactId>
@@ -41,6 +42,11 @@
             <artifactId>property-module</artifactId>
             <version>0.0.1-SNAPSHOT</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.modelmapper</groupId>
+            <artifactId>modelmapper</artifactId>
+            <version>3.1.1</version>
         </dependency>
     </dependencies>
     <build>

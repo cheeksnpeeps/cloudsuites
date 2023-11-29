@@ -1,6 +1,7 @@
 package com.cloudsuites.framework.modules.property;
 import com.cloudsuites.framework.modules.property.repository.BuildingRepository;
-import com.cloudsuites.framework.services.common.entities.property.Building;
+import com.cloudsuites.framework.services.entities.property.Building;
+import com.cloudsuites.framework.services.entities.property.Floor;
 import com.cloudsuites.framework.services.property.BuildingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -25,6 +26,10 @@ public class BuildingServiceImpl implements BuildingService {
     }
 
     @Override
+    public List<Building> getBuildingByPropertyManagementCompanyId(Long companyId) {
+        return buildingRepository.findByPropertyManagementCompanyId(companyId);
+    }
+    @Override
     public List<Building> getAllBuildings() {
         return buildingRepository.findAll();
     }
@@ -37,5 +42,13 @@ public class BuildingServiceImpl implements BuildingService {
     @Override
     public void deleteBuildingById(Long buildingId) {
         buildingRepository.deleteById(buildingId);
+    }
+
+    @Override
+    public void addFloor(Long buildingId, Floor floor) {
+        Building building = buildingRepository.findById(buildingId).orElse(null);
+        if(building == null) throw new RuntimeException("Building not found");
+        building.addFloor(floor);
+        buildingRepository.save(building);
     }
 }

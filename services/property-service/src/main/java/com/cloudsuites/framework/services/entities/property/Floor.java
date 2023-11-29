@@ -1,9 +1,7 @@
-package com.cloudsuites.framework.services.common.entities.property;
+package com.cloudsuites.framework.services.entities.property;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.List;
 
@@ -21,7 +19,7 @@ public class Floor {
     @JoinColumn(name = "building_id")
     private Building building;
 
-    @OneToMany(mappedBy = "floor", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "units", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Unit> units;
 
     // Other floor attributes
