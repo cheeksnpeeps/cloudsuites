@@ -9,9 +9,7 @@ import java.util.List;
 @Repository
 public interface BuildingRepository extends JpaRepository<Building, Long> {
 
-    public List<Building> findByCompanyId(Long companyId);
-
-    public Building findByCompanyIdAndBuildingId(Long companyId, Long buildingId);
+    List<Building> findByManagementCompany_ManagementCompanyId(Long managementCompanyId);
 
     public Building findByNameContaining(String name);
 
@@ -24,6 +22,4 @@ public interface BuildingRepository extends JpaRepository<Building, Long> {
     public List<Building> findByAddress_State(String state);
 
     public List<Building> findByAddress_Country(String country);
-
-    public List<Building> findByPropertyManagementCompanyId(Long companyId);
 }

@@ -2,15 +2,20 @@ package com.cloudsuites.framework.webapp.rest.property.dto;
 
 import com.cloudsuites.framework.webapp.rest.user.dto.ContactInfoDTO;
 import com.cloudsuites.framework.webapp.rest.user.dto.UserDTO;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
-public class PropertyManagementCompanyDTO {
+@AllArgsConstructor
+@NoArgsConstructor
+public class ManagementCompanyDTO {
 
-    private Long companyId;
+    private Long managementCompanyId;
 
     private String name;
 
@@ -22,11 +27,15 @@ public class PropertyManagementCompanyDTO {
 
     private ContactInfoDTO contactInfo;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private UserDTO createdBy;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private UserDTO lastModifiedBy;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private LocalDateTime createdAt;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private LocalDateTime lastModifiedAt;
 }

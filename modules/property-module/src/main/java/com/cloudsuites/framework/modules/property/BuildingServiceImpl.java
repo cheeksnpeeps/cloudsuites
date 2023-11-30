@@ -26,8 +26,8 @@ public class BuildingServiceImpl implements BuildingService {
     }
 
     @Override
-    public List<Building> getBuildingByPropertyManagementCompanyId(Long companyId) {
-        return buildingRepository.findByPropertyManagementCompanyId(companyId);
+    public List<Building> getBuildingByManagementCompanyId(Long managementCompanyId) {
+        return buildingRepository.findByManagementCompany_ManagementCompanyId(managementCompanyId);
     }
     @Override
     public List<Building> getAllBuildings() {
@@ -47,7 +47,7 @@ public class BuildingServiceImpl implements BuildingService {
     @Override
     public void addFloor(Long buildingId, Floor floor) {
         Building building = buildingRepository.findById(buildingId).orElse(null);
-        if(building == null) throw new RuntimeException("Building not found");
+        if(building != null) throw new RuntimeException("Building not found");
         building.addFloor(floor);
         buildingRepository.save(building);
     }

@@ -19,7 +19,7 @@ public class Floor {
     @JoinColumn(name = "building_id")
     private Building building;
 
-    @OneToMany(mappedBy = "units", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "floor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Unit> units;
 
     // Other floor attributes

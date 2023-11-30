@@ -23,8 +23,8 @@ public class Building {
 	private String name;
 
 	@ManyToOne
-	@JoinColumn(name = "company_id")
-	private PropertyManagementCompany propertyManagementCompany;
+	@JoinColumn(name = "management_company_id")
+	private ManagementCompany managementCompany;
 
 	@OneToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "address_id")
@@ -33,7 +33,7 @@ public class Building {
 	@OneToMany(mappedBy = "building", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private List<Floor> floors;
 
-	@OneToMany(mappedBy = "units", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "building", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private List<Unit> units;
 
 	// Other building attributes

@@ -29,6 +29,9 @@ public class Address {
     @Column(name = "city")
     private String city;
 
+    @Column(name = "state")
+    private String state;
+
     @Column(name = "province")
     private String province;
 
@@ -37,5 +40,6 @@ public class Address {
 
     @Column(name = "country")
     private String country;
+
 
 }

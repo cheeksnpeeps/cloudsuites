@@ -11,7 +11,7 @@ public interface BuildingService {
     // Find a building by its ID
     public Building getBuildingById(Long buildingId);
 
-    List<Building> getBuildingByPropertyManagementCompanyId(Long propertyManagementCompanyId);
+    List<Building> getBuildingByManagementCompanyId(Long managementCompanyId);
 
     // Find all buildings
     public List<Building> getAllBuildings();

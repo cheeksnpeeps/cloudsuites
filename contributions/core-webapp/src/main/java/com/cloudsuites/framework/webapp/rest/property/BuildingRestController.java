@@ -9,7 +9,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RestController("/api/buildings")
+@RestController
+@RequestMapping("/api/buildings")
 public class BuildingRestController {
 
     private final BuildingService buildingService;
@@ -28,9 +29,16 @@ public class BuildingRestController {
     }
 
     @GetMapping("/")
-    public List<BuildingDTO> getAllBuildings() {
-        List<Building> buildings = buildingService.getAllBuildings();
-        return mapper.convertToDTOList(buildings);
+    public List<BuildingDTO> getBuildings(@RequestParam(required = false) Long managementCompanyId) {
+        if (managementCompanyId != null) {
+            // If managementCompanyId is provided, filter buildings by management company
+            List<Building> buildings = buildingService.getBuildingByManagementCompanyId(managementCompanyId);
+            return mapper.convertToDTOList(buildings);
+        } else {
+            // If managementCompanyId is not provided, return all buildings
+            List<Building> buildings = buildingService.getAllBuildings();
+            return mapper.convertToDTOList(buildings);
+        }
     }
 
     @PostMapping("/")
@@ -45,11 +53,6 @@ public class BuildingRestController {
         buildingService.deleteBuildingById(buildingId);
     }
 
-    @GetMapping("/")
-    public List<BuildingDTO> getBuildingByPropertyManagementCompanyId(@RequestParam Long companyId) {
-        List<Building> buildings = buildingService.getBuildingByPropertyManagementCompanyId(companyId);
-        return mapper.convertToDTOList(buildings);
-    }
 
 }
 

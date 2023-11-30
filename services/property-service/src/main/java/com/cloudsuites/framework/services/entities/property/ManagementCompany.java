@@ -11,13 +11,13 @@ import java.util.List;
 
 @Data
 @Entity
-@Table(name = "property_management_company")
-public class PropertyManagementCompany {
+@Table(name = "management_company")
+public class ManagementCompany {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "company_id")
-    private Long companyId;
+    @Column(name = "management_company_id")
+    private Long managementCompanyId;
 
     @Column(name = "name")
     private String name;
@@ -25,7 +25,7 @@ public class PropertyManagementCompany {
     @Column(name = "website")
     private String website;
 
-    @OneToMany(mappedBy = "propertyManagementCompany", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "managementCompany", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Building> buildings;
 
     @OneToOne(cascade = CascadeType.ALL)

@@ -6,8 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@Entity
-@Table(name = "address")
 @NoArgsConstructor
 @AllArgsConstructor
 public class AddressDTO {
