@@ -8,18 +8,5 @@ import java.util.List;
 
 @Repository
 public interface BuildingRepository extends JpaRepository<Building, Long> {
-
     List<Building> findByManagementCompany_ManagementCompanyId(Long managementCompanyId);
-
-    public Building findByNameContaining(String name);
-
-    public List<Building> findByAddress_StreetNumber(String streetNumber);
-
-    public List<Building> findByAddress_City(String city);
-
-    public List<Building> findByAddress_Province(String province);
-
-    public List<Building> findByAddress_State(String state);
-
-    public List<Building> findByAddress_Country(String country);
 }

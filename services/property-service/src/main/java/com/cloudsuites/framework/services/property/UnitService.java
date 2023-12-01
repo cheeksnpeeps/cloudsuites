@@ -4,14 +4,17 @@ import com.cloudsuites.framework.services.entities.property.Unit;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+
 @Service
 public interface UnitService {
 
-    public Unit getUnitById(Long unitId);
+    Unit getUnitById(Long buildingId, Long unitId);
 
-    public List<Unit> getAllUnits();
+    List<Unit> getAllUnits(Long buildingId);
 
-    public Unit saveUnit(Unit unit);
+    Unit saveUnit(Long buildingId, Long floorId, Unit unit);
 
-    public void deleteUnitById(Long unitId);
+    public void deleteUnitById(Long buildingId, Long unitId);
+
+    List<Unit> getAllUnitsByFloorNumber(Long buildingId, Integer floorNumber);
 }

@@ -4,16 +4,20 @@ import com.cloudsuites.framework.services.entities.property.ManagementCompany;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
+
 @Service
 public interface ManagementCompanyService {
 
-    public ManagementCompany getManagementCompanyById(Long managementCompanyId);
+    public ManagementCompany getManagementCompanyById(Long companyId);
 
-    public List<ManagementCompany> getAllPropertyManagementCompanies();
+    List<ManagementCompany> getAllManagementCompanies();
 
-    public ManagementCompany saveManagementCompany(ManagementCompany managementCompany);
+    // Query all management companies with their buildings
+    Optional<ManagementCompany> getManagementCompanyByIdWithBuildings(Long managementCompanyId);
 
-    public void deleteManagementCompanyById(Long managementCompanyId);
+    public ManagementCompany saveManagementCompany(ManagementCompany company);
 
+    public void deleteManagementCompanyById(Long companyId);
 }
 

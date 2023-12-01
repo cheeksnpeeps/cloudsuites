@@ -9,6 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import java.util.List;
+import java.util.Optional;
+
 @Component
 @Transactional
 public class BuildingServiceImpl implements BuildingService {
@@ -44,11 +46,18 @@ public class BuildingServiceImpl implements BuildingService {
         buildingRepository.deleteById(buildingId);
     }
 
+    public Optional<Building> getBuildingByIdWithFloors(Long buildingId) {
+        return buildingRepository.findById(buildingId)
+                .map(building -> {
+                    // Force fetching of floors
+                    List<Floor> floors = building.getFloors();
+                    // Now 'floors' should be populated with the actual data.
+                    return building;
+                });
+    }
+
     @Override
-    public void addFloor(Long buildingId, Floor floor) {
-        Building building = buildingRepository.findById(buildingId).orElse(null);
-        if(building != null) throw new RuntimeException("Building not found");
-        building.addFloor(floor);
-        buildingRepository.save(building);
+    public void deleteBuildingByIdWithFloors(Long buildingId) {
+        buildingRepository.deleteById(buildingId);
     }
 }

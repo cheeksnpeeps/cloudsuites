@@ -1,12 +1,12 @@
 package com.cloudsuites.framework.services.entities.property;
 
 import com.cloudsuites.framework.services.common.entities.Address;
-import com.cloudsuites.framework.services.common.entities.user.ContactInfo;
 import com.cloudsuites.framework.services.common.entities.user.User;
 import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -25,16 +25,12 @@ public class ManagementCompany {
     @Column(name = "website")
     private String website;
 
-    @OneToMany(mappedBy = "managementCompany", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private List<Building> buildings;
+    @OneToMany(mappedBy = "managementCompany", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Building> buildings = new ArrayList<>();
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "address_id")
     private Address address;
-
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "contact_info_id")
-    private ContactInfo contactInfo;
 
     @JoinColumn(name = "created_by")
     @OneToOne(cascade = CascadeType.ALL)

@@ -1,12 +1,12 @@
 package com.cloudsuites.framework.webapp.rest.property;
 
 import com.cloudsuites.framework.services.entities.property.ManagementCompany;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.web.bind.annotation.*;
 import com.cloudsuites.framework.services.property.ManagementCompanyService;
 import com.cloudsuites.framework.webapp.rest.property.dto.ManagementCompanyDTO;
 import com.cloudsuites.framework.webapp.rest.property.mapper.ManagementCompanyMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -25,18 +25,23 @@ public class ManagementCompanyRestController {
     }
 
     @GetMapping("/{managementCompanyId}")
-    public ManagementCompanyDTO getManagementCompanyById(@PathVariable Long managementCompanyId) {
+    public ManagementCompanyDTO getManagementCompanyById(@PathVariable Long managementCompanyId, @RequestParam(required = false) Boolean withBuildings) {
+        if(Boolean.TRUE.equals(withBuildings)) {
+            return managementCompanyService.getManagementCompanyByIdWithBuildings(managementCompanyId)
+                    .map(mapper::convertToDTO)
+                    .orElse(null);
+        }
         ManagementCompany managementCompany = managementCompanyService.getManagementCompanyById(managementCompanyId);
         return mapper.convertToDTO(managementCompany);
     }
 
-    @GetMapping("/")
+    @GetMapping("")
     public List<ManagementCompanyDTO> getAllPropertyManagementCompanies() {
-        List<ManagementCompany> companies = managementCompanyService.getAllPropertyManagementCompanies();
+        List<ManagementCompany> companies = managementCompanyService.getAllManagementCompanies();
         return mapper.convertToDTOList(companies);
     }
 
-    @PostMapping("/")
+    @PostMapping("")
     public ManagementCompanyDTO saveManagementCompany(@RequestBody ManagementCompanyDTO managementCompanyDTO) {
         ManagementCompany managementCompany = mapper.convertToEntity(managementCompanyDTO);
         managementCompany = managementCompanyService.saveManagementCompany(managementCompany);

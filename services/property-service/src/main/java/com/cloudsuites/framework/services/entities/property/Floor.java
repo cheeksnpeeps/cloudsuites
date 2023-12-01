@@ -3,6 +3,7 @@ package com.cloudsuites.framework.services.entities.property;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -20,7 +21,7 @@ public class Floor {
     private Building building;
 
     @OneToMany(mappedBy = "floor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Unit> units;
+    private List<Unit> units = new ArrayList<>();
 
     // Other floor attributes
     @Column(name = "floor_number")

@@ -20,22 +20,26 @@ public class UnitServiceImpl implements UnitService {
     }
 
     @Override
-    public Unit getUnitById(Long unitId) {
+    public Unit getUnitById(Long buildingId, Long unitId) {
         return unitRepository.findById(unitId).orElse(null);
     }
 
     @Override
-    public List<Unit> getAllUnits() {
-        return unitRepository.findAll();
-    }
+    public List<Unit> getAllUnits(Long buildingId) {return unitRepository.findAll();}
 
     @Override
-    public Unit saveUnit(Unit unit) {
+    public Unit saveUnit(Long buildingId, Long floorId, Unit unit) {
         return unitRepository.save(unit);
     }
 
     @Override
-    public void deleteUnitById(Long unitId) {
+    public void deleteUnitById(Long buildingId, Long unitId) {
         unitRepository.deleteById(unitId);
     }
+
+    @Override
+    public List<Unit> getAllUnitsByFloorNumber(Long buildingId, Integer floorNumber) {
+        return unitRepository.findAllByFloor_FloorNumber(floorNumber);
+    }
+
 }

@@ -4,6 +4,8 @@ import com.cloudsuites.framework.services.entities.property.Floor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
+
 @Service
 public interface FloorService {
 
@@ -11,9 +13,13 @@ public interface FloorService {
 
     public List<Floor> getAllFloors(Long buildingId);
 
+    List<Floor> getAllFloorsWithUnits(Long buildingId);
+
     Floor saveFloor(Long buildingId, Floor floor);
 
     public void deleteFloorById(Long buildingId, Long floorId);
+
+    Optional<Floor> getFloorByIdWithUnits(Long floorId);
 
 }
 

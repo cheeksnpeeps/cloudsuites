@@ -31,10 +31,10 @@ public class Building {
 	private Address address;
 
 	@OneToMany(mappedBy = "building", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	private List<Floor> floors;
+	private List<Floor> floors = new ArrayList<>();
 
 	@OneToMany(mappedBy = "building", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	private List<Unit> units;
+	private List<Unit> units = new ArrayList<>();
 
 	// Other building attributes
 	@Column(name = "total_floors")

@@ -26,23 +26,27 @@ public class FloorRestController {
     }
 
     @GetMapping("/{floorId}")
-    public FloorDTO getFloorById(@PathVariable Long buildingId, @PathVariable Long floorId) {
-        Floor floor = floorService.getFloorById(buildingId, floorId);
-        return mapper.convertToDTO(floor);
+    public FloorDTO getFloorById(@PathVariable Long buildingId, @PathVariable Long floorId, @RequestParam(required = false) Boolean withUnits) {
+          if(Boolean.TRUE.equals(withUnits)) {
+                return mapper.convertToDTO(floorService.getFloorByIdWithUnits(floorId).orElse(null));
+          } else {
+                return mapper.convertToDTO(floorService.getFloorById(buildingId, floorId));
+          }
     }
 
     @GetMapping("/")
-    public List<FloorDTO> getAllFloors(@PathVariable Long buildingId) {
-        List<Floor> floors = floorService.getAllFloors(buildingId);
-        return mapper.convertToDTOList(floors);
+    public List<FloorDTO> getAllFloors(@PathVariable Long buildingId, @RequestParam(required = false) Boolean withUnits) {
+        if(withUnits != null && withUnits) {
+            return mapper.convertToDTOList(floorService.getAllFloorsWithUnits(buildingId));
+        } else {
+            return mapper.convertToDTOList(floorService.getAllFloors(buildingId));
+        }
     }
 
    @PostMapping("/")
     public FloorDTO saveFloor(@PathVariable Long buildingId, @RequestBody FloorDTO floorDTO) {
         Floor floor = mapper.convertToEntity(floorDTO);
-        floor.setBuilding(buildingService.getBuildingById(buildingId));
-        floor = floorService.saveFloor(buildingId,floor);
-        buildingService.addFloor(buildingId, floor);
+        floor = floorService.saveFloor(buildingId, floor);
         return mapper.convertToDTO(floor);
     }
 
@@ -50,4 +54,6 @@ public class FloorRestController {
     public void deleteFloorById(@PathVariable Long buildingId, @PathVariable Long floorId) {
         floorService.deleteFloorById(buildingId, floorId);
     }
+
+
 }

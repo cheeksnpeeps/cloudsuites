@@ -11,6 +11,8 @@ public class UnitDTO {
 
 	private Long unitId;
 
+	private BuildingDTO buildingDTO;
+
 	private FloorDTO floorDTO;
 
 	private String unitNumber;

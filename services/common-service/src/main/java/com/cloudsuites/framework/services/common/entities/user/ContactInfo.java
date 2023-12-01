@@ -26,5 +26,7 @@ public class ContactInfo {
     @Column(name = "email")
     private String email;
 
+
+
 }
 
