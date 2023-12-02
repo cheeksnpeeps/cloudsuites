@@ -1,6 +1,7 @@
 package com.cloudsuites.framework.webapp.rest.property.dto;
 
-import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,32 +9,29 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AddressDTO {
+@JsonIgnoreProperties(ignoreUnknown=true)
+public class AddressDto {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "address_id")
     private Long addressId;
 
-    @Column(name = "apt_number")
+    @NotBlank(message = "Apartment number is required")
     private String aptNumber;
 
-    @Column(name = "street_number")
+    @NotBlank(message = "Street number is required")
     private String streetNumber;
 
-    @Column(name = "street_name")
+    @NotBlank(message = "Street name is required")
     private String streetName;
 
-    @Column(name = "city")
+    @NotBlank(message = "City is required")
     private String city;
 
-    @Column(name = "province")
+    @NotBlank(message = "Province is required")
     private String province;
 
-    @Column(name = "postal_code")
+    @NotBlank(message = "Postal code is required")
     private String postalCode;
 
-    @Column(name = "country")
+    @NotBlank(message = "Country is required")
     private String country;
-
 }

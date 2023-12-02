@@ -1,7 +1,7 @@
 package com.cloudsuites.framework.webapp.rest.property.mapper;
 
 import com.cloudsuites.framework.services.entities.property.Unit;
-import com.cloudsuites.framework.webapp.rest.property.dto.UnitDTO;
+import com.cloudsuites.framework.webapp.rest.property.dto.UnitDto;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -15,18 +15,18 @@ public class UnitMapper {
     @Autowired
     public UnitMapper(ModelMapper modelMapper) {this.modelMapper = modelMapper;}
 
-    public Unit convertToEntity(UnitDTO unitDTO) {
+    public Unit convertToEntity(UnitDto unitDTO) {
         return modelMapper.map(unitDTO, Unit.class);
     }
 
-    public List<UnitDTO> convertToDTOList(List<Unit> units) {
+    public List<UnitDto> convertToDTOList(List<Unit> units) {
         return units.stream()
                 .map(this::convertToDTO)
                 .toList();
     }
 
-    public UnitDTO convertToDTO(Unit unit) {
-        return modelMapper.map(unit, UnitDTO.class);
+    public UnitDto convertToDTO(Unit unit) {
+        return modelMapper.map(unit, UnitDto.class);
     }
 
 }

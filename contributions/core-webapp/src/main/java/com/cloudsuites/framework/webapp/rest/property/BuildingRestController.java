@@ -1,10 +1,12 @@
 package com.cloudsuites.framework.webapp.rest.property;
 
+import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import com.cloudsuites.framework.services.entities.property.Building;
 import com.cloudsuites.framework.services.property.BuildingService;
-import com.cloudsuites.framework.webapp.rest.property.dto.BuildingDTO;
+import com.cloudsuites.framework.webapp.rest.property.dto.BuildingDto;
 import com.cloudsuites.framework.webapp.rest.property.mapper.BuildingMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,34 +25,34 @@ public class BuildingRestController {
     }
 
     @GetMapping("/{buildingId}")
-    public BuildingDTO getBuildingById(@PathVariable Long buildingId) {
+    public ResponseEntity<BuildingDto> getBuildingById(@PathVariable Long buildingId) throws NotFoundResponseException {
         Building building = buildingService.getBuildingById(buildingId);
-        return mapper.convertToDTO(building);
+        return ResponseEntity.accepted().body(mapper.convertToDTO(building));
     }
 
     @GetMapping("/")
-    public List<BuildingDTO> getBuildings(@RequestParam(required = false) Long managementCompanyId) {
+    public ResponseEntity<List<BuildingDto>> getBuildings(@RequestParam(required = false) Long managementCompanyId) throws NotFoundResponseException {
         if (managementCompanyId != null) {
             // If managementCompanyId is provided, filter buildings by management company
             List<Building> buildings = buildingService.getBuildingByManagementCompanyId(managementCompanyId);
-            return mapper.convertToDTOList(buildings);
-        } else {
-            // If managementCompanyId is not provided, return all buildings
-            List<Building> buildings = buildingService.getAllBuildings();
-            return mapper.convertToDTOList(buildings);
+            return ResponseEntity.accepted().body(mapper.convertToDTOList(buildings));
         }
+            // If managementCompanyId is not provided, return all buildings
+        List<Building> buildings = buildingService.getAllBuildings();
+        return ResponseEntity.accepted().body(mapper.convertToDTOList(buildings));
     }
 
     @PostMapping("/")
-    public BuildingDTO saveBuilding(@RequestBody BuildingDTO buildingDTO) {
+    public ResponseEntity<BuildingDto> saveBuilding(@RequestBody BuildingDto buildingDTO) {
         Building building = mapper.convertToEntity(buildingDTO);
         building = buildingService.saveBuilding(building);
-        return mapper.convertToDTO(building);
+        return ResponseEntity.accepted().body(mapper.convertToDTO(building));
     }
 
     @DeleteMapping("/{buildingId}")
-    public void deleteBuildingById(@PathVariable Long buildingId) {
+    public ResponseEntity<Void> deleteBuildingById(@PathVariable Long buildingId) {
         buildingService.deleteBuildingById(buildingId);
+        return ResponseEntity.accepted().build();
     }
 
 

@@ -1,5 +1,6 @@
 package com.cloudsuites.framework.modules.property;
 
+import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import com.cloudsuites.framework.modules.property.repository.ContactInfoRepository;
 import com.cloudsuites.framework.services.common.entities.user.ContactInfo;
 import com.cloudsuites.framework.services.property.ContactInfoService;
@@ -20,8 +21,8 @@ public class ContactInfoServiceImpl implements ContactInfoService {
     }
 
     @Override
-    public ContactInfo getContactInfoById(Long contactInfoId) {
-        return contactInfoRepository.findById(contactInfoId).orElse(null);
+    public ContactInfo getContactInfoById(Long contactInfoId) throws NotFoundResponseException {
+        return contactInfoRepository.findById(contactInfoId).orElseThrow(() -> new NotFoundResponseException("ContactInfo not found: "+contactInfoId));
     }
 
     @Override

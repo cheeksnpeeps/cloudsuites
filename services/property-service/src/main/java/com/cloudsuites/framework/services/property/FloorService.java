@@ -1,15 +1,15 @@
 package com.cloudsuites.framework.services.property;
 
+import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import com.cloudsuites.framework.services.entities.property.Floor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public interface FloorService {
 
-    public Floor getFloorById(Long buildingId, Long floorId);
+    public Floor getFloorById(Long buildingId, Long floorId) throws NotFoundResponseException;
 
     public List<Floor> getAllFloors(Long buildingId);
 
@@ -19,7 +19,6 @@ public interface FloorService {
 
     public void deleteFloorById(Long buildingId, Long floorId);
 
-    Optional<Floor> getFloorByIdWithUnits(Long floorId);
-
+    public Floor getFloorByIdWithUnits(Long buildingId, Long floorId) throws NotFoundResponseException;
 }
 

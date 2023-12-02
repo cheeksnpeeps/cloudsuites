@@ -2,11 +2,11 @@ package com.cloudsuites.framework.services.entities.property;
 
 import com.cloudsuites.framework.services.common.entities.Address;
 import com.cloudsuites.framework.services.common.entities.user.User;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -25,8 +25,9 @@ public class ManagementCompany {
     @Column(name = "website")
     private String website;
 
+    @JsonManagedReference
     @OneToMany(mappedBy = "managementCompany", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Building> buildings = new ArrayList<>();
+    private List<Building> buildings;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "address_id")

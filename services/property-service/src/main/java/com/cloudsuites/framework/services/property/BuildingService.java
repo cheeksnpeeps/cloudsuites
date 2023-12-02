@@ -1,5 +1,6 @@
 package com.cloudsuites.framework.services.property;
 
+import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import com.cloudsuites.framework.services.entities.property.Building;
 import org.springframework.stereotype.Service;
 
@@ -9,9 +10,9 @@ import java.util.Optional;
 @Service
 public interface BuildingService {
 
-    public Building getBuildingById(Long buildingId);
+    public Building getBuildingById(Long buildingId) throws NotFoundResponseException;
 
-    List<Building> getBuildingByManagementCompanyId(Long managementCompanyId);
+    List<Building> getBuildingByManagementCompanyId(Long managementCompanyId) throws NotFoundResponseException;
 
     List<Building> getAllBuildings();
 
@@ -19,7 +20,7 @@ public interface BuildingService {
 
     public void deleteBuildingById(Long buildingId);
 
-    public Optional<Building> getBuildingByIdWithFloors(Long buildingId);
+    public Optional<Building> getBuildingByIdWithFloors(Long buildingId) throws NotFoundResponseException;
 
     public void deleteBuildingByIdWithFloors(Long buildingId);
 

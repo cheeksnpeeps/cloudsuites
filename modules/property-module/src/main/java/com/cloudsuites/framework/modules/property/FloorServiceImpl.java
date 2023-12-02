@@ -1,5 +1,6 @@
 package com.cloudsuites.framework.modules.property;
 
+import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import com.cloudsuites.framework.modules.property.repository.FloorRepository;
 import com.cloudsuites.framework.services.entities.property.Floor;
 import com.cloudsuites.framework.services.entities.property.Unit;
@@ -9,7 +10,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Component
 @Transactional
@@ -23,8 +23,8 @@ public class FloorServiceImpl implements FloorService {
     }
 
     @Override
-    public Floor getFloorById(Long buildingId, Long floorId) {
-        return floorRepository.findById(floorId).orElse(null);
+    public Floor getFloorById(Long buildingId, Long floorId) throws NotFoundResponseException {
+        return floorRepository.findByBuilding_BuildingIdAndFloorId(buildingId,floorId).orElseThrow(() -> new NotFoundResponseException("Floor not found: "+floorId));
     }
 
     @Override
@@ -53,14 +53,9 @@ public class FloorServiceImpl implements FloorService {
     }
 
     @Override
-    public Optional<Floor> getFloorByIdWithUnits(Long floorId){
-        return floorRepository.findById(floorId)
-                .map(floor -> {
-                    // Force fetching of units
-                    List<Unit> units = floor.getUnits();
-                    // Now 'units' should be populated with the actual data.
-                    return floor;
-                });
+    public Floor getFloorByIdWithUnits(Long buildingId, Long floorId) {
+        return null;
     }
+
 }
 

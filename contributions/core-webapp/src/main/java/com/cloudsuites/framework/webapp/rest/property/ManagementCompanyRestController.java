@@ -1,11 +1,13 @@
 package com.cloudsuites.framework.webapp.rest.property;
 
+import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import com.cloudsuites.framework.services.entities.property.ManagementCompany;
 import com.cloudsuites.framework.services.property.ManagementCompanyService;
-import com.cloudsuites.framework.webapp.rest.property.dto.ManagementCompanyDTO;
+import com.cloudsuites.framework.webapp.rest.property.dto.ManagementCompanyDto;
 import com.cloudsuites.framework.webapp.rest.property.mapper.ManagementCompanyMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,32 +27,28 @@ public class ManagementCompanyRestController {
     }
 
     @GetMapping("/{managementCompanyId}")
-    public ManagementCompanyDTO getManagementCompanyById(@PathVariable Long managementCompanyId, @RequestParam(required = false) Boolean withBuildings) {
-        if(Boolean.TRUE.equals(withBuildings)) {
-            return managementCompanyService.getManagementCompanyByIdWithBuildings(managementCompanyId)
-                    .map(mapper::convertToDTO)
-                    .orElse(null);
-        }
+    public ResponseEntity<ManagementCompanyDto> getManagementCompanyById(@PathVariable Long managementCompanyId) throws NotFoundResponseException {
         ManagementCompany managementCompany = managementCompanyService.getManagementCompanyById(managementCompanyId);
-        return mapper.convertToDTO(managementCompany);
+        return ResponseEntity.accepted().body(mapper.convertToDTO(managementCompany));
     }
 
     @GetMapping("")
-    public List<ManagementCompanyDTO> getAllPropertyManagementCompanies() {
+    public ResponseEntity<List<ManagementCompanyDto>> getAllPropertyManagementCompanies() {
         List<ManagementCompany> companies = managementCompanyService.getAllManagementCompanies();
-        return mapper.convertToDTOList(companies);
+        return ResponseEntity.accepted().body(mapper.convertToDTOList(companies));
     }
 
     @PostMapping("")
-    public ManagementCompanyDTO saveManagementCompany(@RequestBody ManagementCompanyDTO managementCompanyDTO) {
+    public ResponseEntity<ManagementCompanyDto> saveManagementCompany(@RequestBody ManagementCompanyDto managementCompanyDTO) {
         ManagementCompany managementCompany = mapper.convertToEntity(managementCompanyDTO);
         managementCompany = managementCompanyService.saveManagementCompany(managementCompany);
-        return mapper.convertToDTO(managementCompany);
+        return ResponseEntity.accepted().body(mapper.convertToDTO(managementCompany));
     }
 
     @DeleteMapping("/{managementCompanyId}")
-    public void deleteManagementCompanyById(@PathVariable Long managementCompanyId) {
-        managementCompanyService.deleteManagementCompanyById(managementCompanyId);
+    public ResponseEntity<Void> deleteManagementCompanyById(@PathVariable Long managementCompanyId) {
+       managementCompanyService.deleteManagementCompanyById(managementCompanyId);
+         return ResponseEntity.accepted().build();
     }
 
 

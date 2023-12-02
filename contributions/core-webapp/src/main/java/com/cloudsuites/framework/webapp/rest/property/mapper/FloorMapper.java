@@ -1,7 +1,7 @@
 package com.cloudsuites.framework.webapp.rest.property.mapper;
 
 import com.cloudsuites.framework.services.entities.property.Floor;
-import com.cloudsuites.framework.webapp.rest.property.dto.FloorDTO;
+import com.cloudsuites.framework.webapp.rest.property.dto.FloorDto;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
@@ -15,15 +15,15 @@ public class FloorMapper {
         this.modelMapper = modelMapper;
     }
 
-    public FloorDTO convertToDTO(Floor floor) {
-        return modelMapper.map(floor, FloorDTO.class);
+    public FloorDto convertToDTO(Floor floor) {
+        return modelMapper.map(floor, FloorDto.class);
     }
 
-    public Floor convertToEntity(FloorDTO floorDTO) {
+    public Floor convertToEntity(FloorDto floorDTO) {
         return modelMapper.map(floorDTO, Floor.class);
     }
 
-    public List<FloorDTO> convertToDTOList(List<Floor> floors) {
+    public List<FloorDto> convertToDTOList(List<Floor> floors) {
         return floors.stream()
                 .map(this::convertToDTO)
                 .toList();

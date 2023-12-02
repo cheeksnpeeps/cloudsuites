@@ -1,7 +1,7 @@
 package com.cloudsuites.framework.webapp.rest.property.mapper;
 
 import com.cloudsuites.framework.services.entities.property.Building;
-import com.cloudsuites.framework.webapp.rest.property.dto.BuildingDTO;
+import com.cloudsuites.framework.webapp.rest.property.dto.BuildingDto;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -18,15 +18,15 @@ public class BuildingMapper {
         this.modelMapper = modelMapper;
     }
 
-    public BuildingDTO convertToDTO(Building building) {
-        return modelMapper.map(building, BuildingDTO.class);
+    public BuildingDto convertToDTO(Building building) {
+        return modelMapper.map(building, BuildingDto.class);
     }
 
-    public Building convertToEntity(BuildingDTO buildingDTO) {
+    public Building convertToEntity(BuildingDto buildingDTO) {
         return modelMapper.map(buildingDTO, Building.class);
     }
 
-    public List<BuildingDTO> convertToDTOList(List<Building> buildings) {
+    public List<BuildingDto> convertToDTOList(List<Building> buildings) {
         return buildings.stream()
                 .map(this::convertToDTO)
                 .toList();

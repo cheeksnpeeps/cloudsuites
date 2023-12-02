@@ -1,5 +1,6 @@
 package com.cloudsuites.framework.modules.property;
 
+import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import com.cloudsuites.framework.modules.property.repository.UnitRepository;
 import com.cloudsuites.framework.services.entities.property.Unit;
 import com.cloudsuites.framework.services.property.UnitService;
@@ -20,8 +21,13 @@ public class UnitServiceImpl implements UnitService {
     }
 
     @Override
-    public Unit getUnitById(Long buildingId, Long unitId) {
-        return unitRepository.findById(unitId).orElse(null);
+    public Unit getUnitById(Long buildingId, Long unitId) throws NotFoundResponseException {
+        return unitRepository.findById(unitId).orElseThrow(() -> new NotFoundResponseException("Unit not found: "+unitId));
+    }
+
+    @Override
+    public List<Unit> getAllUnitsByFloor(Long buildingId, Long floorId) throws NotFoundResponseException {
+        return unitRepository.findAllByFloor_FloorId(floorId).orElseThrow(() -> new NotFoundResponseException("Unit not found for Floor: "+floorId));
     }
 
     @Override
@@ -35,11 +41,6 @@ public class UnitServiceImpl implements UnitService {
     @Override
     public void deleteUnitById(Long buildingId, Long unitId) {
         unitRepository.deleteById(unitId);
-    }
-
-    @Override
-    public List<Unit> getAllUnitsByFloorNumber(Long buildingId, Integer floorNumber) {
-        return unitRepository.findAllByFloor_FloorNumber(floorNumber);
     }
 
 }

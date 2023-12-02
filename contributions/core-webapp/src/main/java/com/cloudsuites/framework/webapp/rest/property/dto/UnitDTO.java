@@ -1,5 +1,8 @@
 package com.cloudsuites.framework.webapp.rest.property.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -7,21 +10,20 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UnitDTO {
+@JsonIgnoreProperties(ignoreUnknown=true)
+public class UnitDto {
 
 	private Long unitId;
 
-	private BuildingDTO buildingDTO;
+	@Valid
+	private BuildingDto building;
 
-	private FloorDTO floorDTO;
+	@Valid
+	private FloorDto floor;
 
+	@NotBlank(message = "Unit number is required")
 	private String unitNumber;
-
-	private Double squareFootage;
-
-	// Constructors, getters, and setters
-
-	// Additional methods if needed
 }
+
 
 

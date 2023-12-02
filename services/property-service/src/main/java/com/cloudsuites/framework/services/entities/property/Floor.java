@@ -1,9 +1,10 @@
 package com.cloudsuites.framework.services.entities.property;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -16,12 +17,14 @@ public class Floor {
     @Column(name = "floor_id")
     private Long floorId;
 
+    @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "building_id")
     private Building building;
 
+    @JsonManagedReference
     @OneToMany(mappedBy = "floor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Unit> units = new ArrayList<>();
+    private List<Unit> units;
 
     // Other floor attributes
     @Column(name = "floor_number")
