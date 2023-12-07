@@ -17,45 +17,35 @@ import java.util.List;
 public class FloorRestController {
 
     private final FloorService floorService;
-    private final BuildingService buildingService;
     private final FloorMapper mapper;
 
     @Autowired
     public FloorRestController(FloorService floorService, BuildingService buildingService, FloorMapper mapper) {
         this.floorService = floorService;
-        this.buildingService = buildingService;
         this.mapper = mapper;
     }
 
     @GetMapping("/{floorId}")
-    public ResponseEntity<FloorDto> getFloorById(@PathVariable Long buildingId, @PathVariable Long floorId, @RequestParam(required = false) Boolean withUnits) throws NotFoundResponseException {
-          if(Boolean.TRUE.equals(withUnits)) {  // if withUnits is true
-              return ResponseEntity.accepted().body(mapper.convertToDTO(floorService.getFloorByIdWithUnits(buildingId, floorId)));
-          } else {
-              return ResponseEntity.accepted().body(mapper.convertToDTO(floorService.getFloorById(buildingId, floorId)));
-          }
+    public ResponseEntity<FloorDto> getFloorById(@PathVariable Long buildingId, @PathVariable Long floorId) throws NotFoundResponseException {
+        return ResponseEntity.ok().body(mapper.convertToDTO(floorService.getFloorById(buildingId, floorId)));
     }
 
     @DeleteMapping("/{floorId}")
     public ResponseEntity<Void> deleteFloorById(@PathVariable Long buildingId, @PathVariable Long floorId) {
         floorService.deleteFloorById(buildingId, floorId);
-        return ResponseEntity.accepted().build();
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("")
-    public ResponseEntity<List<FloorDto>> getAllFloors(@PathVariable Long buildingId, @RequestParam(required = false) Boolean withUnits) {
-        if(withUnits != null && withUnits) {
-            return ResponseEntity.accepted().body(mapper.convertToDTOList(floorService.getAllFloorsWithUnits(buildingId)));
-        } else {
-            return ResponseEntity.accepted().body(mapper.convertToDTOList(floorService.getAllFloors(buildingId)));
-        }
+    public ResponseEntity<List<FloorDto>> getAllFloors(@PathVariable Long buildingId) {
+        return ResponseEntity.ok().body(mapper.convertToDTOList(floorService.getAllFloors(buildingId)));
     }
 
    @PostMapping("")
     public ResponseEntity<FloorDto> saveFloor(@PathVariable Long buildingId, @RequestBody FloorDto floorDTO) {
         Floor floor = mapper.convertToEntity(floorDTO);
         floor = floorService.saveFloor(buildingId, floor);
-        return ResponseEntity.accepted().body(mapper.convertToDTO(floor));
+        return ResponseEntity.ok().body(mapper.convertToDTO(floor));
     }
 
 

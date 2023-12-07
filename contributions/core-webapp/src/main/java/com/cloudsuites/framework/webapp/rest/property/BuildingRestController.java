@@ -27,7 +27,7 @@ public class BuildingRestController {
     @GetMapping("/{buildingId}")
     public ResponseEntity<BuildingDto> getBuildingById(@PathVariable Long buildingId) throws NotFoundResponseException {
         Building building = buildingService.getBuildingById(buildingId);
-        return ResponseEntity.accepted().body(mapper.convertToDTO(building));
+        return ResponseEntity.ok().body(mapper.convertToDTO(building));
     }
 
     @GetMapping("/")
@@ -35,24 +35,24 @@ public class BuildingRestController {
         if (managementCompanyId != null) {
             // If managementCompanyId is provided, filter buildings by management company
             List<Building> buildings = buildingService.getBuildingByManagementCompanyId(managementCompanyId);
-            return ResponseEntity.accepted().body(mapper.convertToDTOList(buildings));
+            return ResponseEntity.ok().body(mapper.convertToDTOList(buildings));
         }
             // If managementCompanyId is not provided, return all buildings
         List<Building> buildings = buildingService.getAllBuildings();
-        return ResponseEntity.accepted().body(mapper.convertToDTOList(buildings));
+        return ResponseEntity.ok().body(mapper.convertToDTOList(buildings));
     }
 
     @PostMapping("/")
     public ResponseEntity<BuildingDto> saveBuilding(@RequestBody BuildingDto buildingDTO) {
         Building building = mapper.convertToEntity(buildingDTO);
         building = buildingService.saveBuilding(building);
-        return ResponseEntity.accepted().body(mapper.convertToDTO(building));
+        return ResponseEntity.ok().body(mapper.convertToDTO(building));
     }
 
     @DeleteMapping("/{buildingId}")
     public ResponseEntity<Void> deleteBuildingById(@PathVariable Long buildingId) {
         buildingService.deleteBuildingById(buildingId);
-        return ResponseEntity.accepted().build();
+        return ResponseEntity.ok().build();
     }
 
 

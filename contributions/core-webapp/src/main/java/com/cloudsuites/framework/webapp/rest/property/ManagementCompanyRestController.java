@@ -29,26 +29,26 @@ public class ManagementCompanyRestController {
     @GetMapping("/{managementCompanyId}")
     public ResponseEntity<ManagementCompanyDto> getManagementCompanyById(@PathVariable Long managementCompanyId) throws NotFoundResponseException {
         ManagementCompany managementCompany = managementCompanyService.getManagementCompanyById(managementCompanyId);
-        return ResponseEntity.accepted().body(mapper.convertToDTO(managementCompany));
+        return ResponseEntity.ok().body(mapper.convertToDTO(managementCompany));
     }
 
     @GetMapping("")
     public ResponseEntity<List<ManagementCompanyDto>> getAllPropertyManagementCompanies() {
         List<ManagementCompany> companies = managementCompanyService.getAllManagementCompanies();
-        return ResponseEntity.accepted().body(mapper.convertToDTOList(companies));
+        return ResponseEntity.ok().body(mapper.convertToDTOList(companies));
     }
 
     @PostMapping("")
     public ResponseEntity<ManagementCompanyDto> saveManagementCompany(@RequestBody ManagementCompanyDto managementCompanyDTO) {
         ManagementCompany managementCompany = mapper.convertToEntity(managementCompanyDTO);
         managementCompany = managementCompanyService.saveManagementCompany(managementCompany);
-        return ResponseEntity.accepted().body(mapper.convertToDTO(managementCompany));
+        return ResponseEntity.ok().body(mapper.convertToDTO(managementCompany));
     }
 
     @DeleteMapping("/{managementCompanyId}")
     public ResponseEntity<Void> deleteManagementCompanyById(@PathVariable Long managementCompanyId) {
        managementCompanyService.deleteManagementCompanyById(managementCompanyId);
-         return ResponseEntity.accepted().build();
+         return ResponseEntity.ok().build();
     }
 
 
