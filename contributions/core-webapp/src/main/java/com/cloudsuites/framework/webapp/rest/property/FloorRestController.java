@@ -5,7 +5,9 @@ import com.cloudsuites.framework.services.entities.property.Floor;
 import com.cloudsuites.framework.services.property.BuildingService;
 import com.cloudsuites.framework.services.property.FloorService;
 import com.cloudsuites.framework.webapp.rest.property.dto.FloorDto;
+import com.cloudsuites.framework.webapp.rest.property.dto.Views;
 import com.cloudsuites.framework.webapp.rest.property.mapper.FloorMapper;
+import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,28 +27,30 @@ public class FloorRestController {
         this.mapper = mapper;
     }
 
-    @GetMapping("/{floorId}")
-    public ResponseEntity<FloorDto> getFloorById(@PathVariable Long buildingId, @PathVariable Long floorId) throws NotFoundResponseException {
-        return ResponseEntity.ok().body(mapper.convertToDTO(floorService.getFloorById(buildingId, floorId)));
-    }
-
-    @DeleteMapping("/{floorId}")
-    public ResponseEntity<Void> deleteFloorById(@PathVariable Long buildingId, @PathVariable Long floorId) {
-        floorService.deleteFloorById(buildingId, floorId);
-        return ResponseEntity.ok().build();
-    }
-
+    @JsonView(Views.UnitView.class)
     @GetMapping("")
     public ResponseEntity<List<FloorDto>> getAllFloors(@PathVariable Long buildingId) {
         return ResponseEntity.ok().body(mapper.convertToDTOList(floorService.getAllFloors(buildingId)));
     }
 
-   @PostMapping("")
+    @JsonView(Views.UnitView.class)
+    @PostMapping("")
     public ResponseEntity<FloorDto> saveFloor(@PathVariable Long buildingId, @RequestBody FloorDto floorDTO) {
         Floor floor = mapper.convertToEntity(floorDTO);
         floor = floorService.saveFloor(buildingId, floor);
         return ResponseEntity.ok().body(mapper.convertToDTO(floor));
     }
 
+    @JsonView(Views.UnitView.class)
+    @GetMapping("/{floorId}")
+    public ResponseEntity<FloorDto> getFloorById(@PathVariable Long buildingId, @PathVariable Long floorId) throws NotFoundResponseException {
+        return ResponseEntity.ok().body(mapper.convertToDTO(floorService.getFloorById(buildingId, floorId)));
+    }
 
+    @JsonView(Views.UnitView.class)
+    @DeleteMapping("/{floorId}")
+    public ResponseEntity<Void> deleteFloorById(@PathVariable Long buildingId, @PathVariable Long floorId) {
+        floorService.deleteFloorById(buildingId, floorId);
+        return ResponseEntity.ok().build();
+    }
 }

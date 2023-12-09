@@ -2,13 +2,10 @@ package com.cloudsuites.framework.services.entities.property;
 
 import com.cloudsuites.framework.services.common.entities.Address;
 import com.cloudsuites.framework.services.common.entities.user.User;
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -25,7 +22,6 @@ public class Building {
 	private String name;
 
 	@ManyToOne
-	@JsonBackReference
 	@JoinColumn(name = "management_company_id")
 	private ManagementCompany managementCompany;
 
@@ -33,15 +29,12 @@ public class Building {
 	@JoinColumn(name = "address_id")
 	private Address address;
 
-	@JsonManagedReference
 	@OneToMany(mappedBy = "building", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private List<Floor> floors;
 
-	@JsonManagedReference
 	@OneToMany(mappedBy = "building", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private List<Unit> units;
 
-	// Other building attributes
 	@Column(name = "total_floors")
 	private Integer totalFloors;
 
@@ -72,11 +65,4 @@ public class Building {
 		this.lastModifiedAt = LocalDateTime.now();
 	}
 
-	public void addFloor(Floor floor) {
-		if (floors == null) {
-			floors = new ArrayList<>();
-		}
-		floors.add(floor);
-		floor.setBuilding(this);
-	}
 }

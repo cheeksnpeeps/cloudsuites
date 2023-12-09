@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserDTO {
+public class UserDto {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,7 +24,7 @@ public class UserDTO {
 
 	@ManyToOne
 	@JoinColumn(name = "contact_info_id")
-	private ContactInfoDTO contactInfo;
+	private ContactInfoDto contactInfo;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
@@ -32,11 +32,11 @@ public class UserDTO {
 
 	@JoinColumn(name = "created_by")
 	@OneToOne(cascade = CascadeType.ALL)
-	private UserDTO createdBy;
+	private UserDto createdBy;
 
 	@JoinColumn(name = "last_modified_by")
 	@OneToOne(cascade = CascadeType.ALL)
-	private UserDTO lastModifiedBy;
+	private UserDto lastModifiedBy;
 
 	@Column(name = "created_at", nullable = false, updatable = false)
 	private LocalDateTime createdAt;

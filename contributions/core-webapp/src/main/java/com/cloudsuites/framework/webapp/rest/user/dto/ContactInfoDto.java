@@ -1,5 +1,7 @@
 package com.cloudsuites.framework.webapp.rest.user.dto;
 
+import com.cloudsuites.framework.webapp.rest.property.dto.Views;
+import com.fasterxml.jackson.annotation.JsonView;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -7,7 +9,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ContactInfoDTO {
+@JsonView(Views.ContactInfoView.class)
+public class ContactInfoDto {
 
     private Long contactInfoId;
 

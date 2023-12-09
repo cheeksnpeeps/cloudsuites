@@ -4,7 +4,9 @@ import com.cloudsuites.framework.services.common.exception.NotFoundResponseExcep
 import com.cloudsuites.framework.services.entities.property.Building;
 import com.cloudsuites.framework.services.property.BuildingService;
 import com.cloudsuites.framework.webapp.rest.property.dto.BuildingDto;
+import com.cloudsuites.framework.webapp.rest.property.dto.Views;
 import com.cloudsuites.framework.webapp.rest.property.mapper.BuildingMapper;
+import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,13 +26,9 @@ public class BuildingRestController {
         this.mapper = mapper;
     }
 
-    @GetMapping("/{buildingId}")
-    public ResponseEntity<BuildingDto> getBuildingById(@PathVariable Long buildingId) throws NotFoundResponseException {
-        Building building = buildingService.getBuildingById(buildingId);
-        return ResponseEntity.ok().body(mapper.convertToDTO(building));
-    }
 
-    @GetMapping("/")
+    @JsonView(Views.UnitView.class)
+    @GetMapping("")
     public ResponseEntity<List<BuildingDto>> getBuildings(@RequestParam(required = false) Long managementCompanyId) throws NotFoundResponseException {
         if (managementCompanyId != null) {
             // If managementCompanyId is provided, filter buildings by management company
@@ -42,7 +40,8 @@ public class BuildingRestController {
         return ResponseEntity.ok().body(mapper.convertToDTOList(buildings));
     }
 
-    @PostMapping("/")
+    @JsonView(Views.BuildingView.class)
+    @PostMapping("")
     public ResponseEntity<BuildingDto> saveBuilding(@RequestBody BuildingDto buildingDTO) {
         Building building = mapper.convertToEntity(buildingDTO);
         building = buildingService.saveBuilding(building);
@@ -55,6 +54,12 @@ public class BuildingRestController {
         return ResponseEntity.ok().build();
     }
 
+    @JsonView(Views.UnitView.class)
+    @GetMapping("/{buildingId}")
+    public ResponseEntity<BuildingDto> getBuildingById(@PathVariable Long buildingId) throws NotFoundResponseException {
+        Building building = buildingService.getBuildingById(buildingId);
+        return ResponseEntity.ok().body(mapper.convertToDTO(building));
+    }
 
 }
 

@@ -2,7 +2,6 @@ package com.cloudsuites.framework.services.entities.property;
 
 import com.cloudsuites.framework.services.common.entities.Address;
 import com.cloudsuites.framework.services.common.entities.user.User;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -25,7 +24,6 @@ public class ManagementCompany {
     @Column(name = "website")
     private String website;
 
-    @JsonManagedReference
     @OneToMany(mappedBy = "managementCompany", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Building> buildings;
 

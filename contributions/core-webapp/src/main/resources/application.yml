@@ -1,8 +1,6 @@
 logging:
   level:
     root: INFO
-    org.springframework.context.annotation.ClassPathBeanDefinitionScanner: TRACE
-    org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider: TRACE
     com.cloudsuites.framework.webapp.rest: TRACE
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n"
@@ -10,11 +8,18 @@ spring:
   sql:
     init:
       mode: embedded
+  jpa:
+    properties:
+      hibernate:
+        enable_lazy_load_no_trans: true
+        use_sql_comments: true
+        show_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        hbm2ddl:
+          auto: update
   datasource:
     url: jdbc:postgresql://localhost:5432/cloudsuites
     username: csuser
     password: cspassword
     driver-class-name: org.postgresql.Driver
-  jpa:
-    hibernate:
-      ddl-auto: update
+

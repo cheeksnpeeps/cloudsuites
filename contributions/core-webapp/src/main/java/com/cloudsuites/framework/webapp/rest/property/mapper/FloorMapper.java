@@ -24,8 +24,8 @@ public class FloorMapper {
     }
 
     public List<FloorDto> convertToDTOList(List<Floor> floors) {
-        return floors.stream()
+        return (floors != null && !floors.isEmpty()) ? floors.stream()
                 .map(this::convertToDTO)
-                .toList();
+                .toList(): null;
     }
 }

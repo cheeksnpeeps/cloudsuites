@@ -4,7 +4,9 @@ import com.cloudsuites.framework.services.common.exception.NotFoundResponseExcep
 import com.cloudsuites.framework.services.entities.property.ManagementCompany;
 import com.cloudsuites.framework.services.property.ManagementCompanyService;
 import com.cloudsuites.framework.webapp.rest.property.dto.ManagementCompanyDto;
+import com.cloudsuites.framework.webapp.rest.property.dto.Views;
 import com.cloudsuites.framework.webapp.rest.property.mapper.ManagementCompanyMapper;
+import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
@@ -26,12 +28,7 @@ public class ManagementCompanyRestController {
         this.mapper = mapper;
     }
 
-    @GetMapping("/{managementCompanyId}")
-    public ResponseEntity<ManagementCompanyDto> getManagementCompanyById(@PathVariable Long managementCompanyId) throws NotFoundResponseException {
-        ManagementCompany managementCompany = managementCompanyService.getManagementCompanyById(managementCompanyId);
-        return ResponseEntity.ok().body(mapper.convertToDTO(managementCompany));
-    }
-
+    @JsonView(Views.BuildingView.class)
     @GetMapping("")
     public ResponseEntity<List<ManagementCompanyDto>> getAllPropertyManagementCompanies() {
         List<ManagementCompany> companies = managementCompanyService.getAllManagementCompanies();
@@ -51,6 +48,11 @@ public class ManagementCompanyRestController {
          return ResponseEntity.ok().build();
     }
 
-
+    @JsonView(Views.BuildingView.class)
+    @GetMapping("/{managementCompanyId}")
+    public ResponseEntity<ManagementCompanyDto> getManagementCompanyById(@PathVariable Long managementCompanyId) throws NotFoundResponseException {
+        ManagementCompany managementCompany = managementCompanyService.getManagementCompanyById(managementCompanyId);
+        return ResponseEntity.ok().body(mapper.convertToDTO(managementCompany));
+    }
 
 }

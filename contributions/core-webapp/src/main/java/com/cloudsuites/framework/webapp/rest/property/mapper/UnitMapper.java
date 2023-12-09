@@ -20,9 +20,9 @@ public class UnitMapper {
     }
 
     public List<UnitDto> convertToDTOList(List<Unit> units) {
-        return units.stream()
+        return (units != null && !units.isEmpty()) ? units.stream()
                 .map(this::convertToDTO)
-                .toList();
+                .toList(): null;
     }
 
     public UnitDto convertToDTO(Unit unit) {

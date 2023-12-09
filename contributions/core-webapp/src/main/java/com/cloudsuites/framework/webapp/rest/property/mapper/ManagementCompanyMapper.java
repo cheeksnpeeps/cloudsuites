@@ -27,8 +27,8 @@ public class ManagementCompanyMapper {
     }
 
     public List<ManagementCompanyDto> convertToDTOList(List<ManagementCompany> managementCompanies) {
-        return managementCompanies.stream()
+        return (managementCompanies != null && !managementCompanies.isEmpty()) ? managementCompanies.stream()
                 .map(this::convertToDTO)
-                .toList();
+                .toList(): null;
     }
 }

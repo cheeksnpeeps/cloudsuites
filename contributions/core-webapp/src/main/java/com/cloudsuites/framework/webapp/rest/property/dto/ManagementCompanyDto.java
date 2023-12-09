@@ -1,7 +1,10 @@
 package com.cloudsuites.framework.webapp.rest.property.dto;
 
-import com.cloudsuites.framework.webapp.rest.user.dto.ContactInfoDTO;
+import com.cloudsuites.framework.webapp.rest.user.dto.ContactInfoDto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonView;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -15,6 +18,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown=true)
+@JsonView(Views.ManagementCompanyView.class)
 public class ManagementCompanyDto {
 
     private Long managementCompanyId;
@@ -26,12 +30,14 @@ public class ManagementCompanyDto {
     private String website;
 
     @Valid
+    @JsonManagedReference
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private List<BuildingDto> buildings;
 
     @Valid
     private AddressDto addressDTO;
 
     @Valid
-    private ContactInfoDTO contactInfo;
+    private ContactInfoDto contactInfo;
 }
 

@@ -1,8 +1,7 @@
 package com.cloudsuites.framework.webapp.rest.property.dto;
 
-import com.cloudsuites.framework.webapp.rest.user.dto.UserDTO;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.cloudsuites.framework.webapp.rest.user.dto.UserDto;
+import com.fasterxml.jackson.annotation.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -18,7 +17,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown=true)
-
+@JsonView(Views.BuildingView.class)
 public class BuildingDto {
 
 	private Long buildingId;
@@ -26,7 +25,7 @@ public class BuildingDto {
 	@NotBlank(message = "Building name is required")
 	private String name;
 
-	@JsonIgnoreProperties("buildings")
+	@JsonBackReference
 	@NotNull(message = "Management company is required")
 	private ManagementCompanyDto managementCompany;
 
@@ -34,6 +33,8 @@ public class BuildingDto {
 	private AddressDto address;
 
 	@Valid
+	@JsonManagedReference
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private List<FloorDto> floors;
 
 	@PositiveOrZero(message = "Total floors must be a non-negative number")
@@ -43,10 +44,10 @@ public class BuildingDto {
 	private Integer yearBuilt;
 
 	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-	private UserDTO createdBy;
+	private UserDto createdBy;
 
 	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-	private UserDTO lastModifiedBy;
+	private UserDto lastModifiedBy;
 
 	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
 	private LocalDateTime createdAt;

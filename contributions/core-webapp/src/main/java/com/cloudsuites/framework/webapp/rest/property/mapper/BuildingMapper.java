@@ -27,8 +27,8 @@ public class BuildingMapper {
     }
 
     public List<BuildingDto> convertToDTOList(List<Building> buildings) {
-        return buildings.stream()
+        return (buildings != null && !buildings.isEmpty()) ? buildings.stream()
                 .map(this::convertToDTO)
-                .toList();
+                .toList(): null;
     }
 }
