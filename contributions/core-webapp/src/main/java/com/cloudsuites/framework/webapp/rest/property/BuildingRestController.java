@@ -24,6 +24,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/buildings")
+@Tags(value = {@Tag(name = "Buildings", description = "Operations related to buildings")})
 public class BuildingRestController {
 
     private static final Logger logger = LoggerFactory.getLogger(BuildingRestController.class);
@@ -39,8 +40,6 @@ public class BuildingRestController {
     @Operation(summary = "Get Buildings", description = "Get a list of buildings based on optional management company ID")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Not Found")
-    @ApiResponse(responseCode = "500", description = "Internal Server Error")
-    @Tags(value = {@Tag(name = "Buildings", description = "Operations related to buildings")})
     @JsonView(Views.UnitView.class)
     @GetMapping("")
     public ResponseEntity<List<BuildingDto>> getBuildings(@RequestParam(required = false) Long managementCompanyId) throws NotFoundResponseException {
@@ -61,8 +60,6 @@ public class BuildingRestController {
     @Operation(summary = "Save a Building", description = "Create a new building")
     @ApiResponse(responseCode = "201", description = "Building created successfully", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "400", description = "Bad Request")
-    @ApiResponse(responseCode = "500", description = "Internal Server Error")
-    @Tags(value = {@Tag(name = "Buildings", description = "Operations related to buildings")})
     @JsonView(Views.BuildingView.class)
     @PostMapping("")
     public ResponseEntity<BuildingDto> saveBuilding(
@@ -77,8 +74,6 @@ public class BuildingRestController {
     @Operation(summary = "Delete a Building by ID", description = "Delete a building based on its ID")
     @ApiResponse(responseCode = "204", description = "Building deleted successfully")
     @ApiResponse(responseCode = "404", description = "Building not found")
-    @ApiResponse(responseCode = "500", description = "Internal Server Error")
-    @Tags(value = {@Tag(name = "Buildings", description = "Operations related to buildings")})
     @DeleteMapping("/{buildingId}")
     public ResponseEntity<Void> deleteBuildingById(
             @Parameter(description = "ID of the building to be deleted") @PathVariable Long buildingId) {
@@ -91,8 +86,6 @@ public class BuildingRestController {
     @Operation(summary = "Get a Building by ID", description = "Retrieve building details based on its ID")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Building not found")
-    @ApiResponse(responseCode = "500", description = "Internal Server Error")
-    @Tags(value = {@Tag(name = "Buildings", description = "Operations related to buildings")})
     @JsonView(Views.UnitView.class)
     @GetMapping("/{buildingId}")
     public ResponseEntity<BuildingDto> getBuildingById(
@@ -105,4 +98,3 @@ public class BuildingRestController {
     }
 
 }
-

@@ -23,6 +23,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/buildings/{buildingId}/floors")
+@Tags(value = {@Tag(name = "Floors", description = "Operations related to floors")})
 public class FloorRestController {
 
     private final FloorService floorService;
@@ -37,8 +38,6 @@ public class FloorRestController {
     @Operation(summary = "Get All Floors", description = "Retrieve all floors for a building based on its ID")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Building not found")
-    @ApiResponse(responseCode = "500", description = "Internal Server Error")
-    @Tags(value = {@Tag(name = "Floors", description = "Operations related to floors")})
     @JsonView(Views.UnitView.class)
     @GetMapping("")
     public ResponseEntity<List<FloorDto>> getAllFloors(
@@ -51,8 +50,6 @@ public class FloorRestController {
     @ApiResponse(responseCode = "201", description = "Floor created successfully", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "400", description = "Bad Request")
     @ApiResponse(responseCode = "404", description = "Building not found")
-    @ApiResponse(responseCode = "500", description = "Internal Server Error")
-    @Tags(value = {@Tag(name = "Floors", description = "Operations related to floors")})
     @JsonView(Views.UnitView.class)
     @PostMapping("")
     public ResponseEntity<FloorDto> saveFloor(
@@ -66,8 +63,6 @@ public class FloorRestController {
     @Operation(summary = "Get a Floor by ID", description = "Retrieve floor details based on building ID and floor ID")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Building or floor not found")
-    @ApiResponse(responseCode = "500", description = "Internal Server Error")
-    @Tags(value = {@Tag(name = "Floors", description = "Operations related to floors")})
     @JsonView(Views.UnitView.class)
     @GetMapping("/{floorId}")
     public ResponseEntity<FloorDto> getFloorById(
@@ -82,8 +77,6 @@ public class FloorRestController {
     @Operation(summary = "Delete a Floor by ID", description = "Delete a floor based on building ID and floor ID")
     @ApiResponse(responseCode = "204", description = "Floor deleted successfully")
     @ApiResponse(responseCode = "404", description = "Building or floor not found")
-    @ApiResponse(responseCode = "500", description = "Internal Server Error")
-    @Tags(value = {@Tag(name = "Floors", description = "Operations related to floors")})
     @DeleteMapping("/{floorId}")
     public ResponseEntity<Void> deleteFloorById(
             @Parameter(description = "ID of the building") @PathVariable Long buildingId,

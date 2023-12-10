@@ -3,7 +3,7 @@ services:
     image: 'postgres:latest'
     environment:
       - 'POSTGRES_DB=cloudsuites'
-      - 'POSTGRES_PASSWORD=cspassword'
+      - 'POSTGRES_PASSWORD=csPassw0rd'
       - 'POSTGRES_USER=csuser'
     ports:
       - "59665:5432"

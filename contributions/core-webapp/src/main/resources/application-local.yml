@@ -10,7 +10,7 @@ spring:
       mode: embedded
 
   db:
-    url: jdbc:postgresql://cloudsuites.postgres.database.azure.com:5432/cloudsuites?user=csuser&password=csPassw0rd&sslmode=require
+    url: jdbc:postgresql://localhost:5432/cloudsuites
     username: csuser
     password: csPassw0rd
     driver-class-name: org.postgresql.Driver
@@ -23,7 +23,7 @@ spring:
         hbm2ddl:
           auto: update
   datasource:
-    url: jdbc:postgresql://cloudsuites.postgres.database.azure.com:5432/cloudsuites?user=csuser&password=csPassw0rd&sslmode=require
+    url: jdbc:postgresql://localhost:5432/cloudsuites
     username: csuser
     password: csPassw0rd
     driver-class-name: org.postgresql.Driver

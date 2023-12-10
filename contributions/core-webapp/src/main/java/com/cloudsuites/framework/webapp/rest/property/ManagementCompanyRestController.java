@@ -25,6 +25,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/companies")
+@Tags(value = {@Tag(name = "Management Companies", description = "Operations related to property management companies")})
 public class ManagementCompanyRestController {
 
     private static final Logger logger = LoggerFactory.getLogger(ManagementCompanyRestController.class);
@@ -42,8 +43,6 @@ public class ManagementCompanyRestController {
     @JsonView(Views.BuildingView.class)
     @Operation(summary = "Get All Property Management Companies", description = "Retrieve a list of all property management companies")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
-    @ApiResponse(responseCode = "500", description = "Internal Server Error")
-    @Tags(value = {@Tag(name = "Management Companies", description = "Operations related to property management companies")})
     @GetMapping("")
     public ResponseEntity<List<ManagementCompanyDto>> getAllPropertyManagementCompanies() {
         logger.debug("Getting all property management companies");
@@ -55,8 +54,6 @@ public class ManagementCompanyRestController {
     @Operation(summary = "Save a Property Management Company", description = "Create a new property management company")
     @ApiResponse(responseCode = "201", description = "Property management company created successfully", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "400", description = "Bad Request")
-    @ApiResponse(responseCode = "500", description = "Internal Server Error")
-    @Tags(value = {@Tag(name = "Management Companies", description = "Operations related to property management companies")})
     @PostMapping("")
     public ResponseEntity<ManagementCompanyDto> saveManagementCompany(
             @RequestBody @Parameter(description = "Property management company details to be saved") ManagementCompanyDto managementCompanyDTO) {
@@ -70,8 +67,6 @@ public class ManagementCompanyRestController {
     @Operation(summary = "Delete a Property Management Company by ID", description = "Delete a property management company based on its ID")
     @ApiResponse(responseCode = "204", description = "Property management company deleted successfully")
     @ApiResponse(responseCode = "404", description = "Property management company not found")
-    @ApiResponse(responseCode = "500", description = "Internal Server Error")
-    @Tags(value = {@Tag(name = "Management Companies", description = "Operations related to property management companies")})
     @DeleteMapping("/{managementCompanyId}")
     public ResponseEntity<Void> deleteManagementCompanyById(
             @Parameter(description = "ID of the property management company to be deleted") @PathVariable Long managementCompanyId) {
@@ -83,8 +78,6 @@ public class ManagementCompanyRestController {
     @Operation(summary = "Get a Property Management Company by ID", description = "Retrieve property management company details based on its ID")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Property management company not found")
-    @ApiResponse(responseCode = "500", description = "Internal Server Error")
-    @Tags(value = {@Tag(name = "Management Companies", description = "Operations related to property management companies")})
     @JsonView(Views.BuildingView.class)
     @GetMapping("/{managementCompanyId}")
     public ResponseEntity<ManagementCompanyDto> getManagementCompanyById(
