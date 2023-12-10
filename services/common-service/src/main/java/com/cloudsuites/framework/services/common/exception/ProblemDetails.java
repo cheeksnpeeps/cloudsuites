@@ -26,24 +26,5 @@ public class ProblemDetails {
         return new ProblemDetailsBuilder();
     }
 
-    public String getTitle() {
-        return title;
-    }
-
-    public HttpStatus getStatus() {
-        return status;
-    }
-
-    public String getDetail() {
-        return detail;
-    }
-
-    public String getInstance() {
-        return instance;
-    }
-
-    public ZonedDateTime getTimestamp() {
-        return timestamp;
-    }
 }
 

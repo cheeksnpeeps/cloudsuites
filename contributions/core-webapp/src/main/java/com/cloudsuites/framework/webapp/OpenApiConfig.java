@@ -1,7 +1,9 @@
 package com.cloudsuites.framework.webapp;
 
+import com.cloudsuites.framework.webapp.rest.ContextFilter;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -20,5 +22,13 @@ public class OpenApiConfig {
                                 .name("Cheikh Lo")
                         )
                 );
+    }
+
+    @Bean
+    public FilterRegistrationBean<ContextFilter> correlationIdFilter() {
+        FilterRegistrationBean<ContextFilter> registrationBean = new FilterRegistrationBean<>();
+        registrationBean.setFilter(new ContextFilter());
+        registrationBean.addUrlPatterns("/api/*");
+        return registrationBean;
     }
 }

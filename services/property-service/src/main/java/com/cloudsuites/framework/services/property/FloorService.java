@@ -18,7 +18,5 @@ public interface FloorService {
     Floor saveFloor(Long buildingId, Floor floor);
 
     public void deleteFloorById(Long buildingId, Long floorId);
-
-    public Floor getFloorByIdWithUnits(Long buildingId, Long floorId) throws NotFoundResponseException;
 }
 

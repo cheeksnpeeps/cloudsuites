@@ -1,9 +1,9 @@
 logging:
   level:
     root: INFO
-    com.cloudsuites.framework.webapp.rest: TRACE
+    com.cloudsuites.framework: DEBUG
   pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n"
+    console: "%-4relative [%thread] %-5level %logger{35} %X{correlationId} - %msg %n"
 spring:
   sql:
     init:
@@ -13,7 +13,7 @@ spring:
       hibernate:
         enable_lazy_load_no_trans: true
         use_sql_comments: true
-        show_sql: true
+        show_sql: false
         dialect: org.hibernate.dialect.PostgreSQLDialect
         hbm2ddl:
           auto: update
@@ -22,4 +22,14 @@ spring:
     username: csuser
     password: cspassword
     driver-class-name: org.postgresql.Driver
-
+management:
+  endpoints:
+    web:
+      exposure:
+        include: info,health,metrics,env,beans,auditevents,loggers,configprops,threaddump,heapdump,dependencies
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+    loggers:
+      enabled: true

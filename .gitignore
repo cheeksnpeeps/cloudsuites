@@ -1,0 +1,11 @@
+/contributions/core-webapp/target/
+/modules/common-module/target/
+/modules/user-module/target/
+/modules/property-module/target/
+/modules/parking-module/target/
+/services/common-service/target/
+/services/user-service/target/
+/services/property-service/target/
+/services/parking-service/target/
+*.iml
+.idea/*
