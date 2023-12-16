@@ -8,7 +8,6 @@ spring:
   sql:
     init:
       mode: embedded
-
   db:
     url: jdbc:postgresql://cloudsuites.postgres.database.azure.com:5432/cloudsuites?user=csuser&password=csPassw0rd&sslmode=require
     username: csuser
@@ -27,6 +26,10 @@ spring:
     username: csuser
     password: csPassw0rd
     driver-class-name: org.postgresql.Driver
+  web:
+    resources:
+      static-locations: classpath:/static/
+
 management:
   endpoints:
     web:

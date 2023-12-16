@@ -9,3 +9,9 @@
 /services/parking-service/target/
 *.iml
 .idea/*
+/contributions/core-webapp/core-webapp/target/
+/contributions/property-management-web/node_modules/
+/contributions/property-management-web/node/node_modules/
+/contributions/property-management-web/build/
+/contributions/property-management-web/node/
+
