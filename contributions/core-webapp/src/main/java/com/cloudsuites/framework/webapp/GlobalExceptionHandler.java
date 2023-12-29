@@ -29,11 +29,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problemDetails);
     }
     @ExceptionHandler(NotFoundResponseException.class)
-    protected ResponseEntity<Object> handleNotFoundResponseException(NotFoundResponseException ex) {
+    protected ResponseEntity<Object> handleNotFoundResponseException(NotFoundResponseException ex, HttpServletRequest request) {
         ProblemDetails problemDetails = ProblemDetails.builder()
                 .withTitle("Not Found")
                 .withStatus(HttpStatus.NOT_FOUND)
                 .withDetail(ex.getMessage())
+                .withInstance(URI.create(request.getRequestURI()).getPath())
+                .withTimestamp(ZonedDateTime.now())
                 .build();
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(problemDetails);
     }

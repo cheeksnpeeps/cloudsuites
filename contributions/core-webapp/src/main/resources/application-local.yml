@@ -2,17 +2,27 @@ logging:
   level:
     root: INFO
     com.cloudsuites.framework: DEBUG
+    org.springframework.security.oauth2: DEBUG
+    org.springframework.security.jwt: DEBUG
   pattern:
     console: "%-4relative [%thread] %-5level %logger{35} %X{correlationId} - %msg %n"
 spring:
   sql:
     init:
       mode: embedded
-  db:
-    url: jdbc:postgresql://localhost:5432/cloudsuites
-    username: csuser
-    password: csPassw0rd
-    driver-class-name: org.postgresql.Driver
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://cheeksnpeeps.auth0.com/
+          jwe-key-uri: https://cheeksnpeeps.auth0.com/
+          jwk-set-uri: https://cheeksnpeeps.auth0.com/
+auth0:
+  audience: https://api.cloudsuites.com
+web:
+  cors:
+    allowed-origins: http://localhost:8080
+
   jpa:
     properties:
       hibernate:
@@ -29,6 +39,12 @@ spring:
   web:
     resources:
       static-locations: classpath:/static/
+okta:
+  oauth2:
+    groupsClaim: https://api.cloudsuites.com/roles
+    issuer: https://cheeksnpeeps.auth0.com/
+    clientId: ZkxUUYTnpftzHfDz3T3EfAXo2lIngEAK
+    clientSecret: SJMw8cKmR9qbfw93wQVd4KLA0z7dwYQV9gVjzGyxm4GIq8l5xGyIv7yVUEYXHA2L
 
 management:
   endpoints:

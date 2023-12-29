@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -44,6 +45,7 @@ public class ManagementCompanyRestController {
     @Operation(summary = "Get All Property Management Companies", description = "Retrieve a list of all property management companies")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @GetMapping("")
+    @PreAuthorize("hasAuthority('Administrator')")
     public ResponseEntity<List<ManagementCompanyDto>> getAllPropertyManagementCompanies() {
         logger.debug("Getting all property management companies");
         List<ManagementCompany> companies = managementCompanyService.getAllManagementCompanies();
