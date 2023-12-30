@@ -8,7 +8,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtDecoders;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
@@ -59,12 +61,18 @@ public class SecurityConfiguration {
                         oauth2ResourceServer
                                 .jwt(jwt ->
                                         jwt
-                                                .decoder(JwtDecoders.fromOidcIssuerLocation(jwkSetUri))  // Use JwkSetUriJwtDecoderFactory
+                                                .decoder(JwtDecoders.fromOidcIssuerLocation(jwkSetUri))
                                                 .jwtAuthenticationConverter(jwtAuthenticationConverter())
                                 )
                 );
-
         return http.build();
+    }
+
+    @Bean
+    public JwtDecoder jwtDecoder() {
+        return NimbusJwtDecoder
+                .withJwkSetUri("https://cheeksnpeeps.auth0.com/.well-known/jwks.json")
+                .build();
     }
 
     @Bean

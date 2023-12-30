@@ -45,6 +45,7 @@ okta:
     issuer: https://cheeksnpeeps.auth0.com/
     clientId: ZkxUUYTnpftzHfDz3T3EfAXo2lIngEAK
     clientSecret: SJMw8cKmR9qbfw93wQVd4KLA0z7dwYQV9gVjzGyxm4GIq8l5xGyIv7yVUEYXHA2L
+    audience: https://api.cloudsuites.com
 
 management:
   endpoints:

@@ -14,8 +14,16 @@ const App = () => {
         const fetchData = async () => {
             try {
                 const token = await getAccessTokenSilently({
-                    audience: configData.audience,
-                    scope: configData.scope
+                    domain: configData.domain,
+                    clientId: configData.clientId,
+                    useRefreshTokensFallback: true,
+                    cacheLocation: "localstorage",
+                    authorizationParams: {
+                        redirect_uri: window.location.origin,
+                        audience: configData.audience,
+                        scope: configData.scope,
+                        useRefreshTokensFallback: true
+                    }
                 });
 
                 setAccessToken(token);
