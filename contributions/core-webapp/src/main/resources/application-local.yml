@@ -2,8 +2,7 @@ logging:
   level:
     root: INFO
     com.cloudsuites.framework: DEBUG
-    org.springframework.security.oauth2: DEBUG
-    org.springframework.security.jwt: DEBUG
+    org.springframework.security: DEBUG
   pattern:
     console: "%-4relative [%thread] %-5level %logger{35} %X{correlationId} - %msg %n"
 spring:
@@ -15,8 +14,6 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: https://cheeksnpeeps.auth0.com/
-          jwe-key-uri: https://cheeksnpeeps.auth0.com/
-          jwk-set-uri: https://cheeksnpeeps.auth0.com/
 auth0:
   audience: https://api.cloudsuites.com
 web:
@@ -42,10 +39,6 @@ web:
 okta:
   oauth2:
     groupsClaim: https://api.cloudsuites.com/roles
-    issuer: https://cheeksnpeeps.auth0.com/
-    clientId: ZkxUUYTnpftzHfDz3T3EfAXo2lIngEAK
-    clientSecret: SJMw8cKmR9qbfw93wQVd4KLA0z7dwYQV9gVjzGyxm4GIq8l5xGyIv7yVUEYXHA2L
-    audience: https://api.cloudsuites.com
 
 management:
   endpoints:

@@ -19,7 +19,9 @@
   "scripts": {
     "start": "react-scripts start --no-suppress-console",
     "build": "react-scripts build",
-    "test": "react-scripts test",
+    "test": "react-scripts test --watchAll=false",
+    "lint": "eslint src",
+    "format": "prettier --write src/**/*.js",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
