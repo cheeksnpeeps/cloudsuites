@@ -5,6 +5,8 @@ import com.cloudsuites.framework.services.property.BuildingService;
 import com.cloudsuites.framework.services.property.TenantService;
 import com.cloudsuites.framework.services.property.UnitService;
 import com.cloudsuites.framework.services.property.entities.Tenant;
+import com.cloudsuites.framework.services.user.UserService;
+import com.cloudsuites.framework.services.user.entities.Identity;
 import com.cloudsuites.framework.webapp.authentication.service.OtpService;
 import com.cloudsuites.framework.webapp.authentication.util.JwtTokenProvider;
 import com.cloudsuites.framework.webapp.rest.user.dto.TenantDto;
@@ -22,7 +24,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Identity;
 import java.util.Map;
 
 @RestController
