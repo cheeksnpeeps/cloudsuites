@@ -16,33 +16,7 @@
     <packaging>jar</packaging>
     <dependencies>
 
-        <dependency>
-            <groupId>com.cloudsuites.framework.services</groupId>
-            <artifactId>parking-service</artifactId>
-            <version>${core.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.cloudsuites.framework.services</groupId>
-            <artifactId>property-service</artifactId>
-            <version>${core.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.cloudsuites.framework.services</groupId>
-            <artifactId>user-service</artifactId>
-            <version>${core.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.cloudsuites.framework.modules</groupId>
-            <artifactId>user-module</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.cloudsuites.framework.modules</groupId>
-            <artifactId>property-module</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
+
         <dependency>
             <groupId>org.modelmapper</groupId>
             <artifactId>modelmapper</artifactId>
@@ -62,8 +36,23 @@
             <artifactId>spring-security-oauth2-resource-server</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.cloudsuites.framework.modules</groupId>
+            <artifactId>identity-module</artifactId>
+            <version>${core.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.cloudsuites.framework.modules</groupId>
+            <artifactId>property-module</artifactId>
+            <version>${core.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-oauth2-jose</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt</artifactId>
+            <version>0.9.1</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
