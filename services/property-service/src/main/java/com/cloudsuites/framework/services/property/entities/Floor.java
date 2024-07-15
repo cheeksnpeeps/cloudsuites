@@ -1,4 +1,4 @@
-package com.cloudsuites.framework.services.entities.property;
+package com.cloudsuites.framework.services.property.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;

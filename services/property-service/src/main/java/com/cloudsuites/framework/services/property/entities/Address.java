@@ -1,4 +1,4 @@
-package com.cloudsuites.framework.services.common.entities;
+package com.cloudsuites.framework.services.property.entities;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

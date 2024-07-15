@@ -1,7 +1,7 @@
-package com.cloudsuites.framework.services.entities.property;
 
-import com.cloudsuites.framework.services.common.entities.Address;
-import com.cloudsuites.framework.services.common.entities.user.User;
+package com.cloudsuites.framework.services.property.entities;
+
+import com.cloudsuites.framework.services.user.entities.Identity;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -43,11 +43,11 @@ public class Building {
 
 	@JoinColumn(name = "created_by")
 	@OneToOne(cascade = CascadeType.ALL)
-	private User createdBy;
+	private Identity createdBy;
 
 	@JoinColumn(name = "last_modified_by")
 	@OneToOne(cascade = CascadeType.ALL)
-	private User lastModifiedBy;
+	private Identity lastModifiedBy;
 
 	@Column(name = "created_at", nullable = false, updatable = false)
 	private LocalDateTime createdAt;

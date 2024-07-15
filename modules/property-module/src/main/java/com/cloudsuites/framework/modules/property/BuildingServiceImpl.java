@@ -2,7 +2,7 @@ package com.cloudsuites.framework.modules.property;
 
 import com.cloudsuites.framework.modules.property.repository.BuildingRepository;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
-import com.cloudsuites.framework.services.entities.property.Building;
+import com.cloudsuites.framework.services.property.entities.Building;
 import com.cloudsuites.framework.services.property.BuildingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

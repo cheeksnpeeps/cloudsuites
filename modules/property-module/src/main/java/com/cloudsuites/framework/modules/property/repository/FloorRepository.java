@@ -1,6 +1,6 @@
 package com.cloudsuites.framework.modules.property.repository;
 
-import com.cloudsuites.framework.services.entities.property.Floor;
+import com.cloudsuites.framework.services.property.entities.Floor;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

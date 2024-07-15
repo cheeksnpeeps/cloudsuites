@@ -1,6 +1,6 @@
 package com.cloudsuites.framework.modules.property.repository;
 
-import com.cloudsuites.framework.services.entities.property.Building;
+import com.cloudsuites.framework.services.property.entities.Building;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

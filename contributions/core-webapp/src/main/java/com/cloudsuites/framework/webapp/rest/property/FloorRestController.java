@@ -1,7 +1,7 @@
 package com.cloudsuites.framework.webapp.rest.property;
 
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
-import com.cloudsuites.framework.services.entities.property.Floor;
+import com.cloudsuites.framework.services.property.entities.Floor;
 import com.cloudsuites.framework.services.property.BuildingService;
 import com.cloudsuites.framework.services.property.FloorService;
 import com.cloudsuites.framework.webapp.rest.property.dto.FloorDto;

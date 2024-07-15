@@ -1,6 +1,6 @@
 package com.cloudsuites.framework.webapp.rest.property.dto;
 
-import com.cloudsuites.framework.webapp.rest.user.dto.UserDto;
+import com.cloudsuites.framework.webapp.rest.user.dto.IdentityDto;
 import com.fasterxml.jackson.annotation.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -44,10 +44,10 @@ public class BuildingDto {
 	private Integer yearBuilt;
 
 	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-	private UserDto createdBy;
+	private IdentityDto createdBy;
 
 	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-	private UserDto lastModifiedBy;
+	private IdentityDto lastModifiedBy;
 
 	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
 	private LocalDateTime createdAt;

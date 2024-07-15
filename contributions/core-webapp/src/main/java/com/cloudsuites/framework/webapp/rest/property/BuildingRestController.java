@@ -1,7 +1,7 @@
 package com.cloudsuites.framework.webapp.rest.property;
 
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
-import com.cloudsuites.framework.services.entities.property.Building;
+import com.cloudsuites.framework.services.property.entities.Building;
 import com.cloudsuites.framework.services.property.BuildingService;
 import com.cloudsuites.framework.webapp.rest.property.dto.BuildingDto;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
@@ -88,7 +88,7 @@ public class BuildingRestController {
     @ApiResponse(responseCode = "404", description = "Building not found")
     @JsonView(Views.UnitView.class)
     @GetMapping("/{buildingId}")
-    public ResponseEntity<BuildingDto> getBuildingById(
+    public ResponseEntity<BuildingDto>  getBuildingById(
             @Parameter(description = "ID of the building to be retrieved") @PathVariable Long buildingId)
             throws NotFoundResponseException {
         logger.debug("Getting building {}", buildingId);
