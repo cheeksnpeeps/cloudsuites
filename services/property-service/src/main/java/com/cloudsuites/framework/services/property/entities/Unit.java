@@ -1,7 +1,9 @@
-package com.cloudsuites.framework.services.entities.property;
+package com.cloudsuites.framework.services.property.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;
+
+import java.util.List;
 
 @Data
 @Entity
@@ -12,6 +14,13 @@ public class Unit {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "unit_id")
 	private Long unitId;
+
+	@OneToMany(mappedBy = "unit", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private List<Tenant> tenants;
+
+	@ManyToOne
+	@JoinColumn(name = "owner_id")
+	private Owner owner;
 
 	@ManyToOne
 	@JoinColumn(name = "floor_id")

@@ -10,7 +10,7 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<groupId>com.cloudsuites.framework.services</groupId>
-	<artifactId>user-service</artifactId>
+	<artifactId>identity-service</artifactId>
 	<packaging>jar</packaging>
 	<name>CloudSuites - Framework - User Service</name>
 	<description>Module that contains API of all project services. Depends of Model Module.</description>

@@ -16,7 +16,7 @@
 	<modules>
 		<module>common-module</module>
 		<module>parking-module</module>
-		<module>user-module</module>
+		<module>identity-module</module>
 		<module>property-module</module>
 	</modules>
 </project>

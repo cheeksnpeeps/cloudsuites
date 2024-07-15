@@ -10,7 +10,7 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<groupId>com.cloudsuites.framework.modules</groupId>
-	<artifactId>user-module</artifactId>
+	<artifactId>identity-module</artifactId>
 	<packaging>jar</packaging>
 	<name>CloudSuites - Framework - User Service implementation</name>
 	<description>Module that contains API of all project services. Depends of Model Module.</description>
@@ -22,7 +22,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.cloudsuites.framework.services</groupId>
-			<artifactId>user-service</artifactId>
+			<artifactId>identity-service</artifactId>
 			<version>${core.version}</version>
 		</dependency>
 	</dependencies>
