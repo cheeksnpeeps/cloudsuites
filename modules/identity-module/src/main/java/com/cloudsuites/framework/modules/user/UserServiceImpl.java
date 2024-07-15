@@ -1,11 +1,12 @@
 package com.cloudsuites.framework.modules.user;
 
 
+import com.cloudsuites.framework.services.user.UserService;
+import com.cloudsuites.framework.services.user.entities.Identity;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.security.Identity;
 import java.util.List;
 
 @Component
