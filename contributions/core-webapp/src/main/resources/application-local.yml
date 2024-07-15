@@ -1,11 +1,13 @@
 logging:
   level:
     root: INFO
-    com.cloudsuites.framework: DEBUG
+    com.cloudsuites: DEBUG
     org.springframework.security: DEBUG
   pattern:
     console: "%-4relative [%thread] %-5level %logger{35} %X{correlationId} - %msg %n"
 spring:
+  websecurity:
+    debug: true
   sql:
     init:
       mode: embedded
@@ -19,7 +21,6 @@ auth0:
 web:
   cors:
     allowed-origins: http://localhost:8080
-
   jpa:
     properties:
       hibernate:
