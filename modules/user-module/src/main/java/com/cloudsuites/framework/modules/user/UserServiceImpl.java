@@ -1,7 +1,7 @@
 package com.cloudsuites.framework.modules.user;
 
-import com.cloudsuites.framework.services.common.entities.user.User;
 import com.cloudsuites.framework.services.user.UserService;
+import com.cloudsuites.framework.services.user.entities.Identity;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -20,27 +20,37 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getUserById(Long userId) {
+    public Identity findByPhoneNumber(String phoneNumber) {
+        return userRepository.findByPhoneNumber(phoneNumber).orElse(null);
+    }
+
+    @Override
+    public Identity findByEmail(String email) {
+        return userRepository.findByEmail(email).orElse(null);
+    }
+
+    @Override
+    public Identity getUserById(Long userId) {
         return userRepository.findById(userId).orElse(null);
     }
 
     @Override
-    public List<User> getAllUsers() {
+    public List<Identity> getAllUsers() {
         return userRepository.findAll();
     }
 
     @Override
-    public User createUser(User user) {
-        return userRepository.save(user);
+    public Identity createUser(Identity identity) {
+        return userRepository.save(identity);
     }
 
     @Override
-    public User updateUser(Long userId, User user) {
+    public Identity updateUser(Long userId, Identity identity) {
         if (userRepository.existsById(userId)) {
-            user.setId(userId);
-            return userRepository.save(user);
+            identity.setUserId(userId);
+            return userRepository.save(identity);
         }
-        return null; // User not found
+        return null; // Identity not found
     }
 
     @Override
