@@ -9,7 +9,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication(scanBasePackages = "com.cloudsuites.framework")
-@ComponentScan({"com.cloudsuites.framework.modules.property","com.cloudsuites.framework.modules.user", "com.cloudsuites.framework.services", "com.cloudsuites.framework.webapp"})
+@ComponentScan({"com.cloudsuites.framework.modules", "com.cloudsuites.framework.services", "com.cloudsuites.framework.webapp"})
 @EnableJpaRepositories({"com.cloudsuites.framework.modules"})
 @EntityScan(basePackages = {"com.cloudsuites.framework.services"})
 public class CloudsuitesCoreApplication {
