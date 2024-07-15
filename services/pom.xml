@@ -16,8 +16,8 @@
 	<modules>
 		<module>common-service</module>
 		<module>parking-service</module>
-        <module>identity-service</module>
 		<module>property-service</module>
+		<module>identity-service</module>
 	</modules>
 </project>
 
