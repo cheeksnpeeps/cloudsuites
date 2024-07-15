@@ -1,6 +1,6 @@
 package com.cloudsuites.framework.webapp.rest.property.mapper;
 
-import com.cloudsuites.framework.services.entities.property.ManagementCompany;
+import com.cloudsuites.framework.services.property.entities.ManagementCompany;
 import com.cloudsuites.framework.webapp.rest.property.dto.ManagementCompanyDto;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
