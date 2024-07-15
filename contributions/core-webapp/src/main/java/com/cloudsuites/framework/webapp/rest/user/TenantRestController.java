@@ -4,7 +4,11 @@ import com.cloudsuites.framework.services.common.exception.NotFoundResponseExcep
 import com.cloudsuites.framework.services.property.BuildingService;
 import com.cloudsuites.framework.services.property.TenantService;
 import com.cloudsuites.framework.services.property.UnitService;
+import com.cloudsuites.framework.services.property.entities.Building;
 import com.cloudsuites.framework.services.property.entities.Tenant;
+import com.cloudsuites.framework.services.property.entities.Unit;
+import com.cloudsuites.framework.webapp.rest.property.mapper.BuildingMapper;
+import com.cloudsuites.framework.webapp.rest.property.mapper.UnitMapper;
 import com.cloudsuites.framework.webapp.rest.user.dto.TenantDto;
 import com.cloudsuites.framework.webapp.rest.user.mapper.TenantMapper;
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,7 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.toList;
 
 @RestController
 @RequestMapping("/api/v1/")
@@ -37,6 +41,12 @@ public class TenantRestController {
     private TenantMapper tenantMapper;
 
     @Autowired
+    private BuildingMapper buildingMapper;
+
+    @Autowired
+    private UnitMapper unitMapper;
+
+    @Autowired
     private BuildingService buildingService;
 
     @Autowired
@@ -50,9 +60,11 @@ public class TenantRestController {
             @PathVariable Long unitId,
             @RequestBody TenantDto tenantDto) throws NotFoundResponseException {
         logger.info("Creating new tenant in building ID: {} and unit ID: {}", buildingId, unitId);
-        tenantDto.setBuilding(buildingService.getBuildingById(buildingId));
-        tenantDto.setUnit(unitService.getUnitById(buildingId,unitId));
+        Building building = buildingService.getBuildingById(buildingId);
+        Unit unit = unitService.getUnitById(buildingId,unitId);
         Tenant newTenant = tenantService.createTenant(tenantMapper.convertToEntity(tenantDto));
+        newTenant.setBuilding(building);
+        newTenant.setUnit(unit);
         TenantDto newTenantDto = tenantMapper.convertToDTO(newTenant);
         return ResponseEntity.status(201).body(newTenantDto);
     }
@@ -80,8 +92,10 @@ public class TenantRestController {
             @PathVariable Long tenantId,
             @RequestBody TenantDto tenantDto) throws NotFoundResponseException {
         logger.info("Updating tenant with ID: {}", tenantId);
-        tenantDto.setBuilding(buildingService.getBuildingById(buildingId));
-        tenantDto.setUnit(unitService.getUnitById(buildingId,unitId));
+        Building building = buildingService.getBuildingById(buildingId);
+        Unit unit = unitService.getUnitById(buildingId,unitId);
+        tenantDto.setBuilding(buildingMapper.convertToDTO(building));
+        tenantDto.setUnit(unitMapper.convertToDTO(unit));
         Tenant updatedTenant = tenantService.updateTenant(tenantId, tenantMapper.convertToEntity(tenantDto));
         TenantDto updatedTenantDto = tenantMapper.convertToDTO(updatedTenant);
         return ResponseEntity.ok(updatedTenantDto);
