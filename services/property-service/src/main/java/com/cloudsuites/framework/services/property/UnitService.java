@@ -1,7 +1,7 @@
 package com.cloudsuites.framework.services.property;
 
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
-import com.cloudsuites.framework.services.entities.property.Unit;
+import com.cloudsuites.framework.services.property.entities.Unit;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,7 +15,7 @@ public interface UnitService {
 
     Unit saveUnit(Long buildingId, Long floorId, Unit unit);
 
-    public void deleteUnitById(Long buildingId, Long unitId);
+    void deleteUnitById(Long buildingId, Long unitId);
     
     List<Unit> getAllUnitsByFloor(Long buildingId, Long floorId) throws NotFoundResponseException;
 }
