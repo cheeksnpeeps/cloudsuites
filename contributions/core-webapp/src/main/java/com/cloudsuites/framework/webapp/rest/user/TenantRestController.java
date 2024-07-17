@@ -7,9 +7,13 @@ import com.cloudsuites.framework.services.property.UnitService;
 import com.cloudsuites.framework.services.property.entities.Building;
 import com.cloudsuites.framework.services.property.entities.Tenant;
 import com.cloudsuites.framework.services.property.entities.Unit;
+import com.cloudsuites.framework.services.user.UserService;
+import com.cloudsuites.framework.services.user.entities.Identity;
 import com.cloudsuites.framework.webapp.rest.property.mapper.BuildingMapper;
 import com.cloudsuites.framework.webapp.rest.property.mapper.UnitMapper;
+import com.cloudsuites.framework.webapp.rest.user.dto.IdentityDto;
 import com.cloudsuites.framework.webapp.rest.user.dto.TenantDto;
+import com.cloudsuites.framework.webapp.rest.user.mapper.IdentityMapper;
 import com.cloudsuites.framework.webapp.rest.user.mapper.TenantMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -52,6 +56,12 @@ public class TenantRestController {
     @Autowired
     private UnitService unitService;
 
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private IdentityMapper identityMapper;
+
     @Operation(summary = "Create Tenant", description = "Create a new tenant")
     @ApiResponse(responseCode = "201", description = "Tenant created successfully", content = @Content(mediaType = "application/json"))
     @PostMapping("/buildings/{buildingId}/units/{unitId}/tenants")
@@ -59,15 +69,27 @@ public class TenantRestController {
             @PathVariable Long buildingId,
             @PathVariable Long unitId,
             @RequestBody TenantDto tenantDto) throws NotFoundResponseException {
+        IdentityDto identityDto = tenantDto.getIdentity();
+        if (identityDto == null) {
+            throw new NotFoundResponseException("Identity details are required");
+        }
+
+        // Ensure related entities are not null
+        Unit unit = validateBuildingAndUnit(buildingId, unitId);
+
+        // Create Identity entity and Tenant entity
+        Identity identity = userService.createUser(identityMapper.convertToEntity(identityDto));
+        Tenant tenant = tenantMapper.convertToEntity(tenantDto);
+        tenant.setIdentity(identity);
+        tenant.setBuildingId(buildingId);
+        tenant.setUnit(unit);
+
         logger.info("Creating new tenant in building ID: {} and unit ID: {}", buildingId, unitId);
-        Building building = buildingService.getBuildingById(buildingId);
-        Unit unit = unitService.getUnitById(buildingId,unitId);
-        Tenant newTenant = tenantService.createTenant(tenantMapper.convertToEntity(tenantDto));
-        newTenant.setBuilding(building);
-        newTenant.setUnit(unit);
+        Tenant newTenant = tenantService.createTenant(tenant);
         TenantDto newTenantDto = tenantMapper.convertToDTO(newTenant);
         return ResponseEntity.status(201).body(newTenantDto);
     }
+
     @Operation(summary = "Get Tenant by ID", description = "Retrieve a tenant by its ID")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Tenant not found")
@@ -92,10 +114,14 @@ public class TenantRestController {
             @PathVariable Long tenantId,
             @RequestBody TenantDto tenantDto) throws NotFoundResponseException {
         logger.info("Updating tenant with ID: {}", tenantId);
-        Building building = buildingService.getBuildingById(buildingId);
-        Unit unit = unitService.getUnitById(buildingId,unitId);
-        tenantDto.setBuilding(buildingMapper.convertToDTO(building));
-        tenantDto.setUnit(unitMapper.convertToDTO(unit));
+
+        // Ensure related entities are not null
+        validateBuildingAndUnit(buildingId, unitId);
+
+        // Set buildingId instead of the entire Building object
+        tenantDto.setBuildingId(buildingId);
+
+        // Update and return tenant
         Tenant updatedTenant = tenantService.updateTenant(tenantId, tenantMapper.convertToEntity(tenantDto));
         TenantDto updatedTenantDto = tenantMapper.convertToDTO(updatedTenant);
         return ResponseEntity.ok(updatedTenantDto);
@@ -135,5 +161,17 @@ public class TenantRestController {
                 .map(tenantMapper::convertToDTO)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(tenants);
+    }
+
+    private Unit validateBuildingAndUnit(@PathVariable Long buildingId, @PathVariable Long unitId) throws NotFoundResponseException {
+        Building building = buildingService.getBuildingById(buildingId);
+        Unit unit = unitService.getUnitById(buildingId, unitId);
+        if (building == null) {
+            throw new NotFoundResponseException("Building not found for ID: " + buildingId);
+        }
+        if (unit == null) {
+            throw new NotFoundResponseException("Unit not found for ID: " + unitId);
+        }
+        return unit;
     }
 }

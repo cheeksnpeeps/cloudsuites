@@ -78,7 +78,7 @@ public class TenantAuthController {
             tenant.setIdentity(identity);
 
             // Query building and unit entities
-            tenant.setBuilding(buildingService.getBuildingById(buildingId));
+            tenant.setBuildingId(buildingId);
             tenant.setUnit(unitService.getUnitById(buildingId,unitId));
 
             // Create tenant in the database
