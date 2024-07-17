@@ -4,7 +4,10 @@ import com.cloudsuites.framework.services.common.exception.NotFoundResponseExcep
 import com.cloudsuites.framework.services.property.BuildingService;
 import com.cloudsuites.framework.services.property.TenantService;
 import com.cloudsuites.framework.services.property.UnitService;
+import com.cloudsuites.framework.services.property.entities.Building;
 import com.cloudsuites.framework.services.property.entities.Tenant;
+import com.cloudsuites.framework.services.property.entities.Unit;
+import com.cloudsuites.framework.services.property.entities.UserType;
 import com.cloudsuites.framework.services.user.UserService;
 import com.cloudsuites.framework.services.user.entities.Identity;
 import com.cloudsuites.framework.webapp.authentication.service.OtpService;
@@ -12,6 +15,9 @@ import com.cloudsuites.framework.webapp.authentication.util.JwtTokenProvider;
 import com.cloudsuites.framework.webapp.rest.user.dto.TenantDto;
 import com.cloudsuites.framework.webapp.rest.user.mapper.IdentityMapper;
 import com.cloudsuites.framework.webapp.rest.user.mapper.TenantMapper;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtBuilder;
+import io.jsonwebtoken.Jwts;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,8 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -37,27 +41,25 @@ public class TenantAuthController {
     private final TenantService tenantService;
     private final UserService userService;
     private final TenantMapper tenantMapper;
-    private final UserDetailsService userDetailsService;
-
     private final BuildingService buildingService;
     private final UnitService unitService;
-
     private final IdentityMapper identityMapper;
+
 
     @Autowired
     public TenantAuthController(JwtTokenProvider jwtTokenProvider, OtpService otpService,
                                 TenantService tenantService, UserService userService,
-                                TenantMapper tenantMapper, UserDetailsService userDetailsService, BuildingService buildingService, UnitService unitService, IdentityMapper identityMapper) {
+                                TenantMapper tenantMapper, BuildingService buildingService, UnitService unitService, IdentityMapper identityMapper) {
         this.jwtTokenProvider = jwtTokenProvider;
         this.otpService = otpService;
         this.tenantService = tenantService;
         this.userService = userService;
         this.tenantMapper = tenantMapper;
-        this.userDetailsService = userDetailsService;
         this.buildingService = buildingService;
         this.unitService = unitService;
         this.identityMapper = identityMapper;
     }
+
 
     @Operation(summary = "Register a Tenant", description = "Register a new tenant with building and unit information")
     @PostMapping("/tenants/register")
@@ -100,17 +102,28 @@ public class TenantAuthController {
     @Operation(summary = "Verify OTP", description = "Verify the OTP sent to the tenant's phone number")
     @PostMapping("/tenants/{tenantId}/verify-otp")
     public ResponseEntity<Map<String, String>> verifyOtp(
-            @Parameter(description = "Phone number of the tenant") @RequestParam String phoneNumber,
-            @Parameter(description = "OTP to be verified") @RequestParam String otp) {
-
-        if (otpService.verifyOtp(phoneNumber, otp)) {
-                UserDetails userDetails = userDetailsService.loadUserByUsername(phoneNumber);
-                String token = jwtTokenProvider.generateToken(userDetails);
-                String refreshToken = jwtTokenProvider.generateRefreshToken(userDetails);
-                otpService.invalidateOtp(phoneNumber);
-                return ResponseEntity.ok(Map.of("token", token, "refreshToken", refreshToken));
+            @PathVariable Long buildingId,
+            @PathVariable Long unitId,
+            @PathVariable Long tenantId,
+            @Parameter(description = "OTP to be verified") @RequestParam String otp) throws NotFoundResponseException {
+        validateBuildingAndUnit(buildingId, unitId);
+        Tenant tenant = tenantService.getTenantByBuildingIdAndUnitIdAndTenantId(buildingId, unitId, tenantId);
+        Identity identity = tenant.getIdentity();
+        if (otpService.verifyOtp(identity.getPhoneNumber(), otp)) {
+            JwtBuilder claims = Jwts.builder()
+                    .subject(tenantId.toString())
+                    .audience().add(UserType.TENANT.name())
+                    .and()
+                    .claim("personaId", tenantId)
+                    .claim("buildingId", buildingId)
+                    .claim("unitId", unitId)
+                    .claim("userId", identity.getUserId());
+            String token = jwtTokenProvider.generateToken(claims);
+            String refreshToken = jwtTokenProvider.generateRefreshToken(claims);
+            otpService.invalidateOtp(identity.getPhoneNumber());
+            return ResponseEntity.ok(Map.of("token", token, "refreshToken", refreshToken));
         } else {
-            logger.error("Invalid OTP for phone number: {}", phoneNumber);
+            logger.error("Invalid OTP for phone number: {}", identity.getPhoneNumber());
             return ResponseEntity.status(400).body(Map.of("error", "Invalid OTP"));
         }
     }
@@ -118,16 +131,53 @@ public class TenantAuthController {
     @Operation(summary = "Refresh Token", description = "Refresh the authentication token using a valid refresh token")
     @PostMapping("/tenants/{tenantId}/refresh-token")
     public ResponseEntity<Map<String, String>> refreshToken(
-            @Parameter(description = "Refresh token") @RequestParam String refreshToken) {
-
-        if (jwtTokenProvider.validateToken(refreshToken)) {
-            String phoneNumber = jwtTokenProvider.extractUsername(refreshToken);
-            UserDetails userDetails = userDetailsService.loadUserByUsername(phoneNumber);
-            String token = jwtTokenProvider.generateToken(userDetails);
-            return ResponseEntity.ok(Map.of("token", token));
+            @PathVariable Long buildingId,
+            @PathVariable Long unitId,
+            @PathVariable Long tenantId,
+            @Parameter(description = "Refresh token") @RequestParam String refreshToken) throws NotFoundResponseException {
+        if (!jwtTokenProvider.validateToken(refreshToken)) {
+            logger.error("Invalid refresh token");
+            return ResponseEntity.status(400).body(Map.of("error", "Invalid refresh token"));
+        }
+        if (!UserType.valueOf(jwtTokenProvider.extractSubject(refreshToken)).equals(UserType.TENANT)) {
+            logger.error("Invalid refresh token");
+            return ResponseEntity.status(400).body(Map.of("error", "Invalid refresh token"));
+        }
+        Claims claims = jwtTokenProvider.extractAllClaims(refreshToken);
+        Long tenantIdClaim = claims.get("personaId", Long.class);
+        Long buildingIdClaim = claims.get("buildingId", Long.class);
+        Long unitIdClaim = claims.get("unitId", Long.class);
+        if (!(tenantIdClaim.equals(tenantId) && buildingIdClaim.equals(buildingId) && unitIdClaim.equals(unitId))) {
+            logger.error("Invalid refresh token");
+            return ResponseEntity.status(400).body(Map.of("error", "Invalid refresh token"));
+        }
+        Identity identity = userService.getUserById(claims.get("userId", Long.class));
+        Tenant tenant = tenantService.getTenantByBuildingIdAndUnitIdAndTenantId(buildingId, unitId, tenantId);
+        if (tenant.getIdentity().getUserId().equals(identity.getUserId())) {
+            JwtBuilder jwtBuilder = Jwts.builder()
+                    .subject(tenantId.toString())
+                    .audience().add(UserType.TENANT.name())
+                    .and()
+                    .claim("personaId", tenantId)
+                    .claim("buildingId", buildingId)
+                    .claim("unitId", unitId)
+                    .claim("userId", identity.getUserId());
+            String token = jwtTokenProvider.generateToken(jwtBuilder);
+            return ResponseEntity.ok(Map.of("token", token, "refreshToken", refreshToken));
         } else {
             logger.error("Invalid refresh token");
             return ResponseEntity.status(400).body(Map.of("error", "Invalid refresh token"));
+        }
+    }
+
+    private void validateBuildingAndUnit(Long buildingId, Long unitId) throws NotFoundResponseException {
+        Building building = buildingService.getBuildingById(buildingId);
+        Unit unit = unitService.getUnitById(buildingId, unitId);
+        if (building == null) {
+            throw new NotFoundResponseException("Building not found for ID: " + buildingId);
+        }
+        if (unit == null) {
+            throw new NotFoundResponseException("Unit not found for ID: " + unitId);
         }
     }
 }

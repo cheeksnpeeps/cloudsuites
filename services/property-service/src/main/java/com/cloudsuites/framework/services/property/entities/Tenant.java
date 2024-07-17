@@ -35,8 +35,7 @@ public class Tenant {
     @ToString.Exclude
     private Unit unit;
 
-    @ManyToOne
-    @JoinColumn(name = "building_id")
-    private Building building;
-
+    public List<GrantedAuthority> getAuthorities() {
+        return Collections.singletonList(new SimpleGrantedAuthority(UserType.TENANT.name()));
+    }
 }
