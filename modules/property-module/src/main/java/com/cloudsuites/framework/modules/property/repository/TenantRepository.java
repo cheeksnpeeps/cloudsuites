@@ -11,11 +11,11 @@ import java.util.Optional;
 public interface TenantRepository extends JpaRepository<Tenant, Long> {
 
 
-    public Optional<List<Tenant>> findByBuilding_BuildingId(Long buildingId);
+    Optional<List<Tenant>> findByBuildingId(Long buildingId);
 
-    public Optional<List<Tenant>> findByBuilding_BuildingIdAndUnit_UnitId(Long buildingId, Long unitId);
+    Optional<List<Tenant>> findByBuildingIdAndUnit_UnitId(Long buildingId, Long unitId);
 
-    public Optional<Tenant> findByBuilding_BuildingIdAndUnit_UnitIdAndTenantId(Long buildingId, Long unitId, Long tenantId);
+    Optional<Tenant> findByBuildingIdAndUnit_UnitIdAndTenantId(Long buildingId, Long unitId, Long tenantId);
 
-    public Optional<Tenant> findByIdentity_UserId(Long userId);
+    Optional<Tenant> findByIdentity_UserId(Long userId);
 }
