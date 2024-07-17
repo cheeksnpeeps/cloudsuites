@@ -139,7 +139,7 @@ public class TenantAuthController {
             logger.error("Invalid refresh token");
             return ResponseEntity.status(400).body(Map.of("error", "Invalid refresh token"));
         }
-        if (!UserType.valueOf(jwtTokenProvider.extractSubject(refreshToken)).equals(UserType.TENANT)) {
+        if (!UserType.valueOf(jwtTokenProvider.extractAudience(refreshToken)).equals(UserType.TENANT)) {
             logger.error("Invalid refresh token");
             return ResponseEntity.status(400).body(Map.of("error", "Invalid refresh token"));
         }

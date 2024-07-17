@@ -13,7 +13,7 @@ import java.util.function.Function;
 @Component
 public class JwtTokenProvider {
 
-    private final String secretKey = "your-secret-key";
+    private final String secretKey = "lYZGkfPC310rZ-Bbr0ZwLb-PcdVXAzJDKXj6hHBVTFs=";
     private final long accessTokenValidityMs = 1000 * 60 * 60 * 10; // 10 hours
     private final long refreshTokenValidityMs = 1000 * 60 * 60 * 24 * 7; // 7 days
     private final SecretKey key;
@@ -41,6 +41,10 @@ public class JwtTokenProvider {
 
     public String extractSubject(String token) {
         return extractClaim(token, Claims::getSubject);
+    }
+
+    public String extractAudience(String refreshToken) {
+        return extractClaim(refreshToken, Claims::getAudience).stream().findAny().orElse(null);
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
