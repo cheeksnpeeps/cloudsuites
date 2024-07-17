@@ -1,6 +1,7 @@
 package com.cloudsuites.framework.webapp.authentication;
 
 import com.cloudsuites.framework.webapp.authentication.filter.JwtAuthenticationFilter;
+import com.cloudsuites.framework.webapp.authentication.providers.TenantAuthenticationProvider;
 import com.cloudsuites.framework.webapp.authentication.service.CustomUserDetailsService;
 import com.cloudsuites.framework.webapp.authentication.util.JwtTokenProvider;
 import org.springframework.context.annotation.Bean;
@@ -18,10 +19,12 @@ public class SecurityConfiguration {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final CustomUserDetailsService userDetailsService;
+    private final TenantAuthenticationProvider tenantAuthenticationProvider;
 
-    public SecurityConfiguration(JwtTokenProvider jwtTokenProvider, CustomUserDetailsService userDetailsService) {
+    public SecurityConfiguration(JwtTokenProvider jwtTokenProvider, CustomUserDetailsService userDetailsService, TenantAuthenticationProvider tenantAuthenticationProvider) {
         this.jwtTokenProvider = jwtTokenProvider;
         this.userDetailsService = userDetailsService;
+        this.tenantAuthenticationProvider = tenantAuthenticationProvider;
     }
 
     @Bean
@@ -40,6 +43,9 @@ public class SecurityConfiguration {
         // Add JWT filter before UsernamePasswordAuthenticationFilter
         http.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, userDetailsService),
                 UsernamePasswordAuthenticationFilter.class);
+
+        // Register TenantAuthenticationProvider as an AuthenticationProvider
+        http.authenticationProvider(tenantAuthenticationProvider);
 
         return http.build();
     }
