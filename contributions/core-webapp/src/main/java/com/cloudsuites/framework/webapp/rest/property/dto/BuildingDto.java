@@ -18,6 +18,7 @@ import java.util.List;
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown=true)
 @JsonView(Views.BuildingView.class)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class BuildingDto {
 
 	private Long buildingId;
