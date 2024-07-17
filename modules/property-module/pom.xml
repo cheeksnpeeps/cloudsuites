@@ -25,5 +25,10 @@
 			<artifactId>property-service</artifactId>
 			<version>${core.version}</version>
 		</dependency>
+        <dependency>
+            <groupId>com.cloudsuites.framework.services</groupId>
+            <artifactId>identity-service</artifactId>
+            <version>${core.version}</version>
+        </dependency>
 	</dependencies>
 </project>
