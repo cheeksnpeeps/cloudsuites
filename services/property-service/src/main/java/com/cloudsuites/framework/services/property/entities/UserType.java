@@ -1,4 +1,4 @@
-package com.cloudsuites.framework.services.user.entities;
+package com.cloudsuites.framework.services.property.entities;
 
 public enum UserType {
     OWNER,
