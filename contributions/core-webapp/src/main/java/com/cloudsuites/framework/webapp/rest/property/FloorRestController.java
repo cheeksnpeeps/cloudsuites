@@ -1,9 +1,9 @@
 package com.cloudsuites.framework.webapp.rest.property;
 
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
-import com.cloudsuites.framework.services.property.entities.Floor;
 import com.cloudsuites.framework.services.property.BuildingService;
 import com.cloudsuites.framework.services.property.FloorService;
+import com.cloudsuites.framework.services.property.entities.Floor;
 import com.cloudsuites.framework.webapp.rest.property.dto.FloorDto;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
 import com.cloudsuites.framework.webapp.rest.property.mapper.FloorMapper;
@@ -38,7 +38,7 @@ public class FloorRestController {
     @Operation(summary = "Get All Floors", description = "Retrieve all floors for a building based on its ID")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Building not found")
-    @JsonView(Views.UnitView.class)
+    @JsonView(Views.FloorView.class)
     @GetMapping("")
     public ResponseEntity<List<FloorDto>> getAllFloors(
             @Parameter(description = "ID of the building to retrieve all floors") @PathVariable Long buildingId) {
@@ -50,7 +50,7 @@ public class FloorRestController {
     @ApiResponse(responseCode = "201", description = "Floor created successfully", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "400", description = "Bad Request")
     @ApiResponse(responseCode = "404", description = "Building not found")
-    @JsonView(Views.UnitView.class)
+    @JsonView(Views.FloorView.class)
     @PostMapping("")
     public ResponseEntity<FloorDto> saveFloor(
             @Parameter(description = "ID of the building to save the floor") @PathVariable Long buildingId,
@@ -63,7 +63,7 @@ public class FloorRestController {
     @Operation(summary = "Get a Floor by ID", description = "Retrieve floor details based on building ID and floor ID")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Building or floor not found")
-    @JsonView(Views.UnitView.class)
+    @JsonView(Views.FloorView.class)
     @GetMapping("/{floorId}")
     public ResponseEntity<FloorDto> getFloorById(
             @Parameter(description = "ID of the building") @PathVariable Long buildingId,

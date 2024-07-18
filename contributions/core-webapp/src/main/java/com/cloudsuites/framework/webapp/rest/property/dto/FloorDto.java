@@ -17,17 +17,21 @@ import java.util.List;
 @JsonView(Views.FloorView.class)
 public class FloorDto {
 
+    @JsonView({Views.FloorView.class, Views.UnitView.class})
     private Long floorId;
 
     @NotNull(message = "Building is required")
     @JsonBackReference
+    @JsonView(Views.FloorView.class)
     private BuildingDto building;
 
     @Valid
     @JsonManagedReference
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    @JsonView(Views.FloorView.class)
     private List<UnitDto> units;
 
     @Positive(message = "Floor number must be a positive number")
+    @JsonView({Views.FloorView.class, Views.UnitView.class})
     private Integer floorNumber;
 }
