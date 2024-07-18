@@ -4,7 +4,6 @@ import com.cloudsuites.framework.services.user.entities.Identity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
@@ -27,12 +26,10 @@ public class Tenant {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    @ToString.Exclude
     private Identity identity;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "unit_id")
-    @ToString.Exclude
     private Unit unit;
 
     public List<GrantedAuthority> getAuthorities() {

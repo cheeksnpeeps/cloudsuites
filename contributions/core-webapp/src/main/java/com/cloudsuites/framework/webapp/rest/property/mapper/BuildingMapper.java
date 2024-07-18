@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class BuildingMapper {
@@ -18,17 +19,17 @@ public class BuildingMapper {
         this.modelMapper = modelMapper;
     }
 
-    public BuildingDto convertToDTO(Building building) {
-        return modelMapper.map(building, BuildingDto.class);
-    }
-
-    public Building convertToEntity(BuildingDto buildingDTO) {
-        return modelMapper.map(buildingDTO, Building.class);
+    public Building convertToEntity(BuildingDto buildingDto) {
+        return modelMapper.map(buildingDto, Building.class);
     }
 
     public List<BuildingDto> convertToDTOList(List<Building> buildings) {
-        return (buildings != null && !buildings.isEmpty()) ? buildings.stream()
+        return buildings.stream()
                 .map(this::convertToDTO)
-                .toList(): null;
+                .collect(Collectors.toList());
+    }
+
+    public BuildingDto convertToDTO(Building building) {
+        return modelMapper.map(building, BuildingDto.class);
     }
 }

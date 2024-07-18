@@ -9,12 +9,12 @@ import com.cloudsuites.framework.services.property.entities.Tenant;
 import com.cloudsuites.framework.services.property.entities.Unit;
 import com.cloudsuites.framework.services.user.UserService;
 import com.cloudsuites.framework.services.user.entities.Identity;
-import com.cloudsuites.framework.webapp.rest.property.mapper.BuildingMapper;
-import com.cloudsuites.framework.webapp.rest.property.mapper.UnitMapper;
+import com.cloudsuites.framework.webapp.rest.property.dto.Views;
 import com.cloudsuites.framework.webapp.rest.user.dto.IdentityDto;
 import com.cloudsuites.framework.webapp.rest.user.dto.TenantDto;
 import com.cloudsuites.framework.webapp.rest.user.mapper.IdentityMapper;
 import com.cloudsuites.framework.webapp.rest.user.mapper.TenantMapper;
+import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -38,8 +38,6 @@ public class TenantRestController {
 
     private final TenantService tenantService;
     private final TenantMapper tenantMapper;
-    private final BuildingMapper buildingMapper;
-    private final UnitMapper unitMapper;
     private final BuildingService buildingService;
     private final UnitService unitService;
     private final UserService userService;
@@ -47,13 +45,10 @@ public class TenantRestController {
 
     @Autowired
     public TenantRestController(TenantService tenantService, TenantMapper tenantMapper,
-                                BuildingMapper buildingMapper, UnitMapper unitMapper,
                                 BuildingService buildingService, UnitService unitService,
                                 UserService userService, IdentityMapper identityMapper) {
         this.tenantService = tenantService;
         this.tenantMapper = tenantMapper;
-        this.buildingMapper = buildingMapper;
-        this.unitMapper = unitMapper;
         this.buildingService = buildingService;
         this.unitService = unitService;
         this.userService = userService;
@@ -63,6 +58,7 @@ public class TenantRestController {
     @Operation(summary = "Create Tenant", description = "Create a new tenant")
     @ApiResponse(responseCode = "201", description = "Tenant created successfully", content = @Content(mediaType = "application/json"))
     @PostMapping("/buildings/{buildingId}/units/{unitId}/tenants")
+    @JsonView(Views.TenantView.class)
     public ResponseEntity<TenantDto> createTenant(
             @PathVariable Long buildingId,
             @PathVariable Long unitId,
@@ -84,6 +80,7 @@ public class TenantRestController {
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Tenant not found")
     @GetMapping("/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}")
+    @JsonView(Views.TenantView.class)
     public ResponseEntity<TenantDto> getTenant(
             @PathVariable Long buildingId,
             @PathVariable Long unitId,
@@ -98,6 +95,7 @@ public class TenantRestController {
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Tenant not found")
     @PutMapping("/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}")
+    @JsonView(Views.TenantView.class)
     public ResponseEntity<TenantDto> updateTenant(
             @PathVariable Long buildingId,
             @PathVariable Long unitId,
@@ -116,6 +114,7 @@ public class TenantRestController {
     @Operation(summary = "List All Tenants for a given unit", description = "Retrieve a list of all tenants for a given unit")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @GetMapping("/buildings/{buildingId}/units/{unitId}/tenants")
+    @JsonView(Views.TenantView.class)
     public ResponseEntity<List<TenantDto>> listTenants(
             @PathVariable Long buildingId,
             @PathVariable Long unitId) throws NotFoundResponseException {
@@ -129,6 +128,7 @@ public class TenantRestController {
     @Operation(summary = "List All Tenants for a given building", description = "Retrieve a list of all tenants for a given building")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @GetMapping("/buildings/{buildingId}/tenants")
+    @JsonView(Views.TenantView.class)
     public ResponseEntity<List<TenantDto>> listTenantsByBuilding(
             @PathVariable Long buildingId) throws NotFoundResponseException {
         logger.info("Listing all tenants for building ID: {}", buildingId);
@@ -141,6 +141,7 @@ public class TenantRestController {
     @Operation(summary = "List All Tenants", description = "Retrieve a list of all tenants")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @GetMapping("/tenants")
+    @JsonView(Views.TenantView.class)
     public ResponseEntity<List<TenantDto>> listTenants() {
         logger.info("Listing all tenants");
         List<TenantDto> tenants = tenantService.getAllTenants().stream()

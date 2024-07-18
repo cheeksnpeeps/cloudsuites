@@ -11,4 +11,9 @@ public class Views {
     public static class FloorView extends BuildingView {}
     public static class UnitView extends FloorView {}
 
+    public static class OwnerView {
+    }
+
+    public static class TenantView {
+    }
 }
