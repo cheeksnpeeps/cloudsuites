@@ -28,7 +28,6 @@ public class TenantDto{
     @JsonView(Views.TenantView.class)
     private UnitDto unit;
 
-    @JsonView(Views.TenantView.class)
     private BuildingDto building;
 
 }

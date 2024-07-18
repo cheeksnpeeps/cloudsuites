@@ -18,7 +18,7 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class OwnerDto {
 
-    @JsonView({Views.OwnerView.class, Views.UnitView.class})
+    @JsonView({Views.OwnerView.class, Views.TenantView.class, Views.UnitView.class})
     private Long ownerId;
 
     @JsonView({Views.OwnerView.class, Views.UnitView.class})
