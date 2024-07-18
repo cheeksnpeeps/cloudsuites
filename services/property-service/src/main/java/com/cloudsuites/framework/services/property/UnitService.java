@@ -18,4 +18,5 @@ public interface UnitService {
     void deleteUnitById(Long buildingId, Long unitId);
     
     List<Unit> getAllUnitsByFloor(Long buildingId, Long floorId) throws NotFoundResponseException;
+
 }
