@@ -40,7 +40,7 @@ public class ManagementCompanyRestController {
         this.mapper = mapper;
     }
 
-    @JsonView(Views.BuildingView.class)
+    @JsonView(Views.ManagementCompanyView.class)
     @Operation(summary = "Get All Property Management Companies", description = "Retrieve a list of all property management companies")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @GetMapping("")
@@ -55,6 +55,7 @@ public class ManagementCompanyRestController {
     @Operation(summary = "Save a Property Management Company", description = "Create a new property management company")
     @ApiResponse(responseCode = "201", description = "Property management company created successfully", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "400", description = "Bad Request")
+    @JsonView(Views.ManagementCompanyView.class)
     @PostMapping("")
     public ResponseEntity<ManagementCompanyDto> saveManagementCompany(
             @RequestBody @Parameter(description = "Property management company details to be saved") ManagementCompanyDto managementCompanyDTO) {
@@ -69,6 +70,7 @@ public class ManagementCompanyRestController {
     @ApiResponse(responseCode = "204", description = "Property management company deleted successfully")
     @ApiResponse(responseCode = "404", description = "Property management company not found")
     @DeleteMapping("/{managementCompanyId}")
+    @JsonView(Views.ManagementCompanyView.class)
     public ResponseEntity<Void> deleteManagementCompanyById(
             @Parameter(description = "ID of the property management company to be deleted") @PathVariable Long managementCompanyId) {
         logger.debug("Deleting property management company {}", managementCompanyId);
@@ -79,7 +81,7 @@ public class ManagementCompanyRestController {
     @Operation(summary = "Get a Property Management Company by ID", description = "Retrieve property management company details based on its ID")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Property management company not found")
-    @JsonView(Views.BuildingView.class)
+    @JsonView(Views.ManagementCompanyView.class)
     @GetMapping("/{managementCompanyId}")
     public ResponseEntity<ManagementCompanyDto> getManagementCompanyById(
             @Parameter(description = "ID of the property management company to be retrieved") @PathVariable Long managementCompanyId)

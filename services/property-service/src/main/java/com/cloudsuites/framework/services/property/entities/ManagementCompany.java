@@ -1,5 +1,6 @@
 package com.cloudsuites.framework.services.property.entities;
 
+import com.cloudsuites.framework.services.user.entities.Address;
 import com.cloudsuites.framework.services.user.entities.Identity;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -43,6 +44,9 @@ public class ManagementCompany {
 
     @Column(name = "last_modified_at")
     private LocalDateTime lastModifiedAt;
+
+    @OneToMany(mappedBy = "staff", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Staff> staffs;
 
     @PrePersist
     protected void onCreate() {
