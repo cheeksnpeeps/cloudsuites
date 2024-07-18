@@ -1,5 +1,6 @@
-package com.cloudsuites.framework.webapp.rest.property.dto;
+package com.cloudsuites.framework.webapp.rest.user.dto;
 
+import com.cloudsuites.framework.webapp.rest.property.dto.Views;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonView;
 import jakarta.validation.constraints.NotBlank;
@@ -11,7 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown=true)
-@JsonView(Views.AddressView.class)
+@JsonView({Views.AddressView.class, Views.BuildingView.class, Views.ManagementCompanyView.class})
 public class AddressDto {
 
     private Long addressId;

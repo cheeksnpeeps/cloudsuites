@@ -1,6 +1,7 @@
 
 package com.cloudsuites.framework.services.property.entities;
 
+import com.cloudsuites.framework.services.user.entities.Address;
 import com.cloudsuites.framework.services.user.entities.Identity;
 import jakarta.persistence.*;
 import lombok.Data;
