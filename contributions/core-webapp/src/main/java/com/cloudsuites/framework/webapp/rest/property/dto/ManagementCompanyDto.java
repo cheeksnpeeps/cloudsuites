@@ -1,6 +1,7 @@
 package com.cloudsuites.framework.webapp.rest.property.dto;
 
-import com.cloudsuites.framework.webapp.rest.user.dto.ContactInfoDto;
+import com.cloudsuites.framework.webapp.rest.user.dto.AddressDto;
+import com.cloudsuites.framework.webapp.rest.user.dto.StaffDto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -29,7 +30,6 @@ public class ManagementCompanyDto {
     @URL(message = "Invalid website URL")
     private String website;
 
-    @Valid
     @JsonManagedReference
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private List<BuildingDto> buildings;
@@ -37,7 +37,6 @@ public class ManagementCompanyDto {
     @Valid
     private AddressDto addressDTO;
 
-    @Valid
-    private ContactInfoDto contactInfo;
+    private List<StaffDto> staffs;
 }
 
