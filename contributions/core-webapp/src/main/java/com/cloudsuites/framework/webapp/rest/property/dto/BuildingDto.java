@@ -1,5 +1,6 @@
 package com.cloudsuites.framework.webapp.rest.property.dto;
 
+import com.cloudsuites.framework.webapp.rest.user.dto.AddressDto;
 import com.cloudsuites.framework.webapp.rest.user.dto.IdentityDto;
 import com.fasterxml.jackson.annotation.*;
 import jakarta.validation.Valid;
@@ -20,29 +21,30 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BuildingDto {
 
-	@JsonView({Views.BuildingView.class, Views.UnitView.class})
+	@JsonView({Views.BuildingView.class, Views.ManagementCompanyView.class})
 	private Long buildingId;
 
+	@JsonView({Views.BuildingView.class, Views.ManagementCompanyView.class})
 	@NotBlank(message = "Building name is required")
-	@JsonView({Views.BuildingView.class, Views.UnitView.class})
 	private String name;
 
+	@JsonView(Views.BuildingView.class)
 	@JsonBackReference
 	@NotNull(message = "Management company is required")
-	@JsonView({Views.BuildingView.class})
 	private ManagementCompanyDto managementCompany;
 
+	@JsonView(Views.BuildingView.class)
 	@Valid
-	@JsonView({Views.BuildingView.class})
 	private AddressDto address;
 
 	@Valid
 	@JsonManagedReference
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@JsonView({Views.BuildingView.class})
+	@JsonView(Views.BuildingView.class)
 	private List<FloorDto> floors;
 
 	@PositiveOrZero(message = "Total floors must be a non-negative number")
+	@JsonView({Views.BuildingView.class, Views.ManagementCompanyView.class})
 	private Integer totalFloors;
 
 	@Positive(message = "Year built must be a positive number")
