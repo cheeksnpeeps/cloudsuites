@@ -29,8 +29,9 @@ public class Staff {
     @JoinColumn(name = "managementCompany_id")
     private ManagementCompany managementCompany;
 
-    @OneToMany(mappedBy = "staff", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Building> buildings;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "building_id")
+    private Building building;
 
     public List<GrantedAuthority> getAuthorities() {
         return Collections.singletonList(new SimpleGrantedAuthority(UserType.STAFF.name()));
