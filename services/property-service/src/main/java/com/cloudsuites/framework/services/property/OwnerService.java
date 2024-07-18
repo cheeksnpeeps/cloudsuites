@@ -8,6 +8,7 @@ import java.util.List;
 
 @Service
 public interface OwnerService {
+
     Owner getOwnerById(Long id) throws NotFoundResponseException;
 
     Owner createOwner(Owner owner);
@@ -19,6 +20,8 @@ public interface OwnerService {
     List<Owner> getAllOwners() throws NotFoundResponseException;
 
     Owner findByEmail(String email) throws NotFoundResponseException;
+
+    Owner findByName(String email) throws NotFoundResponseException;
 
     Owner findByUserId(Long userId) throws NotFoundResponseException;
 }

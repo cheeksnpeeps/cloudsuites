@@ -17,25 +17,29 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown=true)
-@JsonView(Views.BuildingView.class)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BuildingDto {
 
+	@JsonView({Views.BuildingView.class, Views.UnitView.class})
 	private Long buildingId;
 
 	@NotBlank(message = "Building name is required")
+	@JsonView({Views.BuildingView.class, Views.UnitView.class})
 	private String name;
 
 	@JsonBackReference
 	@NotNull(message = "Management company is required")
+	@JsonView({Views.BuildingView.class})
 	private ManagementCompanyDto managementCompany;
 
 	@Valid
+	@JsonView({Views.BuildingView.class})
 	private AddressDto address;
 
 	@Valid
 	@JsonManagedReference
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@JsonView({Views.BuildingView.class})
 	private List<FloorDto> floors;
 
 	@PositiveOrZero(message = "Total floors must be a non-negative number")
