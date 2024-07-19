@@ -2,8 +2,8 @@ package com.cloudsuites.framework.modules.property;
 
 import com.cloudsuites.framework.modules.property.repository.BuildingRepository;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
-import com.cloudsuites.framework.services.property.entities.Building;
 import com.cloudsuites.framework.services.property.BuildingService;
+import com.cloudsuites.framework.services.property.entities.Building;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +46,7 @@ public class BuildingServiceImpl implements BuildingService {
                     logger.error("Buildings not found for Management Company: {}", managementCompanyId);
                     return new NotFoundResponseException("Buildings not found for Management Company: " + managementCompanyId);
                 });
-        logger.debug("Buildings found for Management Company {}: {}", managementCompanyId, buildings);
+        logger.debug("Buildings found for Management Company {}:", managementCompanyId);
         return buildings;
     }
 
