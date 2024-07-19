@@ -1,13 +1,12 @@
 package com.cloudsuites.framework.modules.property;
 
+import com.cloudsuites.framework.modules.property.repository.AddressRepository;
 import com.cloudsuites.framework.modules.property.repository.BuildingRepository;
 import com.cloudsuites.framework.modules.property.repository.ManagementCompanyRepository;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import com.cloudsuites.framework.services.property.ManagementCompanyService;
-import com.cloudsuites.framework.services.property.entities.Building;
-import com.cloudsuites.framework.services.property.entities.Floor;
 import com.cloudsuites.framework.services.property.entities.ManagementCompany;
-import com.cloudsuites.framework.services.property.entities.Unit;
+import com.cloudsuites.framework.services.user.entities.Address;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,11 +20,13 @@ public class ManagementCompanyServiceImpl implements ManagementCompanyService {
 
     private final ManagementCompanyRepository managementCompanyRepository;
 
-    private static final Logger logger = LoggerFactory.getLogger(FloorServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(ManagementCompanyServiceImpl.class);
+    private final AddressRepository addressRepository;
 
     @Autowired
-    public ManagementCompanyServiceImpl(ManagementCompanyRepository managementCompanyRepository, BuildingRepository buildingRepository) {
+    public ManagementCompanyServiceImpl(ManagementCompanyRepository managementCompanyRepository, BuildingRepository buildingRepository, StaffServiceImpl staffServiceImpl, AddressRepository addressRepository) {
         this.managementCompanyRepository = managementCompanyRepository;
+        this.addressRepository = addressRepository;
     }
 
     @Transactional(readOnly = true)
@@ -63,45 +64,11 @@ public class ManagementCompanyServiceImpl implements ManagementCompanyService {
     @Override
     public ManagementCompany saveManagementCompany(ManagementCompany managementCompany) {
         logger.debug("Entering saveManagementCompany with managementCompany: {}", managementCompany.getName());
+        Address address = addressRepository.save(managementCompany.getAddress());
+        managementCompany.setAddress(address);
         ManagementCompany savedCompany = managementCompanyRepository.save(managementCompany);
-        setManagementCompanyInBuildings(savedCompany.getBuildings(), savedCompany);
         logger.debug("Created Management Company: {}", savedCompany.getName());
         return savedCompany;
     }
-
-    private void setManagementCompanyInBuildings(List<Building> buildings, ManagementCompany managementCompany) {
-        if (buildings != null) {
-            buildings.forEach(building -> {
-                building.setManagementCompany(managementCompany);
-                setBuildingInFloors(building.getFloors(), building);
-                setBuildingInUnits(building.getUnits(), building);
-            });
-            managementCompanyRepository.save(managementCompany);
-        }
-    }
-
-    private void setBuildingInFloors(List<Floor> floors, Building building) {
-        if (floors != null) {
-            floors.forEach(floor -> {
-                floor.setBuilding(building);
-                setFloorInUnits(floor.getUnits(), floor);
-            });
-        }
-    }
-
-    private void setBuildingInUnits(List<Unit> units, Building building) {
-        if (units != null) {
-            units.forEach(unit -> unit.setBuilding(building));
-        }
-    }
-
-    private void setFloorInUnits(List<Unit> units, Floor floor) {
-        if (units != null) {
-            units.forEach(unit -> unit.setFloor(floor));
-        }
-    }
-
-
-
 }
 
