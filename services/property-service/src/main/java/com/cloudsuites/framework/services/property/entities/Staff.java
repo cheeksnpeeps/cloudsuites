@@ -25,7 +25,7 @@ public class Staff {
     @JoinColumn(name = "user_id")
     private Identity identity;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "managementCompany_id")
     private ManagementCompany managementCompany;
 

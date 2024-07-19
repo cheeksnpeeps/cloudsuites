@@ -16,7 +16,6 @@ import io.swagger.v3.oas.annotations.tags.Tags;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,12 +29,11 @@ public class ManagementCompanyRestController {
 
     private static final Logger logger = LoggerFactory.getLogger(ManagementCompanyRestController.class);
 
-    @Qualifier("managementCompanyServiceImpl")
     private final ManagementCompanyService managementCompanyService;
     private final ManagementCompanyMapper mapper;
 
     @Autowired
-    public ManagementCompanyRestController(@Qualifier("managementCompanyServiceImpl") ManagementCompanyService managementCompanyService, ManagementCompanyMapper mapper) {
+    public ManagementCompanyRestController(ManagementCompanyService managementCompanyService, ManagementCompanyMapper mapper) {
         this.managementCompanyService = managementCompanyService;
         this.mapper = mapper;
     }

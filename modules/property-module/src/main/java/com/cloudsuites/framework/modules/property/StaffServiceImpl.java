@@ -61,7 +61,7 @@ public class StaffServiceImpl implements StaffService {
     @Transactional(readOnly = true)
     public List<Staff> getAllStaffsByBuilding(Long buildingId) throws NotFoundResponseException {
         logger.info("Fetching all staffs for building ID: {}", buildingId);
-        return staffRepository.findByBuildingId(buildingId)
+        return staffRepository.findByBuilding_BuildingId(buildingId)
                 .orElseThrow(() -> {
                     logger.error("No staffs found for building ID: {}", buildingId);
                     return new NotFoundResponseException("No staffs found for Building ID: " + buildingId);
@@ -72,7 +72,7 @@ public class StaffServiceImpl implements StaffService {
     @Transactional(readOnly = true)
     public List<Staff> getAllStaffByCompany(Long companyId) throws NotFoundResponseException {
         logger.info("Fetching all staffs for company ID: {}", companyId);
-        return staffRepository.findByManagementCompanyId(companyId)
+        return staffRepository.findByManagementCompany_ManagementCompanyId(companyId)
                 .orElseThrow(() -> {
                     logger.error("No staff found for company ID: {}", companyId);
                     return new NotFoundResponseException("No staff found for company ID: " + companyId);
