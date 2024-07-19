@@ -2,7 +2,9 @@ package com.cloudsuites.framework.webapp.rest.property;
 
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import com.cloudsuites.framework.services.property.BuildingService;
+import com.cloudsuites.framework.services.property.ManagementCompanyService;
 import com.cloudsuites.framework.services.property.entities.Building;
+import com.cloudsuites.framework.services.property.entities.ManagementCompany;
 import com.cloudsuites.framework.webapp.rest.property.dto.BuildingDto;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
 import com.cloudsuites.framework.webapp.rest.property.mapper.BuildingMapper;
@@ -23,38 +25,38 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/buildings")
+@RequestMapping("/api/v1/companies/{companyId}/buildings")
 @Tags(value = {@Tag(name = "Buildings", description = "Operations related to buildings")})
 public class BuildingRestController {
 
     private static final Logger logger = LoggerFactory.getLogger(BuildingRestController.class);
     private final BuildingService buildingService;
     private final BuildingMapper mapper;
+    private final ManagementCompanyService managementCompanyService;
 
     @Autowired
-    public BuildingRestController(BuildingService buildingService, BuildingMapper mapper) {
+    public BuildingRestController(BuildingService buildingService, BuildingMapper mapper, ManagementCompanyService managementCompanyService) {
         this.buildingService = buildingService;
         this.mapper = mapper;
+        this.managementCompanyService = managementCompanyService;
     }
 
-    @Operation(summary = "Get Buildings", description = "Get a list of buildings based on optional management company ID")
+    @Operation(summary = "Get Buildings", description = "Get a list of buildings based on optional management company ID - Use -1 to get all buildings")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Not Found")
     @JsonView(Views.UnitView.class)
     @GetMapping("")
-    public ResponseEntity<List<BuildingDto>> getBuildings(@RequestParam(required = false) Long managementCompanyId) throws NotFoundResponseException {
-        if (managementCompanyId != null) {
-            logger.debug("Getting all buildings for management company: {}", managementCompanyId);
+    public ResponseEntity<List<BuildingDto>> getBuildings(@PathVariable Long companyId) throws NotFoundResponseException {
+        logger.debug("Getting all buildings for management company: {}", companyId);
             // If managementCompanyId is provided, filter buildings by management company
-            List<Building> buildings = buildingService.getBuildingByManagementCompanyId(managementCompanyId);
-            logger.debug("Found {} buildings for management company: {}", buildings.size(), managementCompanyId);
-            return ResponseEntity.ok().body(mapper.convertToDTOList(buildings));
-        }else {
-            logger.debug("Getting all buildings");
+        if (companyId == -1) {
             List<Building> buildings = buildingService.getAllBuildings();
             logger.debug("Found {} buildings", buildings.size());
             return ResponseEntity.ok().body(mapper.convertToDTOList(buildings));
         }
+        List<Building> buildings = buildingService.getBuildingByManagementCompanyId(companyId);
+        logger.debug("Found {} buildings for management company: {}", buildings.size(), companyId);
+        return ResponseEntity.ok().body(mapper.convertToDTOList(buildings));
     }
 
     @Operation(summary = "Save a Building", description = "Create a new building")
@@ -62,10 +64,11 @@ public class BuildingRestController {
     @ApiResponse(responseCode = "400", description = "Bad Request")
     @JsonView(Views.BuildingView.class)
     @PostMapping("")
-    public ResponseEntity<BuildingDto> saveBuilding(
-            @RequestBody @Parameter(description = "Building payload") BuildingDto buildingDTO) {
-        logger.debug("Saving building {}", buildingDTO.getName());
+    public ResponseEntity<BuildingDto> saveBuilding(@RequestBody @Parameter(description = "Building payload") BuildingDto buildingDTO, @PathVariable Long companyId) throws NotFoundResponseException {
         Building building = mapper.convertToEntity(buildingDTO);
+        ManagementCompany company = managementCompanyService.getManagementCompanyById(companyId);
+        building.setManagementCompany(company);
+        logger.debug("Saving building {}", building.getName());
         building = buildingService.saveBuilding(building);
         logger.debug("Building saved successfully: {} {}", building.getBuildingId(), building.getName());
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.convertToDTO(building));
@@ -76,7 +79,7 @@ public class BuildingRestController {
     @ApiResponse(responseCode = "404", description = "Building not found")
     @DeleteMapping("/{buildingId}")
     public ResponseEntity<Void> deleteBuildingById(
-            @Parameter(description = "ID of the building to be deleted") @PathVariable Long buildingId) {
+            @Parameter(description = "ID of the building to be deleted") @PathVariable Long buildingId, @PathVariable String companyId) {
         logger.debug("Deleting building {}", buildingId);
         buildingService.deleteBuildingById(buildingId);
         logger.debug("Building deleted successfully: {}", buildingId);
@@ -89,7 +92,7 @@ public class BuildingRestController {
     @JsonView(Views.BuildingView.class)
     @GetMapping("/{buildingId}")
     public ResponseEntity<BuildingDto>  getBuildingById(
-            @Parameter(description = "ID of the building to be retrieved") @PathVariable Long buildingId)
+            @Parameter(description = "ID of the building to be retrieved") @PathVariable Long buildingId, @PathVariable String companyId)
             throws NotFoundResponseException {
         logger.debug("Getting building {}", buildingId);
         Building building = buildingService.getBuildingById(buildingId);
