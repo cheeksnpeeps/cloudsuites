@@ -31,7 +31,7 @@ public class UnitDto {
 	private OwnerDto owner;
 
 	@Valid
-	@JsonBackReference
+	@JsonBackReference(value = "floor")
 	@JsonView({Views.UnitView.class})
 	private FloorDto floor;
 
