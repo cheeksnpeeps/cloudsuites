@@ -21,17 +21,20 @@ public class Staff {
     @Column(name = "staff_id")
     private Long staffId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id")
     private Identity identity;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "managementCompany_id")
     private ManagementCompany managementCompany;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "building_id")
     private Building building;
+
+    @Column(name = "staff_role")
+    private StaffRole staffRole;
 
     public List<GrantedAuthority> getAuthorities() {
         return Collections.singletonList(new SimpleGrantedAuthority(UserType.STAFF.name()));

@@ -4,7 +4,6 @@ import com.cloudsuites.framework.services.property.entities.StaffRole;
 import com.cloudsuites.framework.webapp.rest.property.dto.BuildingDto;
 import com.cloudsuites.framework.webapp.rest.property.dto.ManagementCompanyDto;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -29,14 +28,12 @@ public class StaffDto {
     @Schema(description = "Role of the staff", example = "BUILDING_SECURITY")
     private StaffRole staffRole;
 
-    @JsonBackReference(value = "managementCompany")
     @JsonView(Views.StaffView.class)
-    @Schema(hidden = true)
+    @Schema(description = "Management company of the staff")
     private ManagementCompanyDto managementCompany;
 
-    @JsonBackReference(value = "building")
     @JsonView(Views.StaffView.class)
-    @Schema(hidden = true)
+    @Schema(description = "Building of the staff")
     private BuildingDto building;
 }
 
