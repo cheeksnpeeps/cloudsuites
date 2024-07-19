@@ -21,12 +21,12 @@ public class FloorDto {
     private Long floorId;
 
     @NotNull(message = "Building is required")
-    @JsonBackReference
+    @JsonBackReference(value = "building")
     @JsonView(Views.FloorView.class)
     private BuildingDto building;
 
     @Valid
-    @JsonManagedReference
+    @JsonManagedReference(value = "floor")
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     @JsonView(Views.FloorView.class)
     private List<UnitDto> units;
