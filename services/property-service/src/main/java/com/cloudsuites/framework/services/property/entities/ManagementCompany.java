@@ -6,7 +6,6 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
 @Entity
@@ -23,9 +22,6 @@ public class ManagementCompany {
 
     @Column(name = "website")
     private String website;
-
-    @OneToMany(mappedBy = "managementCompany", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Building> buildings;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "address_id")
@@ -44,9 +40,6 @@ public class ManagementCompany {
 
     @Column(name = "last_modified_at")
     private LocalDateTime lastModifiedAt;
-
-    @OneToMany(mappedBy = "managementCompany", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Staff> staffs;
 
     @PrePersist
     protected void onCreate() {
