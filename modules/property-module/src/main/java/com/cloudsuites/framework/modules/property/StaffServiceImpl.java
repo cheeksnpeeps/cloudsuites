@@ -67,4 +67,25 @@ public class StaffServiceImpl implements StaffService {
                     return new NotFoundResponseException("No staffs found for Building ID: " + buildingId);
                 });
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Staff> getAllStaffByCompany(Long companyId) throws NotFoundResponseException {
+        logger.info("Fetching all staffs for company ID: {}", companyId);
+        return staffRepository.findByManagementCompanyId(companyId)
+                .orElseThrow(() -> {
+                    logger.error("No staff found for company ID: {}", companyId);
+                    return new NotFoundResponseException("No staff found for company ID: " + companyId);
+                });
+    }
+
+    @Override
+    public void deleteStaff(Long id) throws NotFoundResponseException {
+        logger.info("Deleting staff with ID: {}", id);
+
+        staffRepository.findById(id).ifPresent(staff -> {
+            staffRepository.delete(staff);
+            logger.info("Staff deleted successfully with ID: {}", id);
+        });
+    }
 }
