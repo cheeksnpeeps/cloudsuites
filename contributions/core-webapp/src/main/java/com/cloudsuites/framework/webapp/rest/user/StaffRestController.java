@@ -67,12 +67,12 @@ public class StaffRestController {
     @Operation(summary = "Get All Staffs", description = "Retrieve all staffs")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Staffs not found")
-    @GetMapping("/buildings/{buildingId}/")
+    @GetMapping("/companies/{companyId}")
     @JsonView(Views.StaffView.class)
-    public ResponseEntity<List<StaffDto>> getAllStaffsByCompanyId(@PathVariable Long buildingId) {
+    public ResponseEntity<List<StaffDto>> getAllStaffsByCompanyId(@PathVariable Long companyId) {
         logger.info("Fetching all staffs by Company Id");
         try {
-            List<Staff> staffs = staffService.getAllStaffsByBuilding(buildingId);
+            List<Staff> staffs = staffService.getAllStaffByCompany(companyId);
             logger.info("Fetched {} staffs by Company Id", staffs.size());
             return ResponseEntity.ok().body(mapper.convertToDTOList(staffs));
         } catch (NotFoundResponseException e) {
@@ -84,7 +84,7 @@ public class StaffRestController {
     @Operation(summary = "Create a new Building Staff", description = "Create a new Building staff")
     @ApiResponse(responseCode = "201", description = "Staff created successfully", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "400", description = "Bad Request")
-    @PostMapping("/company/{companyId}/building/{buildingId}")
+    @PostMapping("/companies/{companyId}/building/{buildingId}")
     @JsonView(Views.StaffView.class)
     public ResponseEntity<StaffDto> createBuildingStaff(@RequestBody @Parameter(description = "Staff details to be saved") StaffDto staffDto,
                                                         @PathVariable Long companyId,
@@ -103,7 +103,7 @@ public class StaffRestController {
     @Operation(summary = "Create a new Staff for Management Company", description = "Create a new staff for Management Company")
     @ApiResponse(responseCode = "201", description = "Staff created successfully", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "400", description = "Bad Request")
-    @PostMapping("/company/{companyId}")
+    @PostMapping("/companies/{companyId}")
     @JsonView(Views.StaffView.class)
     public ResponseEntity<StaffDto> createStaff(@RequestBody @Parameter(description = "Staff details to be saved") StaffDto staffDto,
                                                 @PathVariable Long companyId) throws NotFoundResponseException {
