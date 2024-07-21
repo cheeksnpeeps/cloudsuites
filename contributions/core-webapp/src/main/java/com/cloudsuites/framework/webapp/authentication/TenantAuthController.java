@@ -12,9 +12,11 @@ import com.cloudsuites.framework.services.user.UserService;
 import com.cloudsuites.framework.services.user.entities.Identity;
 import com.cloudsuites.framework.webapp.authentication.service.OtpService;
 import com.cloudsuites.framework.webapp.authentication.util.JwtTokenProvider;
+import com.cloudsuites.framework.webapp.rest.property.dto.Views;
 import com.cloudsuites.framework.webapp.rest.user.dto.TenantDto;
 import com.cloudsuites.framework.webapp.rest.user.mapper.IdentityMapper;
 import com.cloudsuites.framework.webapp.rest.user.mapper.TenantMapper;
+import com.fasterxml.jackson.annotation.JsonView;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
@@ -62,25 +64,22 @@ public class TenantAuthController {
 
     @Operation(summary = "Register a Tenant", description = "Register a new tenant with building and unit information")
     @PostMapping("/tenants/register")
+    @JsonView(Views.TenantView.class)
     public ResponseEntity<TenantDto> registerTenant(
             @PathVariable Long buildingId,
             @PathVariable Long unitId,
             @RequestBody @Parameter(description = "Tenant registration details") TenantDto tenantDto) throws NotFoundResponseException {
 
         logger.debug("Registering tenant with phone number: {}", tenantDto.getIdentity().getPhoneNumber());
-
-        try {
-            Identity identity = createIdentity(tenantDto);
-            Tenant tenant = createTenant(tenantDto, buildingId, unitId, identity);
-            String otp = otpService.generateOtp(identity.getPhoneNumber());
-            sendOtp(otp, identity.getPhoneNumber());
-
-            logger.debug("Tenant registered successfully: {} {}", tenant.getTenantId(), tenant.getIdentity().getPhoneNumber());
+        Tenant tenant = tenantMapper.convertToEntity(tenantDto);
+        tenant.setBuilding(buildingService.getBuildingById(buildingId));
+        tenantService.createTenant(tenant, unitId);
+        String phoneNumber = tenant.getIdentity().getPhoneNumber();
+        String otp = otpService.generateOtp(phoneNumber);
+        sendOtp(otp, phoneNumber);
+        logger.info("Tenant building ID: {}", tenant.getBuilding().getBuildingId());
+        logger.debug("Tenant registered successfully: {} {}", tenant.getTenantId(), phoneNumber);
             return ResponseEntity.ok(tenantMapper.convertToDTO(tenant));
-        } catch (Exception e) {
-            logger.error("Error occurred while registering tenant: {}", e.getMessage(), e);
-            return ResponseEntity.status(500).body(null);
-        }
     }
 
     @Operation(summary = "Verify OTP", description = "Verify the OTP sent to the tenant's phone number")
@@ -140,17 +139,7 @@ public class TenantAuthController {
         }
     }
 
-    private Identity createIdentity(TenantDto tenantDto) {
-        return userService.createUser(identityMapper.convertToEntity(tenantDto.getIdentity()));
-    }
 
-    private Tenant createTenant(TenantDto tenantDto, Long buildingId, Long unitId, Identity identity) throws NotFoundResponseException {
-        Tenant tenant = tenantMapper.convertToEntity(tenantDto);
-        tenant.setIdentity(identity);
-        tenant.setBuildingId(buildingId);
-        tenant.setUnit(unitService.getUnitById(buildingId, unitId));
-        return tenantService.createTenant(tenant);
-    }
 
     private void sendOtp(String otp, String phoneNumber) {
         // Send OTP to tenant (this would involve integrating with an SMS/email service)
