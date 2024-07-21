@@ -14,7 +14,6 @@ import com.cloudsuites.framework.webapp.authentication.service.OtpService;
 import com.cloudsuites.framework.webapp.authentication.util.JwtTokenProvider;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
 import com.cloudsuites.framework.webapp.rest.user.dto.TenantDto;
-import com.cloudsuites.framework.webapp.rest.user.mapper.IdentityMapper;
 import com.cloudsuites.framework.webapp.rest.user.mapper.TenantMapper;
 import com.fasterxml.jackson.annotation.JsonView;
 import io.jsonwebtoken.Claims;
@@ -45,13 +44,12 @@ public class TenantAuthController {
     private final TenantMapper tenantMapper;
     private final BuildingService buildingService;
     private final UnitService unitService;
-    private final IdentityMapper identityMapper;
 
     @Autowired
     public TenantAuthController(JwtTokenProvider jwtTokenProvider, OtpService otpService,
                                 TenantService tenantService, UserService userService,
                                 TenantMapper tenantMapper, BuildingService buildingService,
-                                UnitService unitService, IdentityMapper identityMapper) {
+                                UnitService unitService) {
         this.jwtTokenProvider = jwtTokenProvider;
         this.otpService = otpService;
         this.tenantService = tenantService;
@@ -59,7 +57,6 @@ public class TenantAuthController {
         this.tenantMapper = tenantMapper;
         this.buildingService = buildingService;
         this.unitService = unitService;
-        this.identityMapper = identityMapper;
     }
 
     @Operation(summary = "Register a Tenant", description = "Register a new tenant with building and unit information")
