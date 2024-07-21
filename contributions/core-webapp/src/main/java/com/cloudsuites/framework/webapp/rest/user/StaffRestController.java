@@ -69,7 +69,7 @@ public class StaffRestController {
     @ApiResponse(responseCode = "404", description = "Staffs not found")
     @GetMapping("/companies/{companyId}")
     @JsonView(Views.StaffView.class)
-    public ResponseEntity<List<StaffDto>> getAllStaffsByCompanyId(@PathVariable Long companyId) {
+    public ResponseEntity<List<StaffDto>> getAllStaffsByCompanyId(@PathVariable String companyId) {
         logger.info("Fetching all staffs by Company Id");
         try {
             List<Staff> staffs = staffService.getAllStaffByCompany(companyId);
@@ -87,7 +87,7 @@ public class StaffRestController {
     @PostMapping("/companies/{companyId}/building/{buildingId}")
     @JsonView(Views.StaffView.class)
     public ResponseEntity<StaffDto> createBuildingStaff(@RequestBody @Parameter(description = "Staff details to be saved") StaffDto staffDto,
-                                                        @PathVariable Long companyId,
+                                                        @PathVariable String companyId,
                                                         @PathVariable Long buildingId) throws NotFoundResponseException {
         Staff staff = mapper.convertToEntity(staffDto);
         staff.setManagementCompany(managementCompanyService.getManagementCompanyById(companyId));
@@ -106,7 +106,7 @@ public class StaffRestController {
     @PostMapping("/companies/{companyId}")
     @JsonView(Views.StaffView.class)
     public ResponseEntity<StaffDto> createStaff(@RequestBody @Parameter(description = "Staff details to be saved") StaffDto staffDto,
-                                                @PathVariable Long companyId) throws NotFoundResponseException {
+                                                @PathVariable String companyId) throws NotFoundResponseException {
         Staff staff = mapper.convertToEntity(staffDto);
         staff.setManagementCompany(managementCompanyService.getManagementCompanyById(companyId));
         logger.info("Creating a new staff for Management Company with ID: {}", companyId);

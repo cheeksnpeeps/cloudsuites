@@ -46,10 +46,10 @@ public class BuildingRestController {
     @ApiResponse(responseCode = "404", description = "Not Found")
     @JsonView(Views.UnitView.class)
     @GetMapping("")
-    public ResponseEntity<List<BuildingDto>> getBuildings(@PathVariable Long companyId) throws NotFoundResponseException {
+    public ResponseEntity<List<BuildingDto>> getBuildings(@PathVariable String companyId) throws NotFoundResponseException {
         logger.debug("Getting all buildings for management company: {}", companyId);
             // If managementCompanyId is provided, filter buildings by management company
-        if (companyId == -1) {
+        if (companyId == null) {
             List<Building> buildings = buildingService.getAllBuildings();
             logger.debug("Found {} buildings", buildings.size());
             return ResponseEntity.ok().body(mapper.convertToDTOList(buildings));
@@ -64,7 +64,7 @@ public class BuildingRestController {
     @ApiResponse(responseCode = "400", description = "Bad Request")
     @JsonView(Views.BuildingView.class)
     @PostMapping("")
-    public ResponseEntity<BuildingDto> saveBuilding(@RequestBody @Parameter(description = "Building payload") BuildingDto buildingDTO, @PathVariable Long companyId) throws NotFoundResponseException {
+    public ResponseEntity<BuildingDto> saveBuilding(@RequestBody @Parameter(description = "Building payload") BuildingDto buildingDTO, @PathVariable String companyId) throws NotFoundResponseException {
         Building building = mapper.convertToEntity(buildingDTO);
         ManagementCompany company = managementCompanyService.getManagementCompanyById(companyId);
         building.setManagementCompany(company);

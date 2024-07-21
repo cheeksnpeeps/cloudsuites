@@ -1,9 +1,12 @@
 package com.cloudsuites.framework.services.property.entities;
 
+import com.cloudsuites.framework.modules.common.utils.IdGenerator;
 import com.cloudsuites.framework.services.user.entities.Address;
 import com.cloudsuites.framework.services.user.entities.Identity;
 import jakarta.persistence.*;
 import lombok.Data;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 
@@ -12,10 +15,11 @@ import java.time.LocalDateTime;
 @Table(name = "management_company")
 public class ManagementCompany {
 
+    private static final Logger logger = LoggerFactory.getLogger(ManagementCompany.class);
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "management_company_id")
-    private Long managementCompanyId;
+    @Column(name = "management_company_id", unique = true, nullable = false)
+    private String managementCompanyId;
 
     @Column(name = "name")
     private String name;
@@ -44,6 +48,10 @@ public class ManagementCompany {
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
+        if (this.managementCompanyId == null) {
+            this.managementCompanyId = IdGenerator.generateULID("MC-");
+            logger.debug("Generated managementCompanyId: {}", this.managementCompanyId);
+        }
     }
 
     @PreUpdate

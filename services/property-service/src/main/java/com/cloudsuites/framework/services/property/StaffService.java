@@ -19,7 +19,7 @@ public interface StaffService {
     Staff findByUserId(Long userId) throws NotFoundResponseException;
 
     @Transactional(readOnly = true)
-    List<Staff> getAllStaffByCompany(Long companyId) throws NotFoundResponseException;
+    List<Staff> getAllStaffByCompany(String companyId) throws NotFoundResponseException;
 
     void deleteStaff(Long id) throws NotFoundResponseException;
 }

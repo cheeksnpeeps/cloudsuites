@@ -31,7 +31,7 @@ public class ManagementCompanyServiceImpl implements ManagementCompanyService {
 
     @Transactional(readOnly = true)
     @Override
-    public ManagementCompany getManagementCompanyById(Long managementCompanyId) throws NotFoundResponseException {
+    public ManagementCompany getManagementCompanyById(String managementCompanyId) throws NotFoundResponseException {
         logger.debug("Entering getManagementCompanyById with managementCompanyId: {}", managementCompanyId);
 
         ManagementCompany managementCompany = managementCompanyRepository.findById(managementCompanyId)
@@ -54,7 +54,7 @@ public class ManagementCompanyServiceImpl implements ManagementCompanyService {
 
     @Transactional
     @Override
-    public void deleteManagementCompanyById(Long managementCompanyId) {
+    public void deleteManagementCompanyById(String managementCompanyId) {
         logger.debug("Entering deleteManagementCompanyById with managementCompanyId: {}", managementCompanyId);
         managementCompanyRepository.deleteById(managementCompanyId);
         logger.debug("Management Company deleted: {}", managementCompanyId);

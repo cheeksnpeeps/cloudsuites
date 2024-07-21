@@ -20,7 +20,7 @@ public class ManagementCompanyDto {
 
     @JsonView({Views.StaffView.class, Views.ManagementCompanyView.class, Views.BuildingView.class})
     @Schema(hidden = true)
-    private Long managementCompanyId;
+    private String managementCompanyId;
 
     @JsonView({Views.StaffView.class, Views.ManagementCompanyView.class, Views.BuildingView.class})
     @NotBlank(message = "Name is required")

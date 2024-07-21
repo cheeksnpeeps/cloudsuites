@@ -11,7 +11,7 @@ public interface BuildingService {
 
     Building getBuildingById(Long buildingId) throws NotFoundResponseException;
 
-    List<Building> getBuildingByManagementCompanyId(Long managementCompanyId) throws NotFoundResponseException;
+    List<Building> getBuildingByManagementCompanyId(String managementCompanyId) throws NotFoundResponseException;
 
     List<Building> getAllBuildings();
 
