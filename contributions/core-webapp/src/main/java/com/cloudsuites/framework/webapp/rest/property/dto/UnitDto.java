@@ -2,11 +2,10 @@ package com.cloudsuites.framework.webapp.rest.property.dto;
 
 import com.cloudsuites.framework.services.property.entities.Tenant;
 import com.cloudsuites.framework.webapp.rest.user.dto.OwnerDto;
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonView;
-import jakarta.validation.Valid;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,28 +17,27 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown=true)
-@JsonView(Views.UnitView.class)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UnitDto {
 
+	@Schema(hidden = true)
+	@JsonView({Views.UnitView.class, Views.FloorView.class, Views.TenantView.class})
 	private Long unitId;
 
+	@Schema(description = "Building of the unit")
 	@JsonView({Views.UnitView.class})
 	private BuildingDto building;
 
+	@Schema(description = "Owner of the unit")
 	@JsonView({Views.UnitView.class, Views.TenantView.class})
 	private OwnerDto owner;
 
-	@Valid
-	@JsonBackReference(value = "floor")
-	@JsonView({Views.UnitView.class})
-	private FloorDto floor;
-
-	@JsonView({Views.UnitView.class, Views.TenantView.class, Views.OwnerView.class})
+	@Schema(description = "Number of the unit", example = "101")
+	@JsonView({Views.UnitView.class, Views.FloorView.class, Views.TenantView.class, Views.OwnerView.class})
 	@NotBlank(message = "Unit number is required")
 	private String unitNumber;
 
-	@JsonBackReference(value = "tenant-unit")
+	@Schema(description = "Tenants of the unit")
 	@JsonView({Views.UnitView.class, Views.OwnerView.class})
 	private List<Tenant> tenants;
 }
