@@ -2,7 +2,6 @@ package com.cloudsuites.framework.modules.property;
 
 import com.cloudsuites.framework.modules.property.repository.TenantRepository;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
-import com.cloudsuites.framework.services.property.BuildingService;
 import com.cloudsuites.framework.services.property.TenantService;
 import com.cloudsuites.framework.services.property.UnitService;
 import com.cloudsuites.framework.services.property.entities.Tenant;
@@ -20,18 +19,16 @@ import java.util.List;
 @Service
 public class TenantServiceImpl implements TenantService {
 
-    private final BuildingService buildingService;
     private final TenantRepository tenantRepository;
     private final UserService userService;
     private final UnitService unitService;
 
     private static final Logger logger = LoggerFactory.getLogger(TenantServiceImpl.class);
 
-    public TenantServiceImpl(TenantRepository tenantRepository, UserService userService, UnitService unitService, BuildingService buildingService) {
+    public TenantServiceImpl(TenantRepository tenantRepository, UserService userService, UnitService unitService) {
         this.tenantRepository = tenantRepository;
         this.userService = userService;
         this.unitService = unitService;
-        this.buildingService = buildingService;
     }
 
     @Transactional

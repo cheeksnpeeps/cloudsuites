@@ -52,11 +52,6 @@ public class FloorServiceImpl implements FloorService {
     }
 
     @Override
-    public List<Floor> getAllFloorsWithUnits(Long buildingId) {
-        return null;
-    }
-
-    @Override
     public void deleteFloorById(Long buildingId, Long floorId) {
         logger.debug("Entering deleteFloorById with buildingId: {} and floorId: {}", buildingId, floorId);
         floorRepository.deleteById(floorId);
