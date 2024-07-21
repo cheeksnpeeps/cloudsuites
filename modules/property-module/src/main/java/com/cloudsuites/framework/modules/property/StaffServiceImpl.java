@@ -70,7 +70,7 @@ public class StaffServiceImpl implements StaffService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Staff> getAllStaffByCompany(Long companyId) throws NotFoundResponseException {
+    public List<Staff> getAllStaffByCompany(String companyId) throws NotFoundResponseException {
         logger.info("Fetching all staffs for company ID: {}", companyId);
         return staffRepository.findByManagementCompany_ManagementCompanyId(companyId)
                 .orElseThrow(() -> {

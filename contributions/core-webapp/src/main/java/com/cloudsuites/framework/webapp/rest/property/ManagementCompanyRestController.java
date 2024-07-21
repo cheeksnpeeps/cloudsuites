@@ -70,7 +70,7 @@ public class ManagementCompanyRestController {
     @DeleteMapping("/{managementCompanyId}")
     @JsonView(Views.ManagementCompanyView.class)
     public ResponseEntity<Void> deleteManagementCompanyById(
-            @Parameter(description = "ID of the property management company to be deleted") @PathVariable Long managementCompanyId) {
+            @Parameter(description = "ID of the property management company to be deleted") @PathVariable String managementCompanyId) {
         logger.debug("Deleting property management company {}", managementCompanyId);
         managementCompanyService.deleteManagementCompanyById(managementCompanyId);
         logger.debug("Property management company deleted successfully: {}", managementCompanyId);
@@ -82,7 +82,7 @@ public class ManagementCompanyRestController {
     @JsonView(Views.ManagementCompanyView.class)
     @GetMapping("/{managementCompanyId}")
     public ResponseEntity<ManagementCompanyDto> getManagementCompanyById(
-            @Parameter(description = "ID of the property management company to be retrieved") @PathVariable Long managementCompanyId)
+            @Parameter(description = "ID of the property management company to be retrieved") @PathVariable String managementCompanyId)
             throws NotFoundResponseException {
         logger.debug("Getting property management company {}", managementCompanyId);
         ManagementCompany managementCompany = managementCompanyService.getManagementCompanyById(managementCompanyId);

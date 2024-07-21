@@ -9,12 +9,12 @@ import java.util.List;
 @Service
 public interface ManagementCompanyService {
 
-    ManagementCompany getManagementCompanyById(Long companyId) throws NotFoundResponseException;
+    ManagementCompany getManagementCompanyById(String companyId) throws NotFoundResponseException;
 
     List<ManagementCompany> getAllManagementCompanies();
 
     ManagementCompany saveManagementCompany(ManagementCompany company);
 
-    void deleteManagementCompanyById(Long companyId);
+    void deleteManagementCompanyById(String companyId);
 }
 
