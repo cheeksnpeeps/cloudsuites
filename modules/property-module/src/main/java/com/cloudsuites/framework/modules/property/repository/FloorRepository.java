@@ -11,6 +11,6 @@ import java.util.Optional;
 public interface FloorRepository extends JpaRepository<Floor, Long> {
 
     @EntityGraph(attributePaths = "units")
-    public Optional<Floor> findByBuilding_BuildingIdAndFloorId(Long buildingId, Long floorId);
+    Optional<Floor> findByBuilding_BuildingIdAndFloorId(Long buildingId, Long floorId);
 
 }

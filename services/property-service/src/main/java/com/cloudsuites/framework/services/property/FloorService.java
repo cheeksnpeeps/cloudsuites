@@ -13,8 +13,6 @@ public interface FloorService {
 
     List<Floor> getAllFloors(Long buildingId);
 
-    List<Floor> getAllFloorsWithUnits(Long buildingId);
-
     void deleteFloorById(Long buildingId, Long floorId);
 
     Floor saveFloorAndUnits(Long buildingId, Floor floor);
