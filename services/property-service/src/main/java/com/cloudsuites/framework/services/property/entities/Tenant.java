@@ -21,9 +21,6 @@ public class Tenant {
     @Column(name = "tenant_id")
     private Long tenantId;
 
-    @Column(name = "building_id")
-    private Long buildingId;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private Identity identity;
@@ -31,6 +28,10 @@ public class Tenant {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "unit_id")
     private Unit unit;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "building_id")
+    private Building building;
 
     public List<GrantedAuthority> getAuthorities() {
         return Collections.singletonList(new SimpleGrantedAuthority(UserType.TENANT.name()));

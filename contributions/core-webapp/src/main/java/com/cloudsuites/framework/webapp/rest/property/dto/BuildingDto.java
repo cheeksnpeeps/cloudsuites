@@ -25,11 +25,11 @@ import java.time.LocalDateTime;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class BuildingDto {
 
-	@JsonView({Views.StaffView.class, Views.BuildingView.class, Views.ManagementCompanyView.class})
+	@JsonView({Views.StaffView.class, Views.TenantView.class, Views.FloorView.class, Views.BuildingView.class, Views.ManagementCompanyView.class})
 	@Schema(hidden = true)
 	private Long buildingId;
 
-	@JsonView({Views.StaffView.class, Views.BuildingView.class, Views.ManagementCompanyView.class})
+	@JsonView({Views.StaffView.class, Views.TenantView.class, Views.FloorView.class, Views.BuildingView.class, Views.ManagementCompanyView.class})
 	@NotBlank(message = "Building name is required")
 	@Schema(description = "Name of the building", example = "Skyline Tower")
 	private String name;
