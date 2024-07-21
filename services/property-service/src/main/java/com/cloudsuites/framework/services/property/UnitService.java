@@ -13,13 +13,13 @@ public interface UnitService {
 
     List<Unit> getAllUnits(String buildingId);
 
-    Unit saveUnit(String buildingId, Long floorId, Unit unit);
+    Unit saveUnit(String buildingId, String floorId, Unit unit);
 
     List<Unit> saveAllUnits(List<Unit> units);
 
-    void deleteUnitById(String buildingId, Long unitId, Long id);
+    void deleteUnitById(String buildingId, String floorId, Long unitId);
 
-    List<Unit> getAllUnitsByFloor(String buildingId, Long floorId) throws NotFoundResponseException;
+    List<Unit> getAllUnitsByFloor(String buildingId, String floorId) throws NotFoundResponseException;
 
     void deleteAllUnitInBatch(List<Unit> units);
 }

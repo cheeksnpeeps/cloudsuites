@@ -44,7 +44,7 @@ public class UnitRestController {
     @GetMapping("/floors/{floorId}/units")
     public ResponseEntity<List<UnitDto>> getAllUnitsByFloor(
             @Parameter(description = "ID of the building") @PathVariable String buildingId,
-            @Parameter(description = "ID of the floor") @PathVariable Long floorId)
+            @Parameter(description = "ID of the floor") @PathVariable String floorId)
             throws NotFoundResponseException {
         logger.debug("Getting all units for building: {} and floor: {}", buildingId, floorId);
         List<UnitDto> units = unitMapper.convertToDTOList(unitService.getAllUnitsByFloor(buildingId, floorId));
@@ -61,7 +61,7 @@ public class UnitRestController {
     @PostMapping("/floors/{floorId}/units")
     public ResponseEntity<UnitDto> saveUnit(
             @Parameter(description = "ID of the building") @PathVariable String buildingId,
-            @Parameter(description = "ID of the floor") @PathVariable Long floorId,
+            @Parameter(description = "ID of the floor") @PathVariable String floorId,
             @RequestBody @Parameter(description = "Unit details to be saved") UnitDto unitDTO) {
         logger.debug("Saving unit for building: {} and floor: {}", buildingId, floorId);
         UnitDto unit = unitMapper.convertToDTO(unitService.saveUnit(buildingId, floorId, unitMapper.convertToEntity(unitDTO)));
@@ -78,7 +78,7 @@ public class UnitRestController {
             @Parameter(description = "ID of the building") @PathVariable String buildingId,
             @Parameter(description = "ID of the unit to be deleted") @PathVariable Long unitId) {
         logger.debug("Deleting unit for building: {} and unit: {}", buildingId, unitId);
-        unitService.deleteUnitById(buildingId, unitId, unitId);
+        unitService.deleteUnitById(buildingId, "", unitId);
         logger.debug("Unit deleted successfully for building: {} and unit: {}", buildingId, unitId);
         return ResponseEntity.noContent().build();
     }

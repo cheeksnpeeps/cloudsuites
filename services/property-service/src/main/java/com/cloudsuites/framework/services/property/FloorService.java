@@ -9,11 +9,11 @@ import java.util.List;
 @Service
 public interface FloorService {
 
-    Floor getFloorById(String buildingId, Long floorId) throws NotFoundResponseException;
+    Floor getFloorById(String buildingId, String floorId) throws NotFoundResponseException;
 
     List<Floor> getAllFloors(String buildingId);
 
-    void deleteFloorById(String buildingId, Long floorId);
+    void deleteFloorById(String buildingId, String floorId);
 
     Floor saveFloorAndUnits(String buildingId, Floor floor);
 }

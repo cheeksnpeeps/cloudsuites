@@ -80,7 +80,7 @@ public class FloorRestController {
     @GetMapping("/{floorId}")
     public ResponseEntity<FloorDto> getFloorById(
             @Parameter(description = "ID of the building") @PathVariable String buildingId,
-            @Parameter(description = "ID of the floor to be retrieved") @PathVariable Long floorId)
+            @Parameter(description = "ID of the floor to be retrieved") @PathVariable String floorId)
             throws NotFoundResponseException {
         return ResponseEntity.ok().body(mapper.convertToDTO(floorService.getFloorById(buildingId, floorId)));
     }
@@ -92,7 +92,7 @@ public class FloorRestController {
     @DeleteMapping("/{floorId}")
     public ResponseEntity<Void> deleteFloorById(
             @Parameter(description = "ID of the building") @PathVariable String buildingId,
-            @Parameter(description = "ID of the floor to be deleted") @PathVariable Long floorId) {
+            @Parameter(description = "ID of the floor to be deleted") @PathVariable String floorId) {
 
         floorService.deleteFloorById(buildingId, floorId);
         return ResponseEntity.noContent().build();

@@ -30,7 +30,7 @@ public class FloorServiceImpl implements FloorService {
     }
 
     @Override
-    public Floor getFloorById(String buildingId, Long floorId) throws NotFoundResponseException {
+    public Floor getFloorById(String buildingId, String floorId) throws NotFoundResponseException {
         logger.debug("Entering getFloorById with buildingId: {} and floorId: {}", buildingId, floorId);
 
         Floor floor = floorRepository.findByBuilding_BuildingIdAndFloorId(buildingId, floorId)
@@ -52,7 +52,7 @@ public class FloorServiceImpl implements FloorService {
     }
 
     @Override
-    public void deleteFloorById(String buildingId, Long floorId) {
+    public void deleteFloorById(String buildingId, String floorId) {
         logger.debug("Entering deleteFloorById with buildingId: {} and floorId: {}", buildingId, floorId);
         floorRepository.deleteById(floorId);
         logger.debug("Floor deleted: {}", floorId);
