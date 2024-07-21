@@ -15,6 +15,9 @@ public class Floor {
     @Column(name = "floor_id")
     private Long floorId;
 
+    @Column(name = "floor_name")
+    private String floorName;
+
     @ManyToOne
     @JoinColumn(name = "building_id")
     private Building building;
