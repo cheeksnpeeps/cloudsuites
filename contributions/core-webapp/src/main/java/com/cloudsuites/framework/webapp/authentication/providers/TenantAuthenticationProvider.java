@@ -37,7 +37,7 @@ public class TenantAuthenticationProvider implements AuthenticationProvider {
         }
         Claims claims = jwtTokenProvider.extractAllClaims(jwtToken);
         Long tenantId = claims.get("personaId", Long.class);
-        Long buildingId = claims.get("buildingId", Long.class);
+        String buildingId = claims.get("buildingId", String.class);
         Long unitId = claims.get("unitId", Long.class);
 
         Identity identity = userService.getUserById(claims.get("userId", Long.class));

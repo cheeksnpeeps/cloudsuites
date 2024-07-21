@@ -27,7 +27,7 @@ public class BuildingDto {
 
 	@JsonView({Views.StaffView.class, Views.TenantView.class, Views.FloorView.class, Views.BuildingView.class, Views.ManagementCompanyView.class})
 	@Schema(hidden = true)
-	private Long buildingId;
+	private String buildingId;
 
 	@JsonView({Views.StaffView.class, Views.TenantView.class, Views.FloorView.class, Views.BuildingView.class, Views.ManagementCompanyView.class})
 	@NotBlank(message = "Building name is required")

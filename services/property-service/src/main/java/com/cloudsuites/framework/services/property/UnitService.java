@@ -9,17 +9,17 @@ import java.util.List;
 @Service
 public interface UnitService {
 
-    Unit getUnitById(Long buildingId, Long unitId) throws NotFoundResponseException;
+    Unit getUnitById(String buildingId, Long unitId) throws NotFoundResponseException;
 
-    List<Unit> getAllUnits(Long buildingId);
+    List<Unit> getAllUnits(String buildingId);
 
-    Unit saveUnit(Long buildingId, Long floorId, Unit unit);
+    Unit saveUnit(String buildingId, Long floorId, Unit unit);
 
     List<Unit> saveAllUnits(List<Unit> units);
 
-    void deleteUnitById(Long buildingId, Long unitId, Long id);
-    
-    List<Unit> getAllUnitsByFloor(Long buildingId, Long floorId) throws NotFoundResponseException;
+    void deleteUnitById(String buildingId, Long unitId, Long id);
+
+    List<Unit> getAllUnitsByFloor(String buildingId, Long floorId) throws NotFoundResponseException;
 
     void deleteAllUnitInBatch(List<Unit> units);
 }

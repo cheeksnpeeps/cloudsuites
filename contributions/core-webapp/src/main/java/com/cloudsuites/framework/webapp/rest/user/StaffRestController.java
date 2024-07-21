@@ -52,7 +52,7 @@ public class StaffRestController {
     @ApiResponse(responseCode = "404", description = "Staffs not found")
     @GetMapping("/buildings/{buildingId}")
     @JsonView(Views.StaffView.class)
-    public ResponseEntity<List<StaffDto>> getAllStaffsByBuildingId(@PathVariable Long buildingId) {
+    public ResponseEntity<List<StaffDto>> getAllStaffsByBuildingId(@PathVariable String buildingId) {
         logger.info("Fetching all staffs");
         try {
             List<Staff> staffs = staffService.getAllStaffsByBuilding(buildingId);
@@ -88,7 +88,7 @@ public class StaffRestController {
     @JsonView(Views.StaffView.class)
     public ResponseEntity<StaffDto> createBuildingStaff(@RequestBody @Parameter(description = "Staff details to be saved") StaffDto staffDto,
                                                         @PathVariable String companyId,
-                                                        @PathVariable Long buildingId) throws NotFoundResponseException {
+                                                        @PathVariable String buildingId) throws NotFoundResponseException {
         Staff staff = mapper.convertToEntity(staffDto);
         staff.setManagementCompany(managementCompanyService.getManagementCompanyById(companyId));
         staff.setBuilding(buildingService.getBuildingById(buildingId));

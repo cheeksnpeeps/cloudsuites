@@ -59,7 +59,7 @@ public class StaffServiceImpl implements StaffService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Staff> getAllStaffsByBuilding(Long buildingId) throws NotFoundResponseException {
+    public List<Staff> getAllStaffsByBuilding(String buildingId) throws NotFoundResponseException {
         logger.info("Fetching all staffs for building ID: {}", buildingId);
         return staffRepository.findByBuilding_BuildingId(buildingId)
                 .orElseThrow(() -> {

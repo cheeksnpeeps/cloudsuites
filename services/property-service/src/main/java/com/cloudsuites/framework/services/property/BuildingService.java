@@ -9,7 +9,7 @@ import java.util.List;
 @Service
 public interface BuildingService {
 
-    Building getBuildingById(Long buildingId) throws NotFoundResponseException;
+    Building getBuildingById(String buildingId) throws NotFoundResponseException;
 
     List<Building> getBuildingByManagementCompanyId(String managementCompanyId) throws NotFoundResponseException;
 
@@ -17,6 +17,6 @@ public interface BuildingService {
 
     Building saveBuilding(Building building);
 
-    void deleteBuildingById(Long buildingId);
+    void deleteBuildingById(String buildingId);
 
 }
