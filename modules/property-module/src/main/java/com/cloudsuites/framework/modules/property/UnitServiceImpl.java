@@ -67,9 +67,24 @@ public class UnitServiceImpl implements UnitService {
     }
 
     @Override
-    public void deleteUnitById(Long buildingId, Long unitId) {
+    public List<Unit> saveAllUnits(List<Unit> units) {
+        logger.debug("Entering saveUnit with units: {}", units.size());
+        List<Unit> savedUnits = unitRepository.saveAll(units);
+        logger.debug("Units saved successfully: {}", savedUnits.size());
+        return savedUnits;
+    }
+
+    @Override
+    public void deleteUnitById(Long buildingId, Long floorId, Long unitId) {
         logger.debug("Entering deleteUnitById with buildingId: {} and unitId: {}", buildingId, unitId);
         unitRepository.deleteById(unitId);
         logger.debug("unit {} deleted successfully",unitId);
+    }
+
+    @Override
+    public void deleteAllUnitInBatch(List<Unit> units) {
+        logger.debug("Entering deleteAllUnitInBatch with units: {}", units.size());
+        unitRepository.deleteAllInBatch(units);
+        logger.debug("units {} deleted successfully", units.size());
     }
 }

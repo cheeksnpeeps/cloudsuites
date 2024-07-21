@@ -15,8 +15,11 @@ public interface UnitService {
 
     Unit saveUnit(Long buildingId, Long floorId, Unit unit);
 
-    void deleteUnitById(Long buildingId, Long unitId);
+    List<Unit> saveAllUnits(List<Unit> units);
+
+    void deleteUnitById(Long buildingId, Long unitId, Long id);
     
     List<Unit> getAllUnitsByFloor(Long buildingId, Long floorId) throws NotFoundResponseException;
 
+    void deleteAllUnitInBatch(List<Unit> units);
 }
