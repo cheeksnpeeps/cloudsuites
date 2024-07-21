@@ -1,14 +1,18 @@
 package com.cloudsuites.framework.modules.property;
 
 import com.cloudsuites.framework.modules.property.repository.FloorRepository;
+import com.cloudsuites.framework.modules.property.repository.UnitRepository;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
-import com.cloudsuites.framework.services.property.entities.Floor;
 import com.cloudsuites.framework.services.property.FloorService;
+import com.cloudsuites.framework.services.property.entities.Floor;
+import com.cloudsuites.framework.services.property.entities.Unit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -17,10 +21,12 @@ public class FloorServiceImpl implements FloorService {
     private final FloorRepository floorRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(FloorServiceImpl.class);
+    private final UnitRepository unitRepository;
 
     @Autowired
-    public FloorServiceImpl(FloorRepository floorRepository) {
+    public FloorServiceImpl(FloorRepository floorRepository, UnitRepository unitRepository) {
         this.floorRepository = floorRepository;
+        this.unitRepository = unitRepository;
     }
 
     @Override
@@ -51,17 +57,35 @@ public class FloorServiceImpl implements FloorService {
     }
 
     @Override
-    public Floor saveFloor(Long buildingId, Floor floor) {
-        logger.debug("Entering saveFloor with floor: {}", floor.getFloorNumber());
-        Floor savedFloor = floorRepository.save(floor);
-        logger.debug("Floor saved: {}", savedFloor.getFloorNumber());
-        return savedFloor;
-    }
-    @Override
     public void deleteFloorById(Long buildingId, Long floorId) {
         logger.debug("Entering deleteFloorById with buildingId: {} and floorId: {}", buildingId, floorId);
         floorRepository.deleteById(floorId);
         logger.debug("Floor deleted: {}", floorId);
     }
+
+    @Transactional
+    @Override
+    public Floor saveFloorAndUnits(Long buildingId, Floor floor) {
+        // Save the floor first
+        floor = floorRepository.save(floor);
+
+        // Defensive copy of units
+        List<Unit> units = new ArrayList<>(floor.getUnits());
+
+        // Set floor reference for each unit
+        Floor finalFloor = floor;
+
+        units.forEach(unit -> unit.setFloor(finalFloor));
+
+        // Save all units
+        units = unitRepository.saveAll(units);
+
+        // Set the saved units back to the floor
+        floor.setUnits(units);
+
+        // Save the floor again to update the units
+        return floorRepository.save(floor);
+    }
+
 }
 

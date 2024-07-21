@@ -3,6 +3,7 @@ package com.cloudsuites.framework.webapp.rest.property;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import com.cloudsuites.framework.services.property.BuildingService;
 import com.cloudsuites.framework.services.property.FloorService;
+import com.cloudsuites.framework.services.property.entities.Building;
 import com.cloudsuites.framework.services.property.entities.Floor;
 import com.cloudsuites.framework.webapp.rest.property.dto.FloorDto;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
@@ -28,11 +29,13 @@ public class FloorRestController {
 
     private final FloorService floorService;
     private final FloorMapper mapper;
+    private final BuildingService buildingService;
 
     @Autowired
-    public FloorRestController(FloorService floorService, BuildingService buildingService, FloorMapper mapper) {
+    public FloorRestController(FloorService floorService, FloorMapper mapper, BuildingService buildingService) {
         this.floorService = floorService;
         this.mapper = mapper;
+        this.buildingService = buildingService;
     }
 
     @Operation(summary = "Get All Floors", description = "Retrieve all floors for a building based on its ID")
@@ -54,12 +57,22 @@ public class FloorRestController {
     @PostMapping("")
     public ResponseEntity<FloorDto> saveFloor(
             @Parameter(description = "ID of the building to save the floor") @PathVariable Long buildingId,
-            @RequestBody @Parameter(description = "Floor details to be saved") FloorDto floorDTO) {
-
+            @RequestBody @Parameter(description = "Floor details to be saved") FloorDto floorDTO) throws NotFoundResponseException {
+        // Convert DTO to entity
         Floor floor = mapper.convertToEntity(floorDTO);
-        floor = floorService.saveFloor(buildingId, floor);
+
+        // Set the building reference
+        Building building = buildingService.getBuildingById(buildingId);
+        floor.setBuilding(building);
+
+        // Save the floor and its units in a single transaction
+        floor = floorService.saveFloorAndUnits(buildingId, floor);
+
+        // Return response
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.convertToDTO(floor));
+
     }
+
     @Operation(summary = "Get a Floor by ID", description = "Retrieve floor details based on building ID and floor ID")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Building or floor not found")
@@ -69,7 +82,6 @@ public class FloorRestController {
             @Parameter(description = "ID of the building") @PathVariable Long buildingId,
             @Parameter(description = "ID of the floor to be retrieved") @PathVariable Long floorId)
             throws NotFoundResponseException {
-
         return ResponseEntity.ok().body(mapper.convertToDTO(floorService.getFloorById(buildingId, floorId)));
     }
 
