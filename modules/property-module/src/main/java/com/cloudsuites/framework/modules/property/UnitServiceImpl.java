@@ -37,7 +37,7 @@ public class UnitServiceImpl implements UnitService {
     }
 
     @Override
-    public List<Unit> getAllUnitsByFloor(String buildingId, Long floorId) throws NotFoundResponseException {
+    public List<Unit> getAllUnitsByFloor(String buildingId, String floorId) throws NotFoundResponseException {
         logger.debug("Entering getAllUnitsByFloor with buildingId: {} and floorId: {}", buildingId, floorId);
 
         List<Unit> units = unitRepository.findAllByFloor_FloorId(floorId)
@@ -59,7 +59,7 @@ public class UnitServiceImpl implements UnitService {
     }
 
     @Override
-    public Unit saveUnit(String buildingId, Long floorId, Unit unit) {
+    public Unit saveUnit(String buildingId, String floorId, Unit unit) {
         logger.debug("Entering saveUnit with buildingId: {}, floorId: {}", buildingId, floorId);
         Unit savedUnit = unitRepository.save(unit);
         logger.debug("Unit saved successfully: {}", savedUnit.getUnitNumber());
@@ -74,8 +74,9 @@ public class UnitServiceImpl implements UnitService {
         return savedUnits;
     }
 
+
     @Override
-    public void deleteUnitById(String buildingId, Long floorId, Long unitId) {
+    public void deleteUnitById(String buildingId, String floorId, Long unitId) {
         logger.debug("Entering deleteUnitById with buildingId: {} and unitId: {}", buildingId, unitId);
         unitRepository.deleteById(unitId);
         logger.debug("unit {} deleted successfully",unitId);

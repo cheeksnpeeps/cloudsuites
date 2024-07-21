@@ -8,9 +8,9 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface FloorRepository extends JpaRepository<Floor, Long> {
+public interface FloorRepository extends JpaRepository<Floor, String> {
 
     @EntityGraph(attributePaths = "units")
-    Optional<Floor> findByBuilding_BuildingIdAndFloorId(String buildingId, Long floorId);
+    Optional<Floor> findByBuilding_BuildingIdAndFloorId(String buildingId, String floorId);
 
 }
