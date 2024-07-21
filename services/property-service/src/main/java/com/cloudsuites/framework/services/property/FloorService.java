@@ -9,14 +9,14 @@ import java.util.List;
 @Service
 public interface FloorService {
 
-    public Floor getFloorById(Long buildingId, Long floorId) throws NotFoundResponseException;
+    Floor getFloorById(Long buildingId, Long floorId) throws NotFoundResponseException;
 
-    public List<Floor> getAllFloors(Long buildingId);
+    List<Floor> getAllFloors(Long buildingId);
 
     List<Floor> getAllFloorsWithUnits(Long buildingId);
 
-    Floor saveFloor(Long buildingId, Floor floor);
+    void deleteFloorById(Long buildingId, Long floorId);
 
-    public void deleteFloorById(Long buildingId, Long floorId);
+    Floor saveFloorAndUnits(Long buildingId, Floor floor);
 }
 
