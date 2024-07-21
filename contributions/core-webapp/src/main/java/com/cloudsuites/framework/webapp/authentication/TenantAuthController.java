@@ -63,7 +63,7 @@ public class TenantAuthController {
     @PostMapping("/tenants/register")
     @JsonView(Views.TenantView.class)
     public ResponseEntity<TenantDto> registerTenant(
-            @PathVariable Long buildingId,
+            @PathVariable String buildingId,
             @PathVariable Long unitId,
             @RequestBody @Parameter(description = "Tenant registration details") TenantDto tenantDto) throws NotFoundResponseException {
 
@@ -82,7 +82,7 @@ public class TenantAuthController {
     @Operation(summary = "Verify OTP", description = "Verify the OTP sent to the tenant's phone number")
     @PostMapping("/tenants/{tenantId}/verify-otp")
     public ResponseEntity<Map<String, String>> verifyOtp(
-            @PathVariable Long buildingId,
+            @PathVariable String buildingId,
             @PathVariable Long unitId,
             @PathVariable Long tenantId,
             @RequestParam @Parameter(description = "OTP to be verified") String otp) throws NotFoundResponseException {
@@ -107,7 +107,7 @@ public class TenantAuthController {
     @Operation(summary = "Refresh Token", description = "Refresh the authentication token using a valid refresh token")
     @PostMapping("/tenants/{tenantId}/refresh-token")
     public ResponseEntity<Map<String, String>> refreshToken(
-            @PathVariable Long buildingId,
+            @PathVariable String buildingId,
             @PathVariable Long unitId,
             @PathVariable Long tenantId,
             @RequestParam @Parameter(description = "Refresh token") String refreshToken) throws NotFoundResponseException {
@@ -143,7 +143,7 @@ public class TenantAuthController {
         // Assuming you have an implementation for sending the OTP
     }
 
-    private String generateToken(Long tenantId, Long buildingId, Long unitId, Long userId) {
+    private String generateToken(Long tenantId, String buildingId, Long unitId, Long userId) {
         JwtBuilder claims = Jwts.builder()
                 .subject(tenantId.toString())
                 .audience()
@@ -156,7 +156,7 @@ public class TenantAuthController {
         return jwtTokenProvider.generateToken(claims);
     }
 
-    private String generateRefreshToken(Long tenantId, Long buildingId, Long unitId, Long userId) {
+    private String generateRefreshToken(Long tenantId, String buildingId, Long unitId, Long userId) {
         JwtBuilder claims = Jwts.builder()
                 .subject(tenantId.toString())
                 .audience()
@@ -169,9 +169,9 @@ public class TenantAuthController {
         return jwtTokenProvider.generateRefreshToken(claims);
     }
 
-    private boolean validateTokenClaims(Claims claims, Long buildingId, Long unitId, Long tenantId) {
+    private boolean validateTokenClaims(Claims claims, String buildingId, Long unitId, Long tenantId) {
         Long tenantIdClaim = claims.get("personaId", Long.class);
-        Long buildingIdClaim = claims.get("buildingId", Long.class);
+        String buildingIdClaim = claims.get("buildingId", String.class);
         Long unitIdClaim = claims.get("unitId", Long.class);
 
         if (!(tenantIdClaim.equals(tenantId) && buildingIdClaim.equals(buildingId) && unitIdClaim.equals(unitId))) {
@@ -181,7 +181,7 @@ public class TenantAuthController {
         return true;
     }
 
-    private void validateBuildingAndUnit(Long buildingId, Long unitId) throws NotFoundResponseException {
+    private void validateBuildingAndUnit(String buildingId, Long unitId) throws NotFoundResponseException {
         Building building = buildingService.getBuildingById(buildingId);
         Unit unit = unitService.getUnitById(buildingId, unitId);
 

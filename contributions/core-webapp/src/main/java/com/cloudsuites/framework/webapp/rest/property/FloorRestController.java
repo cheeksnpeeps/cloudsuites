@@ -44,7 +44,7 @@ public class FloorRestController {
     @JsonView(Views.FloorView.class)
     @GetMapping("")
     public ResponseEntity<List<FloorDto>> getAllFloors(
-            @Parameter(description = "ID of the building to retrieve all floors") @PathVariable Long buildingId) {
+            @Parameter(description = "ID of the building to retrieve all floors") @PathVariable String buildingId) {
 
         return ResponseEntity.ok().body(mapper.convertToDTOList(floorService.getAllFloors(buildingId)));
     }
@@ -56,7 +56,7 @@ public class FloorRestController {
     @JsonView(Views.FloorView.class)
     @PostMapping("")
     public ResponseEntity<FloorDto> saveFloor(
-            @Parameter(description = "ID of the building to save the floor") @PathVariable Long buildingId,
+            @Parameter(description = "ID of the building to save the floor") @PathVariable String buildingId,
             @RequestBody @Parameter(description = "Floor details to be saved") FloorDto floorDTO) throws NotFoundResponseException {
         // Convert DTO to entity
         Floor floor = mapper.convertToEntity(floorDTO);
@@ -79,7 +79,7 @@ public class FloorRestController {
     @JsonView(Views.FloorView.class)
     @GetMapping("/{floorId}")
     public ResponseEntity<FloorDto> getFloorById(
-            @Parameter(description = "ID of the building") @PathVariable Long buildingId,
+            @Parameter(description = "ID of the building") @PathVariable String buildingId,
             @Parameter(description = "ID of the floor to be retrieved") @PathVariable Long floorId)
             throws NotFoundResponseException {
         return ResponseEntity.ok().body(mapper.convertToDTO(floorService.getFloorById(buildingId, floorId)));
@@ -91,7 +91,7 @@ public class FloorRestController {
     @ApiResponse(responseCode = "404", description = "Building or floor not found")
     @DeleteMapping("/{floorId}")
     public ResponseEntity<Void> deleteFloorById(
-            @Parameter(description = "ID of the building") @PathVariable Long buildingId,
+            @Parameter(description = "ID of the building") @PathVariable String buildingId,
             @Parameter(description = "ID of the floor to be deleted") @PathVariable Long floorId) {
 
         floorService.deleteFloorById(buildingId, floorId);

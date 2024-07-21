@@ -138,7 +138,7 @@ public class OwnerRestController {
     @JsonView(Views.OwnerView.class)
     public ResponseEntity<OwnerDto> addUnitToOwner(
             @Parameter(description = "ID of the owner") @PathVariable Long ownerId,
-            @Parameter(description = "ID of the building to be added") @PathVariable Long buildingId,
+            @Parameter(description = "ID of the building to be added") @PathVariable String buildingId,
             @Parameter(description = "ID of the unit to be added") @PathVariable Long unitId) {
         logger.info("Adding unit to owner with ownerId={}, buildingId={}, unitId={}", ownerId, buildingId, unitId);
         try {

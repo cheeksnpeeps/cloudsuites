@@ -59,7 +59,7 @@ public class TenantRestController {
     @PostMapping("/buildings/{buildingId}/units/{unitId}/tenants")
     @JsonView(Views.TenantView.class)
     public ResponseEntity<TenantDto> createTenant(
-            @PathVariable Long buildingId,
+            @PathVariable String buildingId,
             @PathVariable Long unitId,
             @RequestBody TenantDto tenantDto) throws NotFoundResponseException {
 
@@ -85,7 +85,7 @@ public class TenantRestController {
     @GetMapping("/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}")
     @JsonView(Views.TenantView.class)
     public ResponseEntity<TenantDto> getTenant(
-            @PathVariable Long buildingId,
+            @PathVariable String buildingId,
             @PathVariable Long unitId,
             @PathVariable Long tenantId) throws NotFoundResponseException {
         logger.info("Fetching tenant with ID: {}", tenantId);
@@ -100,7 +100,7 @@ public class TenantRestController {
     @PutMapping("/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}")
     @JsonView(Views.TenantView.class)
     public ResponseEntity<TenantDto> updateTenant(
-            @PathVariable Long buildingId,
+            @PathVariable String buildingId,
             @PathVariable Long unitId,
             @PathVariable Long tenantId,
             @RequestBody TenantDto tenantDto) throws NotFoundResponseException {
@@ -127,7 +127,7 @@ public class TenantRestController {
     @GetMapping("/buildings/{buildingId}/units/{unitId}/tenants")
     @JsonView(Views.TenantView.class)
     public ResponseEntity<List<TenantDto>> listTenants(
-            @PathVariable Long buildingId,
+            @PathVariable String buildingId,
             @PathVariable Long unitId) throws NotFoundResponseException {
         logger.info("Listing all tenants for building ID: {} and unit ID: {}", buildingId, unitId);
         List<TenantDto> tenants = tenantService.getAllTenantsByBuildingAndUnit(buildingId, unitId).stream()
@@ -141,7 +141,7 @@ public class TenantRestController {
     @GetMapping("/buildings/{buildingId}/tenants")
     @JsonView(Views.TenantView.class)
     public ResponseEntity<List<TenantDto>> listTenantsByBuilding(
-            @PathVariable Long buildingId) throws NotFoundResponseException {
+            @PathVariable String buildingId) throws NotFoundResponseException {
         logger.info("Listing all tenants for building ID: {}", buildingId);
         List<TenantDto> tenants = tenantService.getAllTenantsByBuilding(buildingId).stream()
                 .map(tenantMapper::convertToDTO)

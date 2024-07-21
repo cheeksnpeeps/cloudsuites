@@ -26,7 +26,7 @@ public class BuildingServiceImpl implements BuildingService {
 
     @Transactional(readOnly = true)
     @Override
-    public Building getBuildingById(Long buildingId) throws NotFoundResponseException {
+    public Building getBuildingById(String buildingId) throws NotFoundResponseException {
         logger.debug("Entering getBuildingById with buildingId: {}", buildingId);
         Building building = buildingRepository.findById(buildingId)
                 .orElseThrow(() -> {
@@ -70,7 +70,7 @@ public class BuildingServiceImpl implements BuildingService {
 
     @Transactional
     @Override
-    public void deleteBuildingById(Long buildingId) {
+    public void deleteBuildingById(String buildingId) {
         logger.debug("Entering deleteBuildingById with buildingId: {}", buildingId);
         buildingRepository.deleteById(buildingId);
         logger.debug("Building with ID {} deleted successfully", buildingId);

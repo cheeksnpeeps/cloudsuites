@@ -16,7 +16,7 @@ public interface StaffRepository extends JpaRepository<Staff, Long> {
 
     Optional<Staff> findByIdentity_Email(String email);
 
-    Optional<List<Staff>> findByBuilding_BuildingId(Long buildingId);
+    Optional<List<Staff>> findByBuilding_BuildingId(String buildingId);
 
     Optional<List<Staff>> findByManagementCompany_ManagementCompanyId(String managementCompanyId);
 

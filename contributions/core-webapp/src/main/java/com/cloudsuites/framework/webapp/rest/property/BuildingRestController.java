@@ -79,7 +79,7 @@ public class BuildingRestController {
     @ApiResponse(responseCode = "404", description = "Building not found")
     @DeleteMapping("/{buildingId}")
     public ResponseEntity<Void> deleteBuildingById(
-            @Parameter(description = "ID of the building to be deleted") @PathVariable Long buildingId, @PathVariable String companyId) {
+            @Parameter(description = "ID of the building to be deleted") @PathVariable String buildingId, @PathVariable String companyId) {
         logger.debug("Deleting building {}", buildingId);
         buildingService.deleteBuildingById(buildingId);
         logger.debug("Building deleted successfully: {}", buildingId);
@@ -92,7 +92,7 @@ public class BuildingRestController {
     @JsonView(Views.BuildingView.class)
     @GetMapping("/{buildingId}")
     public ResponseEntity<BuildingDto>  getBuildingById(
-            @Parameter(description = "ID of the building to be retrieved") @PathVariable Long buildingId, @PathVariable String companyId)
+            @Parameter(description = "ID of the building to be retrieved") @PathVariable String buildingId, @PathVariable String companyId)
             throws NotFoundResponseException {
         logger.debug("Getting building {}", buildingId);
         Building building = buildingService.getBuildingById(buildingId);

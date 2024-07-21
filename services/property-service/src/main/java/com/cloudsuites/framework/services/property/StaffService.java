@@ -12,7 +12,7 @@ public interface StaffService {
 
     Staff updateStaff(Long staffId, Staff staff) throws NotFoundResponseException;
 
-    List<Staff> getAllStaffsByBuilding(Long buildingId) throws NotFoundResponseException;
+    List<Staff> getAllStaffsByBuilding(String buildingId) throws NotFoundResponseException;
 
     Staff createStaff(Staff staff) throws NotFoundResponseException;
 

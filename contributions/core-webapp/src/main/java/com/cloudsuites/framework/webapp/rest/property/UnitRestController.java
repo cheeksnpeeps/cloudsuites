@@ -43,7 +43,7 @@ public class UnitRestController {
     @JsonView(Views.UnitView.class)
     @GetMapping("/floors/{floorId}/units")
     public ResponseEntity<List<UnitDto>> getAllUnitsByFloor(
-            @Parameter(description = "ID of the building") @PathVariable Long buildingId,
+            @Parameter(description = "ID of the building") @PathVariable String buildingId,
             @Parameter(description = "ID of the floor") @PathVariable Long floorId)
             throws NotFoundResponseException {
         logger.debug("Getting all units for building: {} and floor: {}", buildingId, floorId);
@@ -60,7 +60,7 @@ public class UnitRestController {
     @JsonView(Views.UnitView.class)
     @PostMapping("/floors/{floorId}/units")
     public ResponseEntity<UnitDto> saveUnit(
-            @Parameter(description = "ID of the building") @PathVariable Long buildingId,
+            @Parameter(description = "ID of the building") @PathVariable String buildingId,
             @Parameter(description = "ID of the floor") @PathVariable Long floorId,
             @RequestBody @Parameter(description = "Unit details to be saved") UnitDto unitDTO) {
         logger.debug("Saving unit for building: {} and floor: {}", buildingId, floorId);
@@ -75,7 +75,7 @@ public class UnitRestController {
     @ApiResponse(responseCode = "404", description = "Building or unit not found")
     @DeleteMapping("/units/{unitId}")
     public ResponseEntity<Void> deleteUnitById(
-            @Parameter(description = "ID of the building") @PathVariable Long buildingId,
+            @Parameter(description = "ID of the building") @PathVariable String buildingId,
             @Parameter(description = "ID of the unit to be deleted") @PathVariable Long unitId) {
         logger.debug("Deleting unit for building: {} and unit: {}", buildingId, unitId);
         unitService.deleteUnitById(buildingId, unitId, unitId);
@@ -90,7 +90,7 @@ public class UnitRestController {
     @JsonView(Views.UnitView.class)
     @GetMapping("/units/{unitId}")
     public ResponseEntity<UnitDto> getUnitById(
-            @Parameter(description = "ID of the building") @PathVariable Long buildingId,
+            @Parameter(description = "ID of the building") @PathVariable String buildingId,
             @Parameter(description = "ID of the unit to be retrieved") @PathVariable Long unitId)
             throws NotFoundResponseException {
         logger.debug("Getting unit for building: {} and unit: {}", buildingId, unitId);
@@ -105,7 +105,7 @@ public class UnitRestController {
     @JsonView(Views.UnitView.class)
     @GetMapping("/units")
     public ResponseEntity<List<UnitDto>> getAllUnits(
-            @Parameter(description = "ID of the building") @PathVariable Long buildingId) {
+            @Parameter(description = "ID of the building") @PathVariable String buildingId) {
         logger.debug("Getting all units for building: {}", buildingId);
         List<Unit> units = unitService.getAllUnits(buildingId);
         logger.debug("Found {} units for building: {}", units.size(), buildingId);

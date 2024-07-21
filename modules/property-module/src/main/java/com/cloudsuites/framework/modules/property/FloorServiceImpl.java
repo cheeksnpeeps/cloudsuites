@@ -30,7 +30,7 @@ public class FloorServiceImpl implements FloorService {
     }
 
     @Override
-    public Floor getFloorById(Long buildingId, Long floorId) throws NotFoundResponseException {
+    public Floor getFloorById(String buildingId, Long floorId) throws NotFoundResponseException {
         logger.debug("Entering getFloorById with buildingId: {} and floorId: {}", buildingId, floorId);
 
         Floor floor = floorRepository.findByBuilding_BuildingIdAndFloorId(buildingId, floorId)
@@ -44,7 +44,7 @@ public class FloorServiceImpl implements FloorService {
     }
 
     @Override
-    public List<Floor> getAllFloors(Long buildingId) {
+    public List<Floor> getAllFloors(String buildingId) {
         logger.debug("Entering getAllFloors with buildingId: {}", buildingId);
         List<Floor> floors = floorRepository.findAll();
         logger.debug("Floors found: {}", floors.size());
@@ -52,7 +52,7 @@ public class FloorServiceImpl implements FloorService {
     }
 
     @Override
-    public void deleteFloorById(Long buildingId, Long floorId) {
+    public void deleteFloorById(String buildingId, Long floorId) {
         logger.debug("Entering deleteFloorById with buildingId: {} and floorId: {}", buildingId, floorId);
         floorRepository.deleteById(floorId);
         logger.debug("Floor deleted: {}", floorId);
@@ -60,7 +60,7 @@ public class FloorServiceImpl implements FloorService {
 
     @Transactional
     @Override
-    public Floor saveFloorAndUnits(Long buildingId, Floor floor) {
+    public Floor saveFloorAndUnits(String buildingId, Floor floor) {
         // Save the floor first
         floor = floorRepository.save(floor);
 
