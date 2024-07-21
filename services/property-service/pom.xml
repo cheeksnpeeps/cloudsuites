@@ -31,5 +31,11 @@
 			<artifactId>identity-module</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations-jakarta</artifactId>
+            <version>2.2.15</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
 </project>
