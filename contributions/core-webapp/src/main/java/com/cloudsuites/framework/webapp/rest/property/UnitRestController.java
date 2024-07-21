@@ -78,7 +78,7 @@ public class UnitRestController {
             @Parameter(description = "ID of the building") @PathVariable Long buildingId,
             @Parameter(description = "ID of the unit to be deleted") @PathVariable Long unitId) {
         logger.debug("Deleting unit for building: {} and unit: {}", buildingId, unitId);
-        unitService.deleteUnitById(buildingId, unitId);
+        unitService.deleteUnitById(buildingId, unitId, unitId);
         logger.debug("Unit deleted successfully for building: {} and unit: {}", buildingId, unitId);
         return ResponseEntity.noContent().build();
     }
