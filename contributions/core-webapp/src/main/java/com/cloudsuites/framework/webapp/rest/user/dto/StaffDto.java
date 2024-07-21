@@ -29,11 +29,11 @@ public class StaffDto {
     private StaffRole staffRole;
 
     @JsonView(Views.StaffView.class)
-    @Schema(description = "Management company of the staff")
+    @Schema(hidden = true)
     private ManagementCompanyDto managementCompany;
 
     @JsonView(Views.StaffView.class)
-    @Schema(description = "Building of the staff")
+    @Schema(hidden = true)
     private BuildingDto building;
 }
 
