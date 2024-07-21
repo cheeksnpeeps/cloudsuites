@@ -20,5 +20,10 @@
 			<artifactId>common-service</artifactId>
 			<version>${core.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>de.huxhorn.sulky</groupId>
+			<artifactId>de.huxhorn.sulky.ulid</artifactId>
+			<version>8.3.0</version>
+		</dependency>
 	</dependencies>
 </project>
