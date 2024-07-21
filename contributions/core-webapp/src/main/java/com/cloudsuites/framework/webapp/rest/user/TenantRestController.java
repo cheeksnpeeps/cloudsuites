@@ -10,7 +10,6 @@ import com.cloudsuites.framework.services.property.entities.Unit;
 import com.cloudsuites.framework.services.user.UserService;
 import com.cloudsuites.framework.services.user.entities.Identity;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
-import com.cloudsuites.framework.webapp.rest.user.dto.IdentityDto;
 import com.cloudsuites.framework.webapp.rest.user.dto.TenantDto;
 import com.cloudsuites.framework.webapp.rest.user.mapper.IdentityMapper;
 import com.cloudsuites.framework.webapp.rest.user.mapper.TenantMapper;
@@ -64,14 +63,18 @@ public class TenantRestController {
             @PathVariable Long unitId,
             @RequestBody TenantDto tenantDto) throws NotFoundResponseException {
 
-        validateIdentity(tenantDto.getIdentity());
-        Unit unit = validateBuildingAndUnit(buildingId, unitId);
-
+        if (tenantDto.getIdentity() == null) {
+            throw new NotFoundResponseException("Identity details are required");
+        }
+        Building building = buildingService.getBuildingById(buildingId);
+        Unit unit = unitService.getUnitById(buildingId, unitId);
         Identity identity = userService.createUser(identityMapper.convertToEntity(tenantDto.getIdentity()));
-        Tenant tenant = createTenantEntity(tenantDto, buildingId, unitId, identity, unit);
-
+        Tenant tenant = tenantMapper.convertToEntity(tenantDto);
+        tenant.setIdentity(identity);
+        tenant.setBuilding(building);
+        tenant.setUnit(unit);
         logger.info("Creating new tenant in building ID: {} and unit ID: {}", buildingId, unitId);
-        Tenant newTenant = tenantService.createTenant(tenant);
+        Tenant newTenant = tenantService.createTenant(tenant, unitId);
         TenantDto newTenantDto = tenantMapper.convertToDTO(newTenant);
         return ResponseEntity.status(201).body(newTenantDto);
     }
@@ -103,7 +106,15 @@ public class TenantRestController {
             @RequestBody TenantDto tenantDto) throws NotFoundResponseException {
         logger.info("Updating tenant with ID: {}", tenantId);
 
-        validateBuildingAndUnit(buildingId, unitId);
+        Building building = buildingService.getBuildingById(buildingId);
+        Unit unit = unitService.getUnitById(buildingId, unitId);
+
+        if (building == null) {
+            throw new NotFoundResponseException("Building not found for ID: " + buildingId);
+        }
+        if (unit == null) {
+            throw new NotFoundResponseException("Unit not found for ID: " + unitId);
+        }
         tenantDto.setBuildingId(buildingId);
 
         Tenant updatedTenant = tenantService.updateTenant(tenantId, tenantMapper.convertToEntity(tenantDto));
@@ -150,30 +161,4 @@ public class TenantRestController {
         return ResponseEntity.ok(tenants);
     }
 
-    private void validateIdentity(IdentityDto identityDto) throws NotFoundResponseException {
-        if (identityDto == null) {
-            throw new NotFoundResponseException("Identity details are required");
-        }
-    }
-
-    private Unit validateBuildingAndUnit(@PathVariable Long buildingId, @PathVariable Long unitId) throws NotFoundResponseException {
-        Building building = buildingService.getBuildingById(buildingId);
-        Unit unit = unitService.getUnitById(buildingId, unitId);
-
-        if (building == null) {
-            throw new NotFoundResponseException("Building not found for ID: " + buildingId);
-        }
-        if (unit == null) {
-            throw new NotFoundResponseException("Unit not found for ID: " + unitId);
-        }
-        return unit;
-    }
-
-    private Tenant createTenantEntity(TenantDto tenantDto, Long buildingId, Long unitId, Identity identity, Unit unit) {
-        Tenant tenant = tenantMapper.convertToEntity(tenantDto);
-        tenant.setIdentity(identity);
-        tenant.setBuildingId(buildingId);
-        tenant.setUnit(unit);
-        return tenant;
-    }
 }
