@@ -100,7 +100,7 @@ public class StaffRestController {
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.convertToDTO(createdStaff));
     }
 
-    @Operation(summary = "Create a new Staff for Management Company", description = "Create a new staff for Management Company")
+    @Operation(summary = "Create a new Staff for Company", description = "Create a new staff for Company")
     @ApiResponse(responseCode = "201", description = "Staff created successfully", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "400", description = "Bad Request")
     @PostMapping("/companies/{companyId}")
@@ -109,7 +109,7 @@ public class StaffRestController {
                                                 @PathVariable String companyId) throws NotFoundResponseException {
         Staff staff = mapper.convertToEntity(staffDto);
         staff.setCompany(companyService.getCompanyById(companyId));
-        logger.info("Creating a new staff for Management Company with ID: {}", companyId);
+        logger.info("Creating a new staff for Company with ID: {}", companyId);
         Identity identity = userService.createUser(staff.getIdentity());
         staff.setIdentity(identity);
         Staff createdStaff = staffService.createStaff(staff);
