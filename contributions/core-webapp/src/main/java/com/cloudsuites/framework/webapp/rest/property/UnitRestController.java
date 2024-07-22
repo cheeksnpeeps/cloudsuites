@@ -2,7 +2,7 @@ package com.cloudsuites.framework.webapp.rest.property;
 
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
-import com.cloudsuites.framework.services.property.personas.service.UnitService;
+import com.cloudsuites.framework.services.property.features.service.UnitService;
 import com.cloudsuites.framework.webapp.rest.property.dto.UnitDto;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
 import com.cloudsuites.framework.webapp.rest.property.mapper.UnitMapper;
@@ -76,7 +76,7 @@ public class UnitRestController {
     @DeleteMapping("/units/{unitId}")
     public ResponseEntity<Void> deleteUnitById(
             @Parameter(description = "ID of the building") @PathVariable String buildingId,
-            @Parameter(description = "ID of the unit to be deleted") @PathVariable Long unitId) {
+            @Parameter(description = "ID of the unit to be deleted") @PathVariable String unitId) {
         logger.debug("Deleting unit for building: {} and unit: {}", buildingId, unitId);
         unitService.deleteUnitById(buildingId, "", unitId);
         logger.debug("Unit deleted successfully for building: {} and unit: {}", buildingId, unitId);
@@ -91,7 +91,7 @@ public class UnitRestController {
     @GetMapping("/units/{unitId}")
     public ResponseEntity<UnitDto> getUnitById(
             @Parameter(description = "ID of the building") @PathVariable String buildingId,
-            @Parameter(description = "ID of the unit to be retrieved") @PathVariable Long unitId)
+            @Parameter(description = "ID of the unit to be retrieved") @PathVariable String unitId)
             throws NotFoundResponseException {
         logger.debug("Getting unit for building: {} and unit: {}", buildingId, unitId);
         Unit unit = unitService.getUnitById(buildingId, unitId);

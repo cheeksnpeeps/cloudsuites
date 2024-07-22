@@ -22,7 +22,7 @@ public class UnitDto {
 
 	@Schema(hidden = true)
 	@JsonView({Views.UnitView.class, Views.FloorView.class, Views.TenantView.class})
-	private Long unitId;
+	private String unitId;
 
 	@Schema(description = "Building of the unit")
 	@JsonView({Views.UnitView.class})

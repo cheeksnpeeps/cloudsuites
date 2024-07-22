@@ -4,9 +4,9 @@ import com.cloudsuites.framework.services.common.exception.NotFoundResponseExcep
 import com.cloudsuites.framework.services.property.features.entities.Building;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.property.features.service.BuildingService;
+import com.cloudsuites.framework.services.property.features.service.UnitService;
 import com.cloudsuites.framework.services.property.personas.entities.Tenant;
 import com.cloudsuites.framework.services.property.personas.service.TenantService;
-import com.cloudsuites.framework.services.property.personas.service.UnitService;
 import com.cloudsuites.framework.services.user.UserService;
 import com.cloudsuites.framework.services.user.entities.Identity;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
@@ -60,7 +60,7 @@ public class TenantRestController {
     @JsonView(Views.TenantView.class)
     public ResponseEntity<TenantDto> createTenant(
             @PathVariable String buildingId,
-            @PathVariable Long unitId,
+            @PathVariable String unitId,
             @RequestBody TenantDto tenantDto) throws NotFoundResponseException {
 
         if (tenantDto.getIdentity() == null) {
@@ -86,7 +86,7 @@ public class TenantRestController {
     @JsonView(Views.TenantView.class)
     public ResponseEntity<TenantDto> getTenant(
             @PathVariable String buildingId,
-            @PathVariable Long unitId,
+            @PathVariable String unitId,
             @PathVariable Long tenantId) throws NotFoundResponseException {
         logger.info("Fetching tenant with ID: {}", tenantId);
         Tenant tenant = tenantService.getTenantByBuildingIdAndUnitIdAndTenantId(buildingId, unitId, tenantId);
@@ -101,7 +101,7 @@ public class TenantRestController {
     @JsonView(Views.TenantView.class)
     public ResponseEntity<TenantDto> updateTenant(
             @PathVariable String buildingId,
-            @PathVariable Long unitId,
+            @PathVariable String unitId,
             @PathVariable Long tenantId,
             @RequestBody TenantDto tenantDto) throws NotFoundResponseException {
         logger.info("Updating tenant with ID: {}", tenantId);
@@ -128,7 +128,7 @@ public class TenantRestController {
     @JsonView(Views.TenantView.class)
     public ResponseEntity<List<TenantDto>> listTenants(
             @PathVariable String buildingId,
-            @PathVariable Long unitId) throws NotFoundResponseException {
+            @PathVariable String unitId) throws NotFoundResponseException {
         logger.info("Listing all tenants for building ID: {} and unit ID: {}", buildingId, unitId);
         List<TenantDto> tenants = tenantService.getAllTenantsByBuildingAndUnit(buildingId, unitId).stream()
                 .map(tenantMapper::convertToDTO)

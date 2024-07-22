@@ -1,4 +1,4 @@
-package com.cloudsuites.framework.services.property.personas.service;
+package com.cloudsuites.framework.services.property.features.service;
 
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
@@ -9,7 +9,7 @@ import java.util.List;
 @Service
 public interface UnitService {
 
-    Unit getUnitById(String buildingId, Long unitId) throws NotFoundResponseException;
+    Unit getUnitById(String buildingId, String unitId) throws NotFoundResponseException;
 
     List<Unit> getAllUnits(String buildingId);
 
@@ -17,7 +17,7 @@ public interface UnitService {
 
     List<Unit> saveAllUnits(List<Unit> units);
 
-    void deleteUnitById(String buildingId, String floorId, Long unitId);
+    void deleteUnitById(String buildingId, String floorId, String unitId);
 
     List<Unit> getAllUnitsByFloor(String buildingId, String floorId) throws NotFoundResponseException;
 
