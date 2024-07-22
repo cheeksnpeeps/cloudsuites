@@ -1,8 +1,8 @@
 package com.cloudsuites.framework.webapp.authentication.providers;
 
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
-import com.cloudsuites.framework.services.property.TenantService;
-import com.cloudsuites.framework.services.property.entities.Tenant;
+import com.cloudsuites.framework.services.property.personas.entities.Tenant;
+import com.cloudsuites.framework.services.property.personas.service.TenantService;
 import com.cloudsuites.framework.services.user.UserService;
 import com.cloudsuites.framework.services.user.entities.Identity;
 import com.cloudsuites.framework.webapp.authentication.util.JwtTokenProvider;

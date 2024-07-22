@@ -1,10 +1,10 @@
 package com.cloudsuites.framework.webapp.rest.user;
 
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
-import com.cloudsuites.framework.services.property.BuildingService;
-import com.cloudsuites.framework.services.property.ManagementCompanyService;
-import com.cloudsuites.framework.services.property.StaffService;
-import com.cloudsuites.framework.services.property.entities.Staff;
+import com.cloudsuites.framework.services.property.features.service.BuildingService;
+import com.cloudsuites.framework.services.property.features.service.ManagementCompanyService;
+import com.cloudsuites.framework.services.property.personas.entities.Staff;
+import com.cloudsuites.framework.services.property.personas.service.StaffService;
 import com.cloudsuites.framework.services.user.UserService;
 import com.cloudsuites.framework.services.user.entities.Identity;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;

@@ -1,6 +1,6 @@
 package com.cloudsuites.framework.webapp.rest.property.dto;
 
-import com.cloudsuites.framework.services.property.entities.Tenant;
+import com.cloudsuites.framework.services.property.personas.entities.Tenant;
 import com.cloudsuites.framework.webapp.rest.user.dto.OwnerDto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
