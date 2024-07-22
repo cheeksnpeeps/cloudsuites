@@ -36,7 +36,7 @@ public class TenantAuthenticationProvider implements AuthenticationProvider {
             throw new BadCredentialsException("Invalid or expired JWT Token");
         }
         Claims claims = jwtTokenProvider.extractAllClaims(jwtToken);
-        Long tenantId = claims.get("personaId", Long.class);
+        String tenantId = claims.get("personaId", String.class);
         String buildingId = claims.get("buildingId", String.class);
         String unitId = claims.get("unitId", String.class);
 

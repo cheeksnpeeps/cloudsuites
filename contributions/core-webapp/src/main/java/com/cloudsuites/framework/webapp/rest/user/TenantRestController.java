@@ -87,7 +87,7 @@ public class TenantRestController {
     public ResponseEntity<TenantDto> getTenant(
             @PathVariable String buildingId,
             @PathVariable String unitId,
-            @PathVariable Long tenantId) throws NotFoundResponseException {
+            @PathVariable String tenantId) throws NotFoundResponseException {
         logger.info("Fetching tenant with ID: {}", tenantId);
         Tenant tenant = tenantService.getTenantByBuildingIdAndUnitIdAndTenantId(buildingId, unitId, tenantId);
         TenantDto tenantDto = tenantMapper.convertToDTO(tenant);
@@ -102,7 +102,7 @@ public class TenantRestController {
     public ResponseEntity<TenantDto> updateTenant(
             @PathVariable String buildingId,
             @PathVariable String unitId,
-            @PathVariable Long tenantId,
+            @PathVariable String tenantId,
             @RequestBody TenantDto tenantDto) throws NotFoundResponseException {
         logger.info("Updating tenant with ID: {}", tenantId);
 

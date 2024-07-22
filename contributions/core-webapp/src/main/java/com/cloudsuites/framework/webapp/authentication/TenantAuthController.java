@@ -84,7 +84,7 @@ public class TenantAuthController {
     public ResponseEntity<Map<String, String>> verifyOtp(
             @PathVariable String buildingId,
             @PathVariable String unitId,
-            @PathVariable Long tenantId,
+            @PathVariable String tenantId,
             @RequestParam @Parameter(description = "OTP to be verified") String otp) throws NotFoundResponseException {
 
         validateBuildingAndUnit(buildingId, unitId);
@@ -109,7 +109,7 @@ public class TenantAuthController {
     public ResponseEntity<Map<String, String>> refreshToken(
             @PathVariable String buildingId,
             @PathVariable String unitId,
-            @PathVariable Long tenantId,
+            @PathVariable String tenantId,
             @RequestParam @Parameter(description = "Refresh token") String refreshToken) throws NotFoundResponseException {
 
         if (!jwtTokenProvider.validateToken(refreshToken)) {
@@ -143,9 +143,9 @@ public class TenantAuthController {
         // Assuming you have an implementation for sending the OTP
     }
 
-    private String generateToken(Long tenantId, String buildingId, String unitId, Long userId) {
+    private String generateToken(String tenantId, String buildingId, String unitId, Long userId) {
         JwtBuilder claims = Jwts.builder()
-                .subject(tenantId.toString())
+                .subject(tenantId)
                 .audience()
                 .add(UserType.TENANT.name())
                 .and()
@@ -156,9 +156,9 @@ public class TenantAuthController {
         return jwtTokenProvider.generateToken(claims);
     }
 
-    private String generateRefreshToken(Long tenantId, String buildingId, String unitId, Long userId) {
+    private String generateRefreshToken(String tenantId, String buildingId, String unitId, Long userId) {
         JwtBuilder claims = Jwts.builder()
-                .subject(tenantId.toString())
+                .subject(tenantId)
                 .audience()
                 .add(UserType.TENANT.name())
                 .and()
@@ -169,7 +169,7 @@ public class TenantAuthController {
         return jwtTokenProvider.generateRefreshToken(claims);
     }
 
-    private boolean validateTokenClaims(Claims claims, String buildingId, String unitId, Long tenantId) {
+    private boolean validateTokenClaims(Claims claims, String buildingId, String unitId, String tenantId) {
         String tenantIdClaim = claims.get("personaId", String.class);
         String buildingIdClaim = claims.get("buildingId", String.class);
         String unitIdClaim = claims.get("unitId", String.class);

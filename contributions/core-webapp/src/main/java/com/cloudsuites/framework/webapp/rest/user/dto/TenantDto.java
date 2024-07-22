@@ -22,7 +22,7 @@ public class TenantDto{
 
     @Schema(hidden = true)
     @JsonView(Views.TenantView.class)
-    private Long tenantId;
+    private String tenantId;
 
     @Schema(description = "Identity of the tenant")
     @JsonView(Views.TenantView.class)
