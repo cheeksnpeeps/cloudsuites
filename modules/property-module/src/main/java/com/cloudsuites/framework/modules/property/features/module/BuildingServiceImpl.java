@@ -39,14 +39,14 @@ public class BuildingServiceImpl implements BuildingService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<Building> getBuildingByManagementCompanyId(String managementCompanyId) throws NotFoundResponseException {
-        logger.debug("Entering getBuildingByManagementCompanyId with managementCompanyId: {}", managementCompanyId);
-        List<Building> buildings = buildingRepository.findByManagementCompany_ManagementCompanyId(managementCompanyId)
+    public List<Building> getBuildingByCompanyId(String companyId) throws NotFoundResponseException {
+        logger.debug("Entering getBuildingByCompanyId with companyId: {}", companyId);
+        List<Building> buildings = buildingRepository.findByCompany_CompanyId(companyId)
                 .orElseThrow(() -> {
-                    logger.error("Buildings not found for Management Company: {}", managementCompanyId);
-                    return new NotFoundResponseException("Buildings not found for Management Company: " + managementCompanyId);
+                    logger.error("Buildings not found for Management Company: {}", companyId);
+                    return new NotFoundResponseException("Buildings not found for Management Company: " + companyId);
                 });
-        logger.debug("Buildings found for Management Company {}:", managementCompanyId);
+        logger.debug("Buildings found for Management Company {}:", companyId);
         return buildings;
     }
 

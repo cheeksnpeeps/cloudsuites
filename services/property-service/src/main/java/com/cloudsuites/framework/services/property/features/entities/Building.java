@@ -28,7 +28,7 @@ public class Building {
 
 	@ManyToOne
 	@JoinColumn(name = "management_company_id")
-	private ManagementCompany managementCompany;
+	private Company company;
 
 	@OneToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "address_id")

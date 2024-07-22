@@ -2,7 +2,7 @@ package com.cloudsuites.framework.services.property.personas.entities;
 
 import com.cloudsuites.framework.modules.common.utils.IdGenerator;
 import com.cloudsuites.framework.services.property.features.entities.Building;
-import com.cloudsuites.framework.services.property.features.entities.ManagementCompany;
+import com.cloudsuites.framework.services.property.features.entities.Company;
 import com.cloudsuites.framework.services.user.entities.Identity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -32,8 +32,8 @@ public class Staff {
     private Identity identity;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "managementCompany_id")
-    private ManagementCompany managementCompany;
+    @JoinColumn(name = "company_id")
+    private Company company;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "building_id")

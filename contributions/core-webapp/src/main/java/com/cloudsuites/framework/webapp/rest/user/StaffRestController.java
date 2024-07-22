@@ -2,7 +2,7 @@ package com.cloudsuites.framework.webapp.rest.user;
 
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import com.cloudsuites.framework.services.property.features.service.BuildingService;
-import com.cloudsuites.framework.services.property.features.service.ManagementCompanyService;
+import com.cloudsuites.framework.services.property.features.service.CompanyService;
 import com.cloudsuites.framework.services.property.personas.entities.Staff;
 import com.cloudsuites.framework.services.property.personas.service.StaffService;
 import com.cloudsuites.framework.services.user.UserService;
@@ -35,15 +35,15 @@ public class StaffRestController {
     private final StaffService staffService;
     private final StaffMapper mapper;
     private final UserService userService;
-    private final ManagementCompanyService managementCompanyService;
+    private final CompanyService companyService;
     private final BuildingService buildingService;
 
     @Autowired
-    public StaffRestController(StaffService staffService, StaffMapper mapper, UserService userService, ManagementCompanyService managementCompanyService, BuildingService buildingService) {
+    public StaffRestController(StaffService staffService, StaffMapper mapper, UserService userService, CompanyService companyService, BuildingService buildingService) {
         this.staffService = staffService;
         this.mapper = mapper;
         this.userService = userService;
-        this.managementCompanyService = managementCompanyService;
+        this.companyService = companyService;
         this.buildingService = buildingService;
     }
 
@@ -90,7 +90,7 @@ public class StaffRestController {
                                                         @PathVariable String companyId,
                                                         @PathVariable String buildingId) throws NotFoundResponseException {
         Staff staff = mapper.convertToEntity(staffDto);
-        staff.setManagementCompany(managementCompanyService.getManagementCompanyById(companyId));
+        staff.setCompany(companyService.getCompanyById(companyId));
         staff.setBuilding(buildingService.getBuildingById(buildingId));
         logger.info("Creating a new staff");
         Identity identity = userService.createUser(staff.getIdentity());
@@ -108,7 +108,7 @@ public class StaffRestController {
     public ResponseEntity<StaffDto> createStaff(@RequestBody @Parameter(description = "Staff details to be saved") StaffDto staffDto,
                                                 @PathVariable String companyId) throws NotFoundResponseException {
         Staff staff = mapper.convertToEntity(staffDto);
-        staff.setManagementCompany(managementCompanyService.getManagementCompanyById(companyId));
+        staff.setCompany(companyService.getCompanyById(companyId));
         logger.info("Creating a new staff for Management Company with ID: {}", companyId);
         Identity identity = userService.createUser(staff.getIdentity());
         staff.setIdentity(identity);

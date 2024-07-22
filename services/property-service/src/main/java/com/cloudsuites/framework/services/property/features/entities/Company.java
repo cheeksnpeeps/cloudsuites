@@ -13,13 +13,13 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 @Table(name = "management_company")
-public class ManagementCompany {
+public class Company {
 
-    private static final Logger logger = LoggerFactory.getLogger(ManagementCompany.class);
+    private static final Logger logger = LoggerFactory.getLogger(Company.class);
 
     @Id
     @Column(name = "management_company_id", unique = true, nullable = false)
-    private String managementCompanyId;
+    private String companyId;
 
     @Column(name = "name")
     private String name;
@@ -48,9 +48,9 @@ public class ManagementCompany {
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
-        if (this.managementCompanyId == null) {
-            this.managementCompanyId = IdGenerator.generateULID("MC-");
-            logger.debug("Generated managementCompanyId: {}", this.managementCompanyId);
+        if (this.companyId == null) {
+            this.companyId = IdGenerator.generateULID("MC-");
+            logger.debug("Generated companyId: {}", this.companyId);
         }
     }
 

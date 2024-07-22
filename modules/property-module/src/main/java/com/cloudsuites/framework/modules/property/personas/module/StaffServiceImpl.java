@@ -72,7 +72,7 @@ public class StaffServiceImpl implements StaffService {
     @Transactional(readOnly = true)
     public List<Staff> getAllStaffByCompany(String companyId) throws NotFoundResponseException {
         logger.info("Fetching all staffs for company ID: {}", companyId);
-        return staffRepository.findByManagementCompany_ManagementCompanyId(companyId)
+        return staffRepository.findByCompany_CompanyId(companyId)
                 .orElseThrow(() -> {
                     logger.error("No staff found for company ID: {}", companyId);
                     return new NotFoundResponseException("No staff found for company ID: " + companyId);
