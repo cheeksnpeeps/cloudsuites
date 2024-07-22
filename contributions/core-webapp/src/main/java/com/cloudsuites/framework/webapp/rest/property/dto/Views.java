@@ -1,11 +1,14 @@
 package com.cloudsuites.framework.webapp.rest.property.dto;
 
 public class Views {
-    public static class ManagementCompanyView {}
+    public static class CompanyView {
+    }
 
-    public static class AddressView extends ManagementCompanyView {}
+    public static class AddressView extends CompanyView {
+    }
 
-    public static class BuildingView extends ManagementCompanyView {}
+    public static class BuildingView extends CompanyView {
+    }
 
     public static class FloorView {
     }

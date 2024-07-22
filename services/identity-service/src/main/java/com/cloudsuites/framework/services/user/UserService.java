@@ -12,12 +12,13 @@ public interface UserService {
 
     Identity findByEmail(String email);
 
-    Identity getUserById(Long userId);
+    Identity getUserById(String userId);
 
     List<Identity> getAllUsers();
 
     Identity createUser(Identity identity);
 
-    Identity updateUser(Long userId, Identity identity);
-    void deleteUser(Long userId);
+    Identity updateUser(String userId, Identity identity);
+
+    void deleteUser(String userId);
 }

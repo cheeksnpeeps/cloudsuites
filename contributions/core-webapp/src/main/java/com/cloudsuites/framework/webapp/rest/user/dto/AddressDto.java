@@ -13,11 +13,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown=true)
-@JsonView({Views.AddressView.class, Views.BuildingView.class, Views.ManagementCompanyView.class})
+@JsonView({Views.AddressView.class, Views.BuildingView.class, Views.CompanyView.class})
 public class AddressDto {
 
     @Schema(hidden = true)
-    private Long addressId;
+    private String addressId;
 
     @NotBlank(message = "Apartment number is required")
     @Schema(description = "Apartment number of the address", example = "123")

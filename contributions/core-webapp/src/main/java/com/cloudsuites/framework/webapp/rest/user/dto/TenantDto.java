@@ -18,11 +18,11 @@ import lombok.NoArgsConstructor;
 public class TenantDto{
 
     @Schema(hidden = true)
-    private Long buildingId;
+    private String buildingId;
 
     @Schema(hidden = true)
     @JsonView(Views.TenantView.class)
-    private Long tenantId;
+    private String tenantId;
 
     @Schema(description = "Identity of the tenant")
     @JsonView(Views.TenantView.class)

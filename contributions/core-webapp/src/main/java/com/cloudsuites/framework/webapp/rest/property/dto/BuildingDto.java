@@ -25,25 +25,25 @@ import java.time.LocalDateTime;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class BuildingDto {
 
-	@JsonView({Views.StaffView.class, Views.TenantView.class, Views.FloorView.class, Views.BuildingView.class, Views.ManagementCompanyView.class})
+	@JsonView({Views.StaffView.class, Views.TenantView.class, Views.FloorView.class, Views.BuildingView.class, Views.CompanyView.class})
 	@Schema(hidden = true)
-	private Long buildingId;
+	private String buildingId;
 
-	@JsonView({Views.StaffView.class, Views.TenantView.class, Views.FloorView.class, Views.BuildingView.class, Views.ManagementCompanyView.class})
+	@JsonView({Views.StaffView.class, Views.TenantView.class, Views.FloorView.class, Views.BuildingView.class, Views.CompanyView.class})
 	@NotBlank(message = "Building name is required")
 	@Schema(description = "Name of the building", example = "Skyline Tower")
 	private String name;
 
 	@JsonView(Views.BuildingView.class)
 	@Schema(description = "Management company of the building")
-	private ManagementCompanyDto managementCompany;
+	private CompanyDto company;
 
 	@JsonView({Views.StaffView.class, Views.BuildingView.class})
 	@Schema(description = "Address of the building")
 	private AddressDto address;
 
 	@PositiveOrZero(message = "Total floors must be a non-negative number")
-	@JsonView({Views.StaffView.class, Views.BuildingView.class, Views.ManagementCompanyView.class})
+	@JsonView({Views.StaffView.class, Views.BuildingView.class, Views.CompanyView.class})
 	@Schema(description = "Total number of floors in the building", example = "10")
 	private Integer totalFloors;
 

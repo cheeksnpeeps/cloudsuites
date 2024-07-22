@@ -1,6 +1,6 @@
 package com.cloudsuites.framework.webapp.rest.user.mapper;
 
-import com.cloudsuites.framework.services.property.entities.Tenant;
+import com.cloudsuites.framework.services.property.personas.entities.Tenant;
 import com.cloudsuites.framework.webapp.rest.user.dto.TenantDto;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;

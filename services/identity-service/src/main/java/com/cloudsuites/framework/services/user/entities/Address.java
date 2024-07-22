@@ -1,9 +1,12 @@
 package com.cloudsuites.framework.services.user.entities;
 
+import com.cloudsuites.framework.modules.common.utils.IdGenerator;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Data
 @Entity
@@ -12,10 +15,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Address {
 
+    private static final Logger logger = LoggerFactory.getLogger(Address.class);
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "address_id")
-    private Long addressId;
+    @Column(name = "address_id", unique = true, nullable = false)
+    private String addressId;
 
     @Column(name = "apt_number")
     private String aptNumber;
@@ -41,5 +45,10 @@ public class Address {
     @Column(name = "country")
     private String country;
 
+    @PrePersist
+    protected void onCreate() {
+        this.addressId = IdGenerator.generateULID("ADR-");
+        logger.debug("Generated addressId: {}", this.addressId);
+    }
 
 }

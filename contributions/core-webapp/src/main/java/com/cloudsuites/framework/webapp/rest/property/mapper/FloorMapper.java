@@ -1,6 +1,6 @@
 package com.cloudsuites.framework.webapp.rest.property.mapper;
 
-import com.cloudsuites.framework.services.property.entities.Floor;
+import com.cloudsuites.framework.services.property.features.entities.Floor;
 import com.cloudsuites.framework.webapp.rest.property.dto.FloorDto;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;

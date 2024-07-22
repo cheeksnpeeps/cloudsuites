@@ -19,7 +19,7 @@ import java.util.List;
 public class OwnerDto {
 
     @JsonView({Views.OwnerView.class, Views.TenantView.class, Views.UnitView.class})
-    private Long ownerId;
+    private String ownerId;
 
     @JsonView({Views.OwnerView.class, Views.UnitView.class})
     private IdentityDto identity;

@@ -1,10 +1,10 @@
 package com.cloudsuites.framework.webapp.rest.user;
 
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
-import com.cloudsuites.framework.services.property.BuildingService;
-import com.cloudsuites.framework.services.property.ManagementCompanyService;
-import com.cloudsuites.framework.services.property.StaffService;
-import com.cloudsuites.framework.services.property.entities.Staff;
+import com.cloudsuites.framework.services.property.features.service.BuildingService;
+import com.cloudsuites.framework.services.property.features.service.CompanyService;
+import com.cloudsuites.framework.services.property.personas.entities.Staff;
+import com.cloudsuites.framework.services.property.personas.service.StaffService;
 import com.cloudsuites.framework.services.user.UserService;
 import com.cloudsuites.framework.services.user.entities.Identity;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
@@ -35,15 +35,15 @@ public class StaffRestController {
     private final StaffService staffService;
     private final StaffMapper mapper;
     private final UserService userService;
-    private final ManagementCompanyService managementCompanyService;
+    private final CompanyService companyService;
     private final BuildingService buildingService;
 
     @Autowired
-    public StaffRestController(StaffService staffService, StaffMapper mapper, UserService userService, ManagementCompanyService managementCompanyService, BuildingService buildingService) {
+    public StaffRestController(StaffService staffService, StaffMapper mapper, UserService userService, CompanyService companyService, BuildingService buildingService) {
         this.staffService = staffService;
         this.mapper = mapper;
         this.userService = userService;
-        this.managementCompanyService = managementCompanyService;
+        this.companyService = companyService;
         this.buildingService = buildingService;
     }
 
@@ -52,7 +52,7 @@ public class StaffRestController {
     @ApiResponse(responseCode = "404", description = "Staffs not found")
     @GetMapping("/buildings/{buildingId}")
     @JsonView(Views.StaffView.class)
-    public ResponseEntity<List<StaffDto>> getAllStaffsByBuildingId(@PathVariable Long buildingId) {
+    public ResponseEntity<List<StaffDto>> getAllStaffsByBuildingId(@PathVariable String buildingId) {
         logger.info("Fetching all staffs");
         try {
             List<Staff> staffs = staffService.getAllStaffsByBuilding(buildingId);
@@ -69,7 +69,7 @@ public class StaffRestController {
     @ApiResponse(responseCode = "404", description = "Staffs not found")
     @GetMapping("/companies/{companyId}")
     @JsonView(Views.StaffView.class)
-    public ResponseEntity<List<StaffDto>> getAllStaffsByCompanyId(@PathVariable Long companyId) {
+    public ResponseEntity<List<StaffDto>> getAllStaffsByCompanyId(@PathVariable String companyId) {
         logger.info("Fetching all staffs by Company Id");
         try {
             List<Staff> staffs = staffService.getAllStaffByCompany(companyId);
@@ -87,10 +87,10 @@ public class StaffRestController {
     @PostMapping("/companies/{companyId}/building/{buildingId}")
     @JsonView(Views.StaffView.class)
     public ResponseEntity<StaffDto> createBuildingStaff(@RequestBody @Parameter(description = "Staff details to be saved") StaffDto staffDto,
-                                                        @PathVariable Long companyId,
-                                                        @PathVariable Long buildingId) throws NotFoundResponseException {
+                                                        @PathVariable String companyId,
+                                                        @PathVariable String buildingId) throws NotFoundResponseException {
         Staff staff = mapper.convertToEntity(staffDto);
-        staff.setManagementCompany(managementCompanyService.getManagementCompanyById(companyId));
+        staff.setCompany(companyService.getCompanyById(companyId));
         staff.setBuilding(buildingService.getBuildingById(buildingId));
         logger.info("Creating a new staff");
         Identity identity = userService.createUser(staff.getIdentity());
@@ -106,9 +106,9 @@ public class StaffRestController {
     @PostMapping("/companies/{companyId}")
     @JsonView(Views.StaffView.class)
     public ResponseEntity<StaffDto> createStaff(@RequestBody @Parameter(description = "Staff details to be saved") StaffDto staffDto,
-                                                @PathVariable Long companyId) throws NotFoundResponseException {
+                                                @PathVariable String companyId) throws NotFoundResponseException {
         Staff staff = mapper.convertToEntity(staffDto);
-        staff.setManagementCompany(managementCompanyService.getManagementCompanyById(companyId));
+        staff.setCompany(companyService.getCompanyById(companyId));
         logger.info("Creating a new staff for Management Company with ID: {}", companyId);
         Identity identity = userService.createUser(staff.getIdentity());
         staff.setIdentity(identity);
@@ -122,7 +122,7 @@ public class StaffRestController {
     @ApiResponse(responseCode = "404", description = "Staff not found")
     @GetMapping("/{id}")
     @JsonView(Views.StaffView.class)
-    public ResponseEntity<StaffDto> getStaffById(@Parameter(description = "ID of the staff to be retrieved") @PathVariable Long id) {
+    public ResponseEntity<StaffDto> getStaffById(@Parameter(description = "ID of the staff to be retrieved") @PathVariable String id) {
         logger.info("Fetching staff with ID: {}", id);
         try {
             Staff staff = staffService.getStaffById(id);
@@ -139,7 +139,7 @@ public class StaffRestController {
     @ApiResponse(responseCode = "404", description = "Staff not found")
     @PutMapping("/{id}")
     @JsonView(Views.StaffView.class)
-    public ResponseEntity<StaffDto> updateStaff(@Parameter(description = "ID of the staff to be updated") @PathVariable Long id,
+    public ResponseEntity<StaffDto> updateStaff(@Parameter(description = "ID of the staff to be updated") @PathVariable String id,
                                                 @RequestBody @Parameter(description = "Updated staff details") StaffDto staffDto) {
         logger.info("Updating staff with ID: {}", id);
         try {
@@ -157,7 +157,7 @@ public class StaffRestController {
     @ApiResponse(responseCode = "204", description = "Staff deleted successfully")
     @ApiResponse(responseCode = "404", description = "Staff not found")
     @DeleteMapping("/{staffId}")
-    public ResponseEntity<Void> deleteStaff(@Parameter(description = "ID of the staff to be deleted") @PathVariable Long staffId) throws NotFoundResponseException {
+    public ResponseEntity<Void> deleteStaff(@Parameter(description = "ID of the staff to be deleted") @PathVariable String staffId) throws NotFoundResponseException {
         logger.info("Deleting staff with ID: {}", staffId);
         staffService.deleteStaff(staffId);
         logger.info("Staff deleted successfully with ID: {}", staffId);

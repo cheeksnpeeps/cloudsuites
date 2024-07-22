@@ -1,8 +1,8 @@
 package com.cloudsuites.framework.webapp.rest.property;
 
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
-import com.cloudsuites.framework.services.property.UnitService;
-import com.cloudsuites.framework.services.property.entities.Unit;
+import com.cloudsuites.framework.services.property.features.entities.Unit;
+import com.cloudsuites.framework.services.property.features.service.UnitService;
 import com.cloudsuites.framework.webapp.rest.property.dto.UnitDto;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
 import com.cloudsuites.framework.webapp.rest.property.mapper.UnitMapper;
@@ -43,8 +43,8 @@ public class UnitRestController {
     @JsonView(Views.UnitView.class)
     @GetMapping("/floors/{floorId}/units")
     public ResponseEntity<List<UnitDto>> getAllUnitsByFloor(
-            @Parameter(description = "ID of the building") @PathVariable Long buildingId,
-            @Parameter(description = "ID of the floor") @PathVariable Long floorId)
+            @Parameter(description = "ID of the building") @PathVariable String buildingId,
+            @Parameter(description = "ID of the floor") @PathVariable String floorId)
             throws NotFoundResponseException {
         logger.debug("Getting all units for building: {} and floor: {}", buildingId, floorId);
         List<UnitDto> units = unitMapper.convertToDTOList(unitService.getAllUnitsByFloor(buildingId, floorId));
@@ -60,8 +60,8 @@ public class UnitRestController {
     @JsonView(Views.UnitView.class)
     @PostMapping("/floors/{floorId}/units")
     public ResponseEntity<UnitDto> saveUnit(
-            @Parameter(description = "ID of the building") @PathVariable Long buildingId,
-            @Parameter(description = "ID of the floor") @PathVariable Long floorId,
+            @Parameter(description = "ID of the building") @PathVariable String buildingId,
+            @Parameter(description = "ID of the floor") @PathVariable String floorId,
             @RequestBody @Parameter(description = "Unit details to be saved") UnitDto unitDTO) {
         logger.debug("Saving unit for building: {} and floor: {}", buildingId, floorId);
         UnitDto unit = unitMapper.convertToDTO(unitService.saveUnit(buildingId, floorId, unitMapper.convertToEntity(unitDTO)));
@@ -75,10 +75,10 @@ public class UnitRestController {
     @ApiResponse(responseCode = "404", description = "Building or unit not found")
     @DeleteMapping("/units/{unitId}")
     public ResponseEntity<Void> deleteUnitById(
-            @Parameter(description = "ID of the building") @PathVariable Long buildingId,
-            @Parameter(description = "ID of the unit to be deleted") @PathVariable Long unitId) {
+            @Parameter(description = "ID of the building") @PathVariable String buildingId,
+            @Parameter(description = "ID of the unit to be deleted") @PathVariable String unitId) {
         logger.debug("Deleting unit for building: {} and unit: {}", buildingId, unitId);
-        unitService.deleteUnitById(buildingId, unitId, unitId);
+        unitService.deleteUnitById(buildingId, "", unitId);
         logger.debug("Unit deleted successfully for building: {} and unit: {}", buildingId, unitId);
         return ResponseEntity.noContent().build();
     }
@@ -90,8 +90,8 @@ public class UnitRestController {
     @JsonView(Views.UnitView.class)
     @GetMapping("/units/{unitId}")
     public ResponseEntity<UnitDto> getUnitById(
-            @Parameter(description = "ID of the building") @PathVariable Long buildingId,
-            @Parameter(description = "ID of the unit to be retrieved") @PathVariable Long unitId)
+            @Parameter(description = "ID of the building") @PathVariable String buildingId,
+            @Parameter(description = "ID of the unit to be retrieved") @PathVariable String unitId)
             throws NotFoundResponseException {
         logger.debug("Getting unit for building: {} and unit: {}", buildingId, unitId);
         Unit unit = unitService.getUnitById(buildingId, unitId);
@@ -105,7 +105,7 @@ public class UnitRestController {
     @JsonView(Views.UnitView.class)
     @GetMapping("/units")
     public ResponseEntity<List<UnitDto>> getAllUnits(
-            @Parameter(description = "ID of the building") @PathVariable Long buildingId) {
+            @Parameter(description = "ID of the building") @PathVariable String buildingId) {
         logger.debug("Getting all units for building: {}", buildingId);
         List<Unit> units = unitService.getAllUnits(buildingId);
         logger.debug("Found {} units for building: {}", units.size(), buildingId);
