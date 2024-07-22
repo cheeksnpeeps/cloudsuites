@@ -28,7 +28,7 @@ public class StaffServiceImpl implements StaffService {
     }
 
     @Override
-    public Staff findByUserId(Long userId) throws NotFoundResponseException {
+    public Staff findByUserId(String userId) throws NotFoundResponseException {
         return staffRepository.findByIdentity_UserId(userId)
                 .orElseThrow(() -> {
                     logger.error("Staff not found for user ID: {}", userId);

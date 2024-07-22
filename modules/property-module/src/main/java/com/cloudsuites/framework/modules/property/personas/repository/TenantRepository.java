@@ -17,5 +17,5 @@ public interface TenantRepository extends JpaRepository<Tenant, String> {
 
     Optional<Tenant> findByBuilding_BuildingIdAndUnit_UnitIdAndTenantId(String buildingId, String unitId, String tenantId);
 
-    Optional<Tenant> findByIdentity_UserId(Long userId);
+    Optional<Tenant> findByIdentity_UserId(String userId);
 }

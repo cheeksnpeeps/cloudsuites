@@ -23,5 +23,5 @@ public interface OwnerService {
 
     Owner findByName(String email) throws NotFoundResponseException;
 
-    Owner findByUserId(Long userId) throws NotFoundResponseException;
+    Owner findByUserId(String userId) throws NotFoundResponseException;
 }

@@ -19,7 +19,7 @@ public class IdentityDto {
 
     @Schema(hidden = true)
     @JsonView({Views.StaffView.class, Views.OwnerView.class, Views.TenantView.class, Views.UnitView.class})
-    private Long userId;
+    private String userId;
 
     @JsonView({Views.StaffView.class, Views.OwnerView.class, Views.TenantView.class, Views.UnitView.class})
     @Schema(description = "Username of the user", example = "johndoe")
