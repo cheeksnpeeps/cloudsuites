@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 public class AddressDto {
 
     @Schema(hidden = true)
-    private Long addressId;
+    private String addressId;
 
     @NotBlank(message = "Apartment number is required")
     @Schema(description = "Apartment number of the address", example = "123")
