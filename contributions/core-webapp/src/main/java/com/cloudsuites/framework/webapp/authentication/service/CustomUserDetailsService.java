@@ -1,13 +1,13 @@
 package com.cloudsuites.framework.webapp.authentication.service;
 
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
-import com.cloudsuites.framework.services.property.ManagerService;
-import com.cloudsuites.framework.services.property.OwnerService;
-import com.cloudsuites.framework.services.property.TenantService;
-import com.cloudsuites.framework.services.property.entities.Manager;
-import com.cloudsuites.framework.services.property.entities.Owner;
-import com.cloudsuites.framework.services.property.entities.Tenant;
-import com.cloudsuites.framework.services.property.entities.UserType;
+import com.cloudsuites.framework.services.property.features.service.ManagerService;
+import com.cloudsuites.framework.services.property.personas.entities.Manager;
+import com.cloudsuites.framework.services.property.personas.entities.Owner;
+import com.cloudsuites.framework.services.property.personas.entities.Tenant;
+import com.cloudsuites.framework.services.property.personas.entities.UserType;
+import com.cloudsuites.framework.services.property.personas.service.OwnerService;
+import com.cloudsuites.framework.services.property.personas.service.TenantService;
 import com.cloudsuites.framework.services.user.UserService;
 import com.cloudsuites.framework.services.user.entities.Identity;
 import com.cloudsuites.framework.webapp.authentication.UserPrincipal;

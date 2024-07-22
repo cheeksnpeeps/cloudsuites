@@ -1,6 +1,6 @@
 package com.cloudsuites.framework.webapp.rest.user.dto;
 
-import com.cloudsuites.framework.services.property.entities.StaffRole;
+import com.cloudsuites.framework.services.property.personas.entities.StaffRole;
 import com.cloudsuites.framework.webapp.rest.property.dto.BuildingDto;
 import com.cloudsuites.framework.webapp.rest.property.dto.ManagementCompanyDto;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;

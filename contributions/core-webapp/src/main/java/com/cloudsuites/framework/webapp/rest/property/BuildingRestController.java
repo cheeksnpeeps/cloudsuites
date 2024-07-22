@@ -1,10 +1,10 @@
 package com.cloudsuites.framework.webapp.rest.property;
 
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
-import com.cloudsuites.framework.services.property.BuildingService;
-import com.cloudsuites.framework.services.property.ManagementCompanyService;
-import com.cloudsuites.framework.services.property.entities.Building;
-import com.cloudsuites.framework.services.property.entities.ManagementCompany;
+import com.cloudsuites.framework.services.property.features.entities.Building;
+import com.cloudsuites.framework.services.property.features.entities.ManagementCompany;
+import com.cloudsuites.framework.services.property.features.service.BuildingService;
+import com.cloudsuites.framework.services.property.features.service.ManagementCompanyService;
 import com.cloudsuites.framework.webapp.rest.property.dto.BuildingDto;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
 import com.cloudsuites.framework.webapp.rest.property.mapper.BuildingMapper;
