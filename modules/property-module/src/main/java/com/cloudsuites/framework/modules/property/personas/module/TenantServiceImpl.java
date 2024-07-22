@@ -90,7 +90,7 @@ public class TenantServiceImpl implements TenantService {
     }
 
     @Override
-    public Tenant getTenantById(Long tenantId) throws NotFoundResponseException {
+    public Tenant getTenantById(String tenantId) throws NotFoundResponseException {
         logger.info("Fetching tenant with ID: {}", tenantId);
         return tenantRepository.findById(tenantId)
                 .orElseThrow(() -> {
@@ -100,7 +100,7 @@ public class TenantServiceImpl implements TenantService {
     }
 
     @Override
-    public Tenant updateTenant(Long tenantId, Tenant tenant) throws NotFoundResponseException {
+    public Tenant updateTenant(String tenantId, Tenant tenant) throws NotFoundResponseException {
         logger.info("Updating tenant with ID: {}", tenantId);
         Tenant existingTenant = getTenantById(tenantId);
         existingTenant.setIdentity(tenant.getIdentity());
@@ -144,7 +144,7 @@ public class TenantServiceImpl implements TenantService {
 
     @Override
     @Transactional(readOnly = true)
-    public Tenant getTenantByBuildingIdAndUnitIdAndTenantId(String buildingId, String unitId, Long tenantId) throws NotFoundResponseException {
+    public Tenant getTenantByBuildingIdAndUnitIdAndTenantId(String buildingId, String unitId, String tenantId) throws NotFoundResponseException {
         logger.info("Fetching tenant for building ID: {}, unit ID: {}, and tenant ID: {}", buildingId, unitId, tenantId);
         return tenantRepository.findByBuilding_BuildingIdAndUnit_UnitIdAndTenantId(buildingId, unitId, tenantId)
                 .orElseThrow(() -> {

@@ -8,14 +8,14 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface TenantRepository extends JpaRepository<Tenant, Long> {
+public interface TenantRepository extends JpaRepository<Tenant, String> {
 
 
     Optional<List<Tenant>> findByBuilding_BuildingId(String buildingId);
 
     Optional<List<Tenant>> findByBuilding_BuildingIdAndUnit_UnitId(String buildingId, String unitId);
 
-    Optional<Tenant> findByBuilding_BuildingIdAndUnit_UnitIdAndTenantId(String buildingId, String unitId, Long tenantId);
+    Optional<Tenant> findByBuilding_BuildingIdAndUnit_UnitIdAndTenantId(String buildingId, String unitId, String tenantId);
 
     Optional<Tenant> findByIdentity_UserId(Long userId);
 }
