@@ -20,11 +20,11 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public Admin getAdminById(Long id) throws NotFoundResponseException {
-        return adminRepository.findById(id)
+    public Admin getAdminById(String adminId) throws NotFoundResponseException {
+        return adminRepository.findById(adminId)
                 .orElseThrow(() -> {
-                    logger.error("Admin not found with ID: {}", id);
-                    return new NotFoundResponseException("Admin not found with ID: " + id);
+                    logger.error("Admin not found with ID: {}", adminId);
+                    return new NotFoundResponseException("Admin not found with ID: " + adminId);
                 });
     }
 
@@ -37,19 +37,19 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public Admin updateAdmin(Long id, Admin admin) throws NotFoundResponseException {
-        logger.info("Updating admin with ID: {}", id);
+    public Admin updateAdmin(String adminId, Admin admin) throws NotFoundResponseException {
+        logger.info("Updating admin with ID: {}", adminId);
         Admin updatedAdmin = adminRepository.save(admin);
         logger.info("Admin updated successfully with ID: {}", updatedAdmin.getAdminId());
         return updatedAdmin;
     }
 
     @Override
-    public void deleteAdmin(Long id) throws NotFoundResponseException {
-        logger.info("Deleting admin with ID: {}", id);
-        Admin existingAdmin = getAdminById(id);
+    public void deleteAdmin(String adminId) throws NotFoundResponseException {
+        logger.info("Deleting admin with ID: {}", adminId);
+        Admin existingAdmin = getAdminById(adminId);
         adminRepository.delete(existingAdmin);
-        logger.info("Admin deleted successfully with ID: {}", id);
+        logger.info("Admin deleted successfully with ID: {}", adminId);
     }
 
     @Override

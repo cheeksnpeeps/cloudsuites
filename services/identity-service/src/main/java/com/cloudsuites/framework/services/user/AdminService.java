@@ -9,13 +9,13 @@ import java.util.List;
 @Service
 public interface AdminService {
 
-    Admin getAdminById(Long id) throws NotFoundResponseException;
+    Admin getAdminById(String adminId) throws NotFoundResponseException;
 
     Admin createAdmin(Admin admin);
 
-    Admin updateAdmin(Long id, Admin admin) throws NotFoundResponseException;
+    Admin updateAdmin(String adminId, Admin admin) throws NotFoundResponseException;
 
-    void deleteAdmin(Long id) throws NotFoundResponseException;
+    void deleteAdmin(String adminId) throws NotFoundResponseException;
 
     List<Admin> getAllAdmins() throws NotFoundResponseException;
 
