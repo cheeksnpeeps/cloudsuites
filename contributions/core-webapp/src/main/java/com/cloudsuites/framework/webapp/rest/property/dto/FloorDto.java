@@ -18,7 +18,7 @@ public class FloorDto {
 
     @Schema(hidden = true)
     @JsonView({Views.FloorView.class, Views.UnitView.class})
-    private Long floorId;
+    private String floorId;
 
     @Schema(description = "Name of the floor", example = "Ground Floor")
     @JsonView({Views.FloorView.class, Views.UnitView.class})

@@ -1,6 +1,6 @@
 package com.cloudsuites.framework.webapp.rest.property.dto;
 
-import com.cloudsuites.framework.services.property.entities.Tenant;
+import com.cloudsuites.framework.services.property.personas.entities.Tenant;
 import com.cloudsuites.framework.webapp.rest.user.dto.OwnerDto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -22,7 +22,7 @@ public class UnitDto {
 
 	@Schema(hidden = true)
 	@JsonView({Views.UnitView.class, Views.FloorView.class, Views.TenantView.class})
-	private Long unitId;
+	private String unitId;
 
 	@Schema(description = "Building of the unit")
 	@JsonView({Views.UnitView.class})

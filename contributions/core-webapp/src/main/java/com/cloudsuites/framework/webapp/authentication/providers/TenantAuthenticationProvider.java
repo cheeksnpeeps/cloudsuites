@@ -1,8 +1,8 @@
 package com.cloudsuites.framework.webapp.authentication.providers;
 
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
-import com.cloudsuites.framework.services.property.TenantService;
-import com.cloudsuites.framework.services.property.entities.Tenant;
+import com.cloudsuites.framework.services.property.personas.entities.Tenant;
+import com.cloudsuites.framework.services.property.personas.service.TenantService;
 import com.cloudsuites.framework.services.user.UserService;
 import com.cloudsuites.framework.services.user.entities.Identity;
 import com.cloudsuites.framework.webapp.authentication.util.JwtTokenProvider;
@@ -36,11 +36,11 @@ public class TenantAuthenticationProvider implements AuthenticationProvider {
             throw new BadCredentialsException("Invalid or expired JWT Token");
         }
         Claims claims = jwtTokenProvider.extractAllClaims(jwtToken);
-        Long tenantId = claims.get("personaId", Long.class);
-        Long buildingId = claims.get("buildingId", Long.class);
-        Long unitId = claims.get("unitId", Long.class);
+        String tenantId = claims.get("personaId", String.class);
+        String buildingId = claims.get("buildingId", String.class);
+        String unitId = claims.get("unitId", String.class);
 
-        Identity identity = userService.getUserById(claims.get("userId", Long.class));
+        Identity identity = userService.getUserById(claims.get("userId", String.class));
         Tenant tenant = null;
         try {
             tenant = tenantService.getTenantByBuildingIdAndUnitIdAndTenantId(buildingId, unitId, tenantId);

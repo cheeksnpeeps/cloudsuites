@@ -1,7 +1,10 @@
 package com.cloudsuites.framework.services.user.entities;
 
+import com.cloudsuites.framework.modules.common.utils.IdGenerator;
 import jakarta.persistence.*;
 import lombok.Data;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 
@@ -10,15 +13,11 @@ import java.time.LocalDateTime;
 @Table(name = "identity")
 public class Identity {
 
-	public Identity() {}
-	public Identity(String firstName, String phoneNumber) {
-		this.firstName = firstName;
-		this.phoneNumber = phoneNumber;
-	}
+	private static final Logger logger = LoggerFactory.getLogger(Identity.class);
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long userId;
+	@Column(name = "user_id", unique = true, nullable = false)
+	private String userId;
 
 	@Column
 	private String username;
@@ -54,6 +53,8 @@ public class Identity {
 
 	@PrePersist
 	protected void onCreate() {
+		this.userId = IdGenerator.generateULID("ID-");
+		logger.debug("Generated userId: {}", this.userId);
 		this.createdAt = LocalDateTime.now();
 	}
 
