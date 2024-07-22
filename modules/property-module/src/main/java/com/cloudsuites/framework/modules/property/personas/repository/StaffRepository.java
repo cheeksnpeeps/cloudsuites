@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface StaffRepository extends JpaRepository<Staff, Long> {
+public interface StaffRepository extends JpaRepository<Staff, String> {
 
     Optional<Staff> findByIdentity_FirstName(String name);
 

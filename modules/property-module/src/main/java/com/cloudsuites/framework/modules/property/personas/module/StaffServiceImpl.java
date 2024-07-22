@@ -37,7 +37,7 @@ public class StaffServiceImpl implements StaffService {
     }
 
     @Override
-    public Staff getStaffById(Long staffId) throws NotFoundResponseException {
+    public Staff getStaffById(String staffId) throws NotFoundResponseException {
         logger.info("Fetching staff with ID: {}", staffId);
         return staffRepository.findById(staffId)
                 .orElseThrow(() -> {
@@ -47,7 +47,7 @@ public class StaffServiceImpl implements StaffService {
     }
 
     @Override
-    public Staff updateStaff(Long staffId, Staff staff) throws NotFoundResponseException {
+    public Staff updateStaff(String staffId, Staff staff) throws NotFoundResponseException {
         logger.info("Updating staff with ID: {}", staffId);
         Staff existingStaff = getStaffById(staffId);
         existingStaff.setIdentity(staff.getIdentity());
@@ -80,12 +80,12 @@ public class StaffServiceImpl implements StaffService {
     }
 
     @Override
-    public void deleteStaff(Long id) throws NotFoundResponseException {
-        logger.info("Deleting staff with ID: {}", id);
+    public void deleteStaff(String staffId) throws NotFoundResponseException {
+        logger.info("Deleting staff with ID: {}", staffId);
 
-        staffRepository.findById(id).ifPresent(staff -> {
+        staffRepository.findById(staffId).ifPresent(staff -> {
             staffRepository.delete(staff);
-            logger.info("Staff deleted successfully with ID: {}", id);
+            logger.info("Staff deleted successfully with ID: {}", staffId);
         });
     }
 }

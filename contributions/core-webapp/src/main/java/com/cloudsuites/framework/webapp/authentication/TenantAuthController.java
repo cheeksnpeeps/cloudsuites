@@ -170,7 +170,7 @@ public class TenantAuthController {
     }
 
     private boolean validateTokenClaims(Claims claims, String buildingId, String unitId, Long tenantId) {
-        Long tenantIdClaim = claims.get("personaId", Long.class);
+        String tenantIdClaim = claims.get("personaId", String.class);
         String buildingIdClaim = claims.get("buildingId", String.class);
         String unitIdClaim = claims.get("unitId", String.class);
 

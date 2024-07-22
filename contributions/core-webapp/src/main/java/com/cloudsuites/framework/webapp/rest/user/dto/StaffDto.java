@@ -19,7 +19,7 @@ public class StaffDto {
 
     @JsonView(Views.StaffView.class)
     @Schema(hidden = true)
-    private Long staffId;
+    private String staffId;
 
     @JsonView({Views.StaffView.class})
     private IdentityDto identity;
