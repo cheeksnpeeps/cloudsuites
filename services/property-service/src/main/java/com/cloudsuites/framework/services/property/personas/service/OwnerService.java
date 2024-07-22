@@ -9,13 +9,13 @@ import java.util.List;
 @Service
 public interface OwnerService {
 
-    Owner getOwnerById(Long id) throws NotFoundResponseException;
+    Owner getOwnerById(String ownerId) throws NotFoundResponseException;
 
     Owner createOwner(Owner owner);
 
-    Owner updateOwner(Long id, Owner owner) throws NotFoundResponseException;
+    Owner updateOwner(String ownerId, Owner owner) throws NotFoundResponseException;
 
-    void deleteOwner(Long id) throws NotFoundResponseException;
+    void deleteOwner(String ownerId) throws NotFoundResponseException;
 
     List<Owner> getAllOwners() throws NotFoundResponseException;
 

@@ -82,14 +82,14 @@ public class OwnerRestController {
     @ApiResponse(responseCode = "404", description = "Owner not found")
     @GetMapping("/{id}")
     @JsonView(Views.OwnerView.class)
-    public ResponseEntity<OwnerDto> getOwnerById(@Parameter(description = "ID of the owner to be retrieved") @PathVariable Long id) {
-        logger.info("Fetching owner with ID: {}", id);
+    public ResponseEntity<OwnerDto> getOwnerById(@Parameter(description = "ID of the owner to be retrieved") @PathVariable String ownerId) {
+        logger.info("Fetching owner with ID: {}", ownerId);
         try {
-            Owner owner = ownerService.getOwnerById(id);
+            Owner owner = ownerService.getOwnerById(ownerId);
             logger.info("Owner fetched with ID: {}", owner.getOwnerId());
             return ResponseEntity.ok().body(mapper.convertToDTO(owner));
         } catch (NotFoundResponseException e) {
-            logger.error("Owner not found with ID: {}", id);
+            logger.error("Owner not found with ID: {}", ownerId);
             return ResponseEntity.notFound().build();
         }
     }
@@ -99,16 +99,16 @@ public class OwnerRestController {
     @ApiResponse(responseCode = "404", description = "Owner not found")
     @PutMapping("/{id}")
     @JsonView(Views.OwnerView.class)
-    public ResponseEntity<OwnerDto> updateOwner(@Parameter(description = "ID of the owner to be updated") @PathVariable Long id,
+    public ResponseEntity<OwnerDto> updateOwner(@Parameter(description = "ID of the owner to be updated") @PathVariable String ownerId,
                                                 @RequestBody @Parameter(description = "Updated owner details") OwnerDto ownerDto) {
-        logger.info("Updating owner with ID: {}", id);
+        logger.info("Updating owner with ID: {}", ownerId);
         try {
             Owner owner = mapper.convertToEntity(ownerDto);
-            owner = ownerService.updateOwner(id, owner);
-            logger.info("Owner updated successfully with ID: {}", id);
+            owner = ownerService.updateOwner(ownerId, owner);
+            logger.info("Owner updated successfully with ID: {}", ownerId);
             return ResponseEntity.ok().body(mapper.convertToDTO(owner));
         } catch (NotFoundResponseException e) {
-            logger.error("Owner not found with ID: {}", id);
+            logger.error("Owner not found with ID: {}", ownerId);
             return ResponseEntity.notFound().build();
         }
     }
@@ -117,14 +117,14 @@ public class OwnerRestController {
     @ApiResponse(responseCode = "204", description = "Owner deleted successfully")
     @ApiResponse(responseCode = "404", description = "Owner not found")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteOwner(@Parameter(description = "ID of the owner to be deleted") @PathVariable Long id) {
-        logger.info("Deleting owner with ID: {}", id);
+    public ResponseEntity<Void> deleteOwner(@Parameter(description = "ID of the owner to be deleted") @PathVariable String ownerId) {
+        logger.info("Deleting owner with ID: {}", ownerId);
         try {
-            ownerService.deleteOwner(id);
-            logger.info("Owner deleted successfully with ID: {}", id);
+            ownerService.deleteOwner(ownerId);
+            logger.info("Owner deleted successfully with ID: {}", ownerId);
             return ResponseEntity.noContent().build();
         } catch (NotFoundResponseException e) {
-            logger.error("Owner not found with ID: {}", id);
+            logger.error("Owner not found with ID: {}", ownerId);
             return ResponseEntity.notFound().build();
         }
     }
@@ -137,7 +137,7 @@ public class OwnerRestController {
     @PostMapping("/{ownerId}/buildings/{buildingId}/units/{unitId}/transfer")
     @JsonView(Views.OwnerView.class)
     public ResponseEntity<OwnerDto> addUnitToOwner(
-            @Parameter(description = "ID of the owner") @PathVariable Long ownerId,
+            @Parameter(description = "ID of the owner") @PathVariable String ownerId,
             @Parameter(description = "ID of the building to be added") @PathVariable String buildingId,
             @Parameter(description = "ID of the unit to be added") @PathVariable String unitId) {
         logger.info("Adding unit to owner with ownerId={}, buildingId={}, unitId={}", ownerId, buildingId, unitId);
@@ -187,7 +187,7 @@ public class OwnerRestController {
     @ApiResponse(responseCode = "404", description = "Owner or Unit not found")
     @DeleteMapping("/{ownerId}/units/{unitId}")
     @JsonView(Views.OwnerView.class)
-    public ResponseEntity<OwnerDto> removeUnitFromOwner(@Parameter(description = "ID of the owner") @PathVariable Long ownerId,
+    public ResponseEntity<OwnerDto> removeUnitFromOwner(@Parameter(description = "ID of the owner") @PathVariable String ownerId,
                                                         @Parameter(description = "ID of the unit to be removed") @PathVariable String unitId) {
         logger.info("Removing unit from owner with ownerId={}, unitId={}", ownerId, unitId);
         try {

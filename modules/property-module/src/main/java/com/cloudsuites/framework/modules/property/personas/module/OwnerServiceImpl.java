@@ -19,11 +19,11 @@ public class OwnerServiceImpl implements OwnerService {
     private OwnerRepository ownerRepository;
 
     @Override
-    public Owner getOwnerById(Long id) throws NotFoundResponseException {
-        return ownerRepository.findById(id)
+    public Owner getOwnerById(String ownerId) throws NotFoundResponseException {
+        return ownerRepository.findById(ownerId)
                 .orElseThrow(() -> {
-                    logger.error("Owner not found with ID: {}", id);
-                    return new NotFoundResponseException("Owner not found with ID: " + id);
+                    logger.error("Owner not found with ID: {}", ownerId);
+                    return new NotFoundResponseException("Owner not found with ID: " + ownerId);
                 });
     }
 
@@ -36,19 +36,19 @@ public class OwnerServiceImpl implements OwnerService {
     }
 
     @Override
-    public Owner updateOwner(Long id, Owner owner) throws NotFoundResponseException {
-        logger.info("Updating owner with ID: {}", id);
+    public Owner updateOwner(String ownerId, Owner owner) throws NotFoundResponseException {
+        logger.info("Updating owner with ID: {}", ownerId);
         Owner updatedOwner = ownerRepository.save(owner);
         logger.info("Owner updated successfully with ID: {}", updatedOwner.getOwnerId());
         return updatedOwner;
     }
 
     @Override
-    public void deleteOwner(Long id) throws NotFoundResponseException {
-        logger.info("Deleting owner with ID: {}", id);
-        Owner existingOwner = getOwnerById(id);
+    public void deleteOwner(String ownerId) throws NotFoundResponseException {
+        logger.info("Deleting owner with ID: {}", ownerId);
+        Owner existingOwner = getOwnerById(ownerId);
         ownerRepository.delete(existingOwner);
-        logger.info("Owner deleted successfully with ID: {}", id);
+        logger.info("Owner deleted successfully with ID: {}", ownerId);
     }
 
     @Override
