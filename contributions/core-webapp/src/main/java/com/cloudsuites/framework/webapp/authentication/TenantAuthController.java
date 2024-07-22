@@ -4,10 +4,10 @@ import com.cloudsuites.framework.services.common.exception.NotFoundResponseExcep
 import com.cloudsuites.framework.services.property.features.entities.Building;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.property.features.service.BuildingService;
+import com.cloudsuites.framework.services.property.features.service.UnitService;
 import com.cloudsuites.framework.services.property.personas.entities.Tenant;
 import com.cloudsuites.framework.services.property.personas.entities.UserType;
 import com.cloudsuites.framework.services.property.personas.service.TenantService;
-import com.cloudsuites.framework.services.property.personas.service.UnitService;
 import com.cloudsuites.framework.services.user.UserService;
 import com.cloudsuites.framework.services.user.entities.Identity;
 import com.cloudsuites.framework.webapp.authentication.service.OtpService;
@@ -64,7 +64,7 @@ public class TenantAuthController {
     @JsonView(Views.TenantView.class)
     public ResponseEntity<TenantDto> registerTenant(
             @PathVariable String buildingId,
-            @PathVariable Long unitId,
+            @PathVariable String unitId,
             @RequestBody @Parameter(description = "Tenant registration details") TenantDto tenantDto) throws NotFoundResponseException {
 
         logger.debug("Registering tenant with phone number: {}", tenantDto.getIdentity().getPhoneNumber());
@@ -83,7 +83,7 @@ public class TenantAuthController {
     @PostMapping("/tenants/{tenantId}/verify-otp")
     public ResponseEntity<Map<String, String>> verifyOtp(
             @PathVariable String buildingId,
-            @PathVariable Long unitId,
+            @PathVariable String unitId,
             @PathVariable Long tenantId,
             @RequestParam @Parameter(description = "OTP to be verified") String otp) throws NotFoundResponseException {
 
@@ -108,7 +108,7 @@ public class TenantAuthController {
     @PostMapping("/tenants/{tenantId}/refresh-token")
     public ResponseEntity<Map<String, String>> refreshToken(
             @PathVariable String buildingId,
-            @PathVariable Long unitId,
+            @PathVariable String unitId,
             @PathVariable Long tenantId,
             @RequestParam @Parameter(description = "Refresh token") String refreshToken) throws NotFoundResponseException {
 
@@ -143,7 +143,7 @@ public class TenantAuthController {
         // Assuming you have an implementation for sending the OTP
     }
 
-    private String generateToken(Long tenantId, String buildingId, Long unitId, Long userId) {
+    private String generateToken(Long tenantId, String buildingId, String unitId, Long userId) {
         JwtBuilder claims = Jwts.builder()
                 .subject(tenantId.toString())
                 .audience()
@@ -156,7 +156,7 @@ public class TenantAuthController {
         return jwtTokenProvider.generateToken(claims);
     }
 
-    private String generateRefreshToken(Long tenantId, String buildingId, Long unitId, Long userId) {
+    private String generateRefreshToken(Long tenantId, String buildingId, String unitId, Long userId) {
         JwtBuilder claims = Jwts.builder()
                 .subject(tenantId.toString())
                 .audience()
@@ -169,10 +169,10 @@ public class TenantAuthController {
         return jwtTokenProvider.generateRefreshToken(claims);
     }
 
-    private boolean validateTokenClaims(Claims claims, String buildingId, Long unitId, Long tenantId) {
+    private boolean validateTokenClaims(Claims claims, String buildingId, String unitId, Long tenantId) {
         Long tenantIdClaim = claims.get("personaId", Long.class);
         String buildingIdClaim = claims.get("buildingId", String.class);
-        Long unitIdClaim = claims.get("unitId", Long.class);
+        String unitIdClaim = claims.get("unitId", String.class);
 
         if (!(tenantIdClaim.equals(tenantId) && buildingIdClaim.equals(buildingId) && unitIdClaim.equals(unitId))) {
             logger.error("Token claims do not match with the request parameters");
@@ -181,7 +181,7 @@ public class TenantAuthController {
         return true;
     }
 
-    private void validateBuildingAndUnit(String buildingId, Long unitId) throws NotFoundResponseException {
+    private void validateBuildingAndUnit(String buildingId, String unitId) throws NotFoundResponseException {
         Building building = buildingService.getBuildingById(buildingId);
         Unit unit = unitService.getUnitById(buildingId, unitId);
 

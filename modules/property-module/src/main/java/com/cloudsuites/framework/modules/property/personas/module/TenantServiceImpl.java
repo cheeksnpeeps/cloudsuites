@@ -3,9 +3,9 @@ package com.cloudsuites.framework.modules.property.personas.module;
 import com.cloudsuites.framework.modules.property.personas.repository.TenantRepository;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
+import com.cloudsuites.framework.services.property.features.service.UnitService;
 import com.cloudsuites.framework.services.property.personas.entities.Tenant;
 import com.cloudsuites.framework.services.property.personas.service.TenantService;
-import com.cloudsuites.framework.services.property.personas.service.UnitService;
 import com.cloudsuites.framework.services.user.UserService;
 import com.cloudsuites.framework.services.user.entities.Identity;
 import org.slf4j.Logger;
@@ -33,7 +33,7 @@ public class TenantServiceImpl implements TenantService {
 
     @Transactional
     @Override
-    public Tenant createTenant(Tenant tenant, Long unitId) throws NotFoundResponseException {
+    public Tenant createTenant(Tenant tenant, String unitId) throws NotFoundResponseException {
         // Log the start of the tenant creation process
         logger.debug("Starting tenant creation process for tenant: {}", tenant);
 
@@ -122,7 +122,7 @@ public class TenantServiceImpl implements TenantService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Tenant> getAllTenantsByBuildingAndUnit(String buildingId, Long unitId) throws NotFoundResponseException {
+    public List<Tenant> getAllTenantsByBuildingAndUnit(String buildingId, String unitId) throws NotFoundResponseException {
         logger.info("Fetching all tenants for building ID: {} and unit ID: {}", buildingId, unitId);
         return tenantRepository.findByBuilding_BuildingIdAndUnit_UnitId(buildingId, unitId)
                 .orElseThrow(() -> {
@@ -144,7 +144,7 @@ public class TenantServiceImpl implements TenantService {
 
     @Override
     @Transactional(readOnly = true)
-    public Tenant getTenantByBuildingIdAndUnitIdAndTenantId(String buildingId, Long unitId, Long tenantId) throws NotFoundResponseException {
+    public Tenant getTenantByBuildingIdAndUnitIdAndTenantId(String buildingId, String unitId, Long tenantId) throws NotFoundResponseException {
         logger.info("Fetching tenant for building ID: {}, unit ID: {}, and tenant ID: {}", buildingId, unitId, tenantId);
         return tenantRepository.findByBuilding_BuildingIdAndUnit_UnitIdAndTenantId(buildingId, unitId, tenantId)
                 .orElseThrow(() -> {

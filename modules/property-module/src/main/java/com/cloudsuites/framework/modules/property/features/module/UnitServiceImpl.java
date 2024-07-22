@@ -3,7 +3,7 @@ package com.cloudsuites.framework.modules.property.features.module;
 import com.cloudsuites.framework.modules.property.features.repository.UnitRepository;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
-import com.cloudsuites.framework.services.property.personas.service.UnitService;
+import com.cloudsuites.framework.services.property.features.service.UnitService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +23,7 @@ public class UnitServiceImpl implements UnitService {
     }
 
     @Override
-    public Unit getUnitById(String buildingId, Long unitId) throws NotFoundResponseException {
+    public Unit getUnitById(String buildingId, String unitId) throws NotFoundResponseException {
         logger.debug("Entering getUnitById with buildingId: {} and unitId: {}", buildingId, unitId);
 
         Unit unit = unitRepository.findById(unitId)
@@ -76,7 +76,7 @@ public class UnitServiceImpl implements UnitService {
 
 
     @Override
-    public void deleteUnitById(String buildingId, String floorId, Long unitId) {
+    public void deleteUnitById(String buildingId, String floorId, String unitId) {
         logger.debug("Entering deleteUnitById with buildingId: {} and unitId: {}", buildingId, unitId);
         unitRepository.deleteById(unitId);
         logger.debug("unit {} deleted successfully",unitId);

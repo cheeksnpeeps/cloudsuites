@@ -1,9 +1,12 @@
 package com.cloudsuites.framework.services.property.features.entities;
 
+import com.cloudsuites.framework.modules.common.utils.IdGenerator;
 import com.cloudsuites.framework.services.property.personas.entities.Owner;
 import com.cloudsuites.framework.services.property.personas.entities.Tenant;
 import jakarta.persistence.*;
 import lombok.Data;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -12,10 +15,11 @@ import java.util.List;
 @Table(name = "unit")
 public class Unit {
 
+	private static final Logger logger = LoggerFactory.getLogger(Unit.class);
+
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "unit_id")
-	private Long unitId;
+	@Column(name = "unit_id", unique = true, nullable = false)
+	private String unitId;
 
 	@OneToMany(mappedBy = "unit", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private List<Tenant> tenants;
@@ -38,6 +42,11 @@ public class Unit {
 	@Column(name = "square_footage")
 	private Double squareFootage;
 
+	@PrePersist
+	protected void onCreate() {
+		this.unitId = IdGenerator.generateULID("UN-");
+		logger.debug("Generated unitId: {}", this.unitId);
+	}
 }
 
 

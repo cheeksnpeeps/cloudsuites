@@ -2,9 +2,9 @@ package com.cloudsuites.framework.webapp.rest.user;
 
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
+import com.cloudsuites.framework.services.property.features.service.UnitService;
 import com.cloudsuites.framework.services.property.personas.entities.Owner;
 import com.cloudsuites.framework.services.property.personas.service.OwnerService;
-import com.cloudsuites.framework.services.property.personas.service.UnitService;
 import com.cloudsuites.framework.services.user.UserService;
 import com.cloudsuites.framework.services.user.entities.Identity;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
@@ -139,7 +139,7 @@ public class OwnerRestController {
     public ResponseEntity<OwnerDto> addUnitToOwner(
             @Parameter(description = "ID of the owner") @PathVariable Long ownerId,
             @Parameter(description = "ID of the building to be added") @PathVariable String buildingId,
-            @Parameter(description = "ID of the unit to be added") @PathVariable Long unitId) {
+            @Parameter(description = "ID of the unit to be added") @PathVariable String unitId) {
         logger.info("Adding unit to owner with ownerId={}, buildingId={}, unitId={}", ownerId, buildingId, unitId);
         try {
             logger.info("Fetching owner with ID: {}", ownerId);
@@ -188,7 +188,7 @@ public class OwnerRestController {
     @DeleteMapping("/{ownerId}/units/{unitId}")
     @JsonView(Views.OwnerView.class)
     public ResponseEntity<OwnerDto> removeUnitFromOwner(@Parameter(description = "ID of the owner") @PathVariable Long ownerId,
-                                                        @Parameter(description = "ID of the unit to be removed") @PathVariable Long unitId) {
+                                                        @Parameter(description = "ID of the unit to be removed") @PathVariable String unitId) {
         logger.info("Removing unit from owner with ownerId={}, unitId={}", ownerId, unitId);
         try {
             Owner owner = ownerService.getOwnerById(ownerId);
