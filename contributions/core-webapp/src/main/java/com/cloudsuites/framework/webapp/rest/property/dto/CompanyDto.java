@@ -16,23 +16,23 @@ import org.hibernate.validator.constraints.URL;
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown=true)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class ManagementCompanyDto {
+public class CompanyDto {
 
-    @JsonView({Views.StaffView.class, Views.ManagementCompanyView.class, Views.BuildingView.class})
+    @JsonView({Views.StaffView.class, Views.CompanyView.class, Views.BuildingView.class})
     @Schema(hidden = true)
-    private String managementCompanyId;
+    private String companyId;
 
-    @JsonView({Views.StaffView.class, Views.ManagementCompanyView.class, Views.BuildingView.class})
+    @JsonView({Views.StaffView.class, Views.CompanyView.class, Views.BuildingView.class})
     @NotBlank(message = "Name is required")
     @Schema(description = "Name of the management company", example = "Skyline Property Management")
     private String name;
 
-    @JsonView({Views.StaffView.class, Views.ManagementCompanyView.class, Views.BuildingView.class})
+    @JsonView({Views.StaffView.class, Views.CompanyView.class, Views.BuildingView.class})
     @URL(message = "Invalid website URL")
     @Schema(description = "Website of the management company", example = "https://www.skylinepropertymanagement.com")
     private String website;
 
-    @JsonView({Views.StaffView.class, Views.ManagementCompanyView.class})
+    @JsonView({Views.StaffView.class, Views.CompanyView.class})
     @NotBlank(message = "Address is required")
     @Schema(description = "Address of the management company")
     private AddressDto address;

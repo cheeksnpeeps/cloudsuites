@@ -2,9 +2,9 @@ package com.cloudsuites.framework.webapp.rest.property;
 
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import com.cloudsuites.framework.services.property.features.entities.Building;
-import com.cloudsuites.framework.services.property.features.entities.ManagementCompany;
+import com.cloudsuites.framework.services.property.features.entities.Company;
 import com.cloudsuites.framework.services.property.features.service.BuildingService;
-import com.cloudsuites.framework.services.property.features.service.ManagementCompanyService;
+import com.cloudsuites.framework.services.property.features.service.CompanyService;
 import com.cloudsuites.framework.webapp.rest.property.dto.BuildingDto;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
 import com.cloudsuites.framework.webapp.rest.property.mapper.BuildingMapper;
@@ -32,13 +32,13 @@ public class BuildingRestController {
     private static final Logger logger = LoggerFactory.getLogger(BuildingRestController.class);
     private final BuildingService buildingService;
     private final BuildingMapper mapper;
-    private final ManagementCompanyService managementCompanyService;
+    private final CompanyService companyService;
 
     @Autowired
-    public BuildingRestController(BuildingService buildingService, BuildingMapper mapper, ManagementCompanyService managementCompanyService) {
+    public BuildingRestController(BuildingService buildingService, BuildingMapper mapper, CompanyService companyService) {
         this.buildingService = buildingService;
         this.mapper = mapper;
-        this.managementCompanyService = managementCompanyService;
+        this.companyService = companyService;
     }
 
     @Operation(summary = "Get Buildings", description = "Get a list of buildings based on optional management company ID - Use -1 to get all buildings")
@@ -48,13 +48,13 @@ public class BuildingRestController {
     @GetMapping("")
     public ResponseEntity<List<BuildingDto>> getBuildings(@PathVariable String companyId) throws NotFoundResponseException {
         logger.debug("Getting all buildings for management company: {}", companyId);
-            // If managementCompanyId is provided, filter buildings by management company
+        // If companyId is provided, filter buildings by management company
         if (companyId == null) {
             List<Building> buildings = buildingService.getAllBuildings();
             logger.debug("Found {} buildings", buildings.size());
             return ResponseEntity.ok().body(mapper.convertToDTOList(buildings));
         }
-        List<Building> buildings = buildingService.getBuildingByManagementCompanyId(companyId);
+        List<Building> buildings = buildingService.getBuildingByCompanyId(companyId);
         logger.debug("Found {} buildings for management company: {}", buildings.size(), companyId);
         return ResponseEntity.ok().body(mapper.convertToDTOList(buildings));
     }
@@ -66,8 +66,8 @@ public class BuildingRestController {
     @PostMapping("")
     public ResponseEntity<BuildingDto> saveBuilding(@RequestBody @Parameter(description = "Building payload") BuildingDto buildingDTO, @PathVariable String companyId) throws NotFoundResponseException {
         Building building = mapper.convertToEntity(buildingDTO);
-        ManagementCompany company = managementCompanyService.getManagementCompanyById(companyId);
-        building.setManagementCompany(company);
+        Company company = companyService.getCompanyById(companyId);
+        building.setCompany(company);
         logger.debug("Saving building {}", building.getName());
         building = buildingService.saveBuilding(building);
         logger.debug("Building saved successfully: {} {}", building.getBuildingId(), building.getName());

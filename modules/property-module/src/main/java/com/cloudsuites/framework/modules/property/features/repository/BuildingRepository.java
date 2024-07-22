@@ -9,6 +9,6 @@ import java.util.Optional;
 
 @Repository
 public interface BuildingRepository extends JpaRepository<Building, String> {
-    Optional<List<Building>> findByManagementCompany_ManagementCompanyId(String managementCompanyId);
+    Optional<List<Building>> findByCompany_CompanyId(String companyId);
 
 }

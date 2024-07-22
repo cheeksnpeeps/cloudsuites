@@ -2,7 +2,7 @@ package com.cloudsuites.framework.webapp.rest.user.dto;
 
 import com.cloudsuites.framework.services.property.personas.entities.StaffRole;
 import com.cloudsuites.framework.webapp.rest.property.dto.BuildingDto;
-import com.cloudsuites.framework.webapp.rest.property.dto.ManagementCompanyDto;
+import com.cloudsuites.framework.webapp.rest.property.dto.CompanyDto;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonView;
@@ -30,7 +30,7 @@ public class StaffDto {
 
     @JsonView(Views.StaffView.class)
     @Schema(hidden = true)
-    private ManagementCompanyDto managementCompany;
+    private CompanyDto company;
 
     @JsonView(Views.StaffView.class)
     @Schema(hidden = true)
