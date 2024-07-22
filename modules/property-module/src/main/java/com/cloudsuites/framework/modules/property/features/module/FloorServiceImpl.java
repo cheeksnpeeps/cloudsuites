@@ -35,28 +35,30 @@ public class FloorServiceImpl implements FloorService {
 
     @Override
     public Floor getFloorById(String buildingId, String floorId) throws NotFoundResponseException {
+        validateBuilding(buildingId);
         logger.debug("Entering getFloorById with buildingId: {} and floorId: {}", buildingId, floorId);
-
         Floor floor = floorRepository.findByBuilding_BuildingIdAndFloorId(buildingId, floorId)
                 .orElseThrow(() -> {
                     logger.error("Floor not found for buildingId: {} and floorId: {}", buildingId, floorId);
                     return new NotFoundResponseException("Floor not found: " + floorId);
                 });
-
         logger.debug("Floor found: {}", floor.getFloorNumber());
         return floor;
     }
 
     @Override
-    public List<Floor> getAllFloors(String buildingId) {
+    public List<Floor> getAllFloorsByBuildingId(String buildingId) throws NotFoundResponseException {
+        validateBuilding(buildingId);
         logger.debug("Entering getAllFloors with buildingId: {}", buildingId);
-        List<Floor> floors = floorRepository.findAll();
+        List<Floor> floors = floorRepository.findAllByBuilding_BuildingId(buildingId)
+                .orElse(new ArrayList<>());
         logger.debug("Floors found: {}", floors.size());
         return floors;
     }
 
     @Override
-    public void deleteFloorById(String buildingId, String floorId) {
+    public void deleteFloorById(String buildingId, String floorId) throws NotFoundResponseException {
+        validateBuilding(buildingId);
         logger.debug("Entering deleteFloorById with buildingId: {} and floorId: {}", buildingId, floorId);
         floorRepository.deleteById(floorId);
         logger.debug("Floor deleted: {}", floorId);
@@ -65,7 +67,8 @@ public class FloorServiceImpl implements FloorService {
     @Transactional
     @Override
     public Floor saveFloorAndUnits(String buildingId, Floor floor) throws NotFoundResponseException {
-
+        validateBuilding(buildingId);
+        logger.debug("Entering saveFloorAndUnits with buildingId: {} and floor: {}", buildingId, floor);
         Building building = buildingService.getBuildingById(buildingId);
         floor.setBuilding(building);
         // Save the floor first
@@ -92,5 +95,10 @@ public class FloorServiceImpl implements FloorService {
         return floorRepository.save(floor);
     }
 
+    private void validateBuilding(String buildingId) throws NotFoundResponseException {
+        if (buildingService.getBuildingById(buildingId) == null) {
+            throw new NotFoundResponseException("Building not found: " + buildingId);
+        }
+    }
 }
 
