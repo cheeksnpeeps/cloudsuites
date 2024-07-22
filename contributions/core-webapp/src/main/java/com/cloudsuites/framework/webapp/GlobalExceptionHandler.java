@@ -3,6 +3,7 @@ package com.cloudsuites.framework.webapp;
 import com.cloudsuites.framework.services.common.exception.CustomException;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import com.cloudsuites.framework.services.common.exception.ProblemDetails;
+import com.cloudsuites.framework.services.common.exception.ValidationException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,8 +20,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<ProblemDetails> handleCustomException(CustomException ex, HttpServletRequest request) {
         ProblemDetails problemDetails = ProblemDetails.builder()
-                .withTitle("Bad Request")
-                .withStatus(HttpStatus.BAD_REQUEST)
+                .withTitle("Custom Error")
+                .withStatus(HttpStatus.BAD_REQUEST.value())
                 .withDetail(ex.getMessage())
                 .withInstance(URI.create(request.getRequestURI()).getPath())
                 .withTimestamp(ZonedDateTime.now())
@@ -28,32 +29,46 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problemDetails);
     }
+
     @ExceptionHandler(NotFoundResponseException.class)
-    protected ResponseEntity<Object> handleNotFoundResponseException(NotFoundResponseException ex, HttpServletRequest request) {
+    protected ResponseEntity<ProblemDetails> handleNotFoundResponseException(NotFoundResponseException ex, HttpServletRequest request) {
         ProblemDetails problemDetails = ProblemDetails.builder()
-                .withTitle("Not Found")
-                .withStatus(HttpStatus.NOT_FOUND)
+                .withTitle("Resource Not Found")
+                .withStatus(HttpStatus.NOT_FOUND.value())
                 .withDetail(ex.getMessage())
                 .withInstance(URI.create(request.getRequestURI()).getPath())
                 .withTimestamp(ZonedDateTime.now())
                 .build();
+
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(problemDetails);
     }
 
-    // Default exception handler
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ProblemDetails> handleAllExceptions(Exception ex, HttpServletRequest request) {
         ProblemDetails problemDetails = ProblemDetails.builder()
                 .withTitle("Internal Server Error")
-                .withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+                .withStatus(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .withDetail(ex.getMessage())
                 .withInstance(URI.create(request.getRequestURI()).getPath())
                 .withTimestamp(ZonedDateTime.now())
                 .build();
 
-        ex.printStackTrace();
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(problemDetails);
     }
+
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<ProblemDetails> handleValidationException(ValidationException ex, HttpServletRequest request) {
+        ProblemDetails problemDetails = ProblemDetails.builder()
+                .withTitle("Validation Error")
+                .withStatus(HttpStatus.BAD_REQUEST.value())
+                .withDetail(ex.getMessage())
+                .withInstance(URI.create(request.getRequestURI()).getPath())
+                .withTimestamp(ZonedDateTime.now())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problemDetails);
+    }
+
 
 
 }
