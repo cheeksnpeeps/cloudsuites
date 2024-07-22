@@ -105,7 +105,7 @@ public class TenantRestController {
             @PathVariable String tenantId,
             @RequestBody TenantDto tenantDto) throws NotFoundResponseException {
         logger.info("Updating tenant with ID: {}", tenantId);
-
+        Tenant tenant = tenantMapper.convertToEntity(tenantDto);
         Building building = buildingService.getBuildingById(buildingId);
         Unit unit = unitService.getUnitById(buildingId, unitId);
 
@@ -115,9 +115,8 @@ public class TenantRestController {
         if (unit == null) {
             throw new NotFoundResponseException("Unit not found for ID: " + unitId);
         }
-        tenantDto.setBuildingId(buildingId);
-
-        Tenant updatedTenant = tenantService.updateTenant(tenantId, tenantMapper.convertToEntity(tenantDto));
+        tenant.setBuilding(building);
+        Tenant updatedTenant = tenantService.updateTenant(tenantId, tenant);
         TenantDto updatedTenantDto = tenantMapper.convertToDTO(updatedTenant);
         return ResponseEntity.ok(updatedTenantDto);
     }

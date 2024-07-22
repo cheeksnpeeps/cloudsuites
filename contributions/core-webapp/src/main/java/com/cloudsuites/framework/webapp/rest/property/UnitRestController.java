@@ -96,6 +96,7 @@ public class UnitRestController {
         logger.debug("Getting unit for building: {} and unit: {}", buildingId, unitId);
         Unit unit = unitService.getUnitById(buildingId, unitId);
         logger.debug("Found unit for building: {} and unit: {}", buildingId, unitId);
+        logger.debug("Unit tenants: {}", unit.getTenants().size());
         return ResponseEntity.ok().body(unitMapper.convertToDTO(unit));
     }
 

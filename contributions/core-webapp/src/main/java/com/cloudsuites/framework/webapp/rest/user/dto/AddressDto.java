@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown=true)
-@JsonView({Views.AddressView.class, Views.BuildingView.class, Views.CompanyView.class})
+@JsonView({Views.AddressView.class, Views.BuildingView.class, Views.StaffView.class, Views.CompanyView.class})
 public class AddressDto {
 
     @Schema(hidden = true)
