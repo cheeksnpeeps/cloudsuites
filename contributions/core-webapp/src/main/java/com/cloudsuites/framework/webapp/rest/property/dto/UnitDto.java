@@ -1,7 +1,7 @@
 package com.cloudsuites.framework.webapp.rest.property.dto;
 
-import com.cloudsuites.framework.services.property.personas.entities.Tenant;
 import com.cloudsuites.framework.webapp.rest.user.dto.OwnerDto;
+import com.cloudsuites.framework.webapp.rest.user.dto.TenantDto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonView;
@@ -39,7 +39,7 @@ public class UnitDto {
 
 	@Schema(description = "Tenants of the unit")
 	@JsonView({Views.UnitView.class, Views.OwnerView.class})
-	private List<Tenant> tenants;
+	private List<TenantDto> tenants;
 }
 
 

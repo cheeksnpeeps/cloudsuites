@@ -53,7 +53,6 @@ public class TenantServiceImpl implements TenantService {
             logger.error(errorMsg);
             throw new NotFoundResponseException(errorMsg);
         }
-
         // Step 3: Add tenant to the unit's list of tenants
         logger.debug("Adding tenant to unit's tenant list");
         if (unit.getTenants() == null) {

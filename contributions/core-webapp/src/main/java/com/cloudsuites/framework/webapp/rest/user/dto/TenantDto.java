@@ -21,11 +21,11 @@ public class TenantDto{
     private String buildingId;
 
     @Schema(hidden = true)
-    @JsonView(Views.TenantView.class)
+    @JsonView({Views.TenantView.class, Views.UnitView.class, Views.OwnerView.class})
     private String tenantId;
 
     @Schema(description = "Identity of the tenant")
-    @JsonView(Views.TenantView.class)
+    @JsonView({Views.TenantView.class, Views.UnitView.class, Views.OwnerView.class})
     private IdentityDto identity;
 
     @Schema(hidden = true)
