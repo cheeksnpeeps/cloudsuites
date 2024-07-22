@@ -11,10 +11,10 @@ public interface FloorService {
 
     Floor getFloorById(String buildingId, String floorId) throws NotFoundResponseException;
 
-    List<Floor> getAllFloors(String buildingId);
+    void deleteFloorById(String buildingId, String floorId) throws NotFoundResponseException;
 
-    void deleteFloorById(String buildingId, String floorId);
+    Floor saveFloorAndUnits(String buildingId, Floor floor) throws NotFoundResponseException;
 
-    Floor saveFloorAndUnits(String buildingId, Floor floor);
+    List<Floor> getAllFloorsByBuildingId(String buildingId) throws NotFoundResponseException;
 }
 
