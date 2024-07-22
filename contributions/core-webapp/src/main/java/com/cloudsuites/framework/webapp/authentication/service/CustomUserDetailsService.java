@@ -1,9 +1,6 @@
 package com.cloudsuites.framework.webapp.authentication.service;
 
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
-import com.cloudsuites.framework.services.property.features.service.ManagerService;
-import com.cloudsuites.framework.services.property.personas.service.OwnerService;
-import com.cloudsuites.framework.services.property.personas.service.TenantService;
 import com.cloudsuites.framework.services.user.UserService;
 import com.cloudsuites.framework.services.user.entities.Identity;
 import com.cloudsuites.framework.webapp.authentication.UserPrincipal;
@@ -25,8 +22,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final UserService userService;
 
     @Autowired
-    public CustomUserDetailsService(UserService userService, TenantService tenantService,
-                                    OwnerService ownerService, ManagerService managerService) {
+    public CustomUserDetailsService(UserService userService) {
         this.userService = userService;
     }
 
