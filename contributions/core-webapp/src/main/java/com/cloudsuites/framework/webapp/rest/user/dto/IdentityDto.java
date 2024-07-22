@@ -26,7 +26,7 @@ public class IdentityDto {
     private String username;
 
     @JsonView({Views.StaffView.class, Views.OwnerView.class, Views.TenantView.class, Views.UnitView.class})
-    @Schema(description = "Gender of the user", example = "MALE | FEMALE | OTHER")
+    @Schema(description = "Gender of the user", example = "FEMALE")
     private Gender gender;
 
     @JsonView({Views.StaffView.class, Views.OwnerView.class, Views.TenantView.class, Views.UnitView.class})

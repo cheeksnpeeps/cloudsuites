@@ -3,8 +3,10 @@ package com.cloudsuites.framework.modules.property.features.module;
 import com.cloudsuites.framework.modules.property.features.repository.FloorRepository;
 import com.cloudsuites.framework.modules.property.features.repository.UnitRepository;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
+import com.cloudsuites.framework.services.property.features.entities.Building;
 import com.cloudsuites.framework.services.property.features.entities.Floor;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
+import com.cloudsuites.framework.services.property.features.service.BuildingService;
 import com.cloudsuites.framework.services.property.features.service.FloorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,11 +24,13 @@ public class FloorServiceImpl implements FloorService {
 
     private static final Logger logger = LoggerFactory.getLogger(FloorServiceImpl.class);
     private final UnitRepository unitRepository;
+    private final BuildingService buildingService;
 
     @Autowired
-    public FloorServiceImpl(FloorRepository floorRepository, UnitRepository unitRepository) {
+    public FloorServiceImpl(FloorRepository floorRepository, UnitRepository unitRepository, BuildingService buildingService) {
         this.floorRepository = floorRepository;
         this.unitRepository = unitRepository;
+        this.buildingService = buildingService;
     }
 
     @Override
@@ -60,7 +64,10 @@ public class FloorServiceImpl implements FloorService {
 
     @Transactional
     @Override
-    public Floor saveFloorAndUnits(String buildingId, Floor floor) {
+    public Floor saveFloorAndUnits(String buildingId, Floor floor) throws NotFoundResponseException {
+
+        Building building = buildingService.getBuildingById(buildingId);
+        floor.setBuilding(building);
         // Save the floor first
         floor = floorRepository.save(floor);
 
@@ -70,7 +77,10 @@ public class FloorServiceImpl implements FloorService {
         // Set floor reference for each unit
         Floor finalFloor = floor;
 
-        units.forEach(unit -> unit.setFloor(finalFloor));
+        units.forEach(unit -> {
+            unit.setFloor(finalFloor);
+            unit.setBuilding(building);
+        });
 
         // Save all units
         units = unitRepository.saveAll(units);

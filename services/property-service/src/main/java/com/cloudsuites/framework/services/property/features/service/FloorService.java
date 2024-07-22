@@ -15,6 +15,6 @@ public interface FloorService {
 
     void deleteFloorById(String buildingId, String floorId);
 
-    Floor saveFloorAndUnits(String buildingId, Floor floor);
+    Floor saveFloorAndUnits(String buildingId, Floor floor) throws NotFoundResponseException;
 }
 

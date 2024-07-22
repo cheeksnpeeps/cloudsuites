@@ -1,7 +1,6 @@
 package com.cloudsuites.framework.webapp.rest.property;
 
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
-import com.cloudsuites.framework.services.property.features.entities.Building;
 import com.cloudsuites.framework.services.property.features.entities.Floor;
 import com.cloudsuites.framework.services.property.features.service.BuildingService;
 import com.cloudsuites.framework.services.property.features.service.FloorService;
@@ -29,13 +28,11 @@ public class FloorRestController {
 
     private final FloorService floorService;
     private final FloorMapper mapper;
-    private final BuildingService buildingService;
 
     @Autowired
     public FloorRestController(FloorService floorService, FloorMapper mapper, BuildingService buildingService) {
         this.floorService = floorService;
         this.mapper = mapper;
-        this.buildingService = buildingService;
     }
 
     @Operation(summary = "Get All Floors", description = "Retrieve all floors for a building based on its ID")
@@ -60,10 +57,6 @@ public class FloorRestController {
             @RequestBody @Parameter(description = "Floor details to be saved") FloorDto floorDTO) throws NotFoundResponseException {
         // Convert DTO to entity
         Floor floor = mapper.convertToEntity(floorDTO);
-
-        // Set the building reference
-        Building building = buildingService.getBuildingById(buildingId);
-        floor.setBuilding(building);
 
         // Save the floor and its units in a single transaction
         floor = floorService.saveFloorAndUnits(buildingId, floor);
