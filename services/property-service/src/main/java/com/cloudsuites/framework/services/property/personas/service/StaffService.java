@@ -16,7 +16,7 @@ public interface StaffService {
 
     Staff createStaff(Staff staff) throws NotFoundResponseException;
 
-    Staff findByUserId(Long userId) throws NotFoundResponseException;
+    Staff findByUserId(String userId) throws NotFoundResponseException;
 
     @Transactional(readOnly = true)
     List<Staff> getAllStaffByCompany(String companyId) throws NotFoundResponseException;

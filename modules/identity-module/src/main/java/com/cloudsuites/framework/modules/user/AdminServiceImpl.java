@@ -81,7 +81,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public Admin findByUserId(Long userId) throws NotFoundResponseException {
+    public Admin findByUserId(String userId) throws NotFoundResponseException {
         return adminRepository.findByIdentity_UserId(userId)
                 .orElseThrow(() -> {
                     logger.error("Admin not found for user ID: {}", userId);

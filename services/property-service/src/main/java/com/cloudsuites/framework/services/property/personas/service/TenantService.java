@@ -18,5 +18,6 @@ public interface TenantService {
     Tenant getTenantByBuildingIdAndUnitIdAndTenantId(String buildingId, String unitId, String tenantId) throws NotFoundResponseException;
 
     Tenant createTenant(Tenant tenant, String unitId) throws NotFoundResponseException;
-    Tenant findByUserId(Long userId) throws NotFoundResponseException;
+
+    Tenant findByUserId(String userId) throws NotFoundResponseException;
 }

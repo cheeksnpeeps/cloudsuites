@@ -122,7 +122,7 @@ public class TenantAuthController {
             return ResponseEntity.status(400).body(Map.of("error", "Invalid refresh token"));
         }
 
-        Identity identity = userService.getUserById(claims.get("userId", Long.class));
+        Identity identity = userService.getUserById(claims.get("userId", String.class));
         Tenant tenant = tenantService.getTenantByBuildingIdAndUnitIdAndTenantId(buildingId, unitId, tenantId);
 
         if (tenant.getIdentity().getUserId().equals(identity.getUserId())) {
@@ -143,7 +143,7 @@ public class TenantAuthController {
         // Assuming you have an implementation for sending the OTP
     }
 
-    private String generateToken(String tenantId, String buildingId, String unitId, Long userId) {
+    private String generateToken(String tenantId, String buildingId, String unitId, String userId) {
         JwtBuilder claims = Jwts.builder()
                 .subject(tenantId)
                 .audience()
@@ -156,7 +156,7 @@ public class TenantAuthController {
         return jwtTokenProvider.generateToken(claims);
     }
 
-    private String generateRefreshToken(String tenantId, String buildingId, String unitId, Long userId) {
+    private String generateRefreshToken(String tenantId, String buildingId, String unitId, String userId) {
         JwtBuilder claims = Jwts.builder()
                 .subject(tenantId)
                 .audience()

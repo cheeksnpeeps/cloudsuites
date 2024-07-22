@@ -9,12 +9,12 @@ import java.util.Map;
 
 public class UserPrincipal implements UserDetails {
 
-    private final Long userId;
+    private final String userId;
     private final Map<String, Long> personaIds;
     private final String username;
     private final Collection<? extends GrantedAuthority> authorities;
 
-    public UserPrincipal(Long userId, Map<String, Long> personaIds, String username,
+    public UserPrincipal(String userId, Map<String, Long> personaIds, String username,
                          Collection<? extends GrantedAuthority> authorities) {
         this.userId = userId;
         this.personaIds = personaIds;
@@ -31,11 +31,11 @@ public class UserPrincipal implements UserDetails {
         );
     }
 
-    public Long getUserId() {
+    public String userId() {
         return userId;
     }
 
-    public Map<String, Long> getPersonaIds() {
+    public Map<String, Long> personaIds() {
         return personaIds;
     }
 

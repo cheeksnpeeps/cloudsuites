@@ -40,7 +40,7 @@ public class TenantAuthenticationProvider implements AuthenticationProvider {
         String buildingId = claims.get("buildingId", String.class);
         String unitId = claims.get("unitId", String.class);
 
-        Identity identity = userService.getUserById(claims.get("userId", Long.class));
+        Identity identity = userService.getUserById(claims.get("userId", String.class));
         Tenant tenant = null;
         try {
             tenant = tenantService.getTenantByBuildingIdAndUnitIdAndTenantId(buildingId, unitId, tenantId);

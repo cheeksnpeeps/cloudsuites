@@ -12,7 +12,7 @@ public interface StaffRepository extends JpaRepository<Staff, String> {
 
     Optional<Staff> findByIdentity_FirstName(String name);
 
-    Optional<Staff> findByIdentity_UserId(Long userId);
+    Optional<Staff> findByIdentity_UserId(String userId);
 
     Optional<Staff> findByIdentity_Email(String email);
 

@@ -80,7 +80,7 @@ public class OwnerServiceImpl implements OwnerService {
     }
 
     @Override
-    public Owner findByUserId(Long userId) throws NotFoundResponseException {
+    public Owner findByUserId(String userId) throws NotFoundResponseException {
         return ownerRepository.findByIdentity_UserId(userId)
                 .orElseThrow(() -> {
                     logger.error("Owner not found for user ID: {}", userId);

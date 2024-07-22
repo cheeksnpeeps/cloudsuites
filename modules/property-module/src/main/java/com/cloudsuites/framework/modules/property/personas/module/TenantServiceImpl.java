@@ -81,7 +81,7 @@ public class TenantServiceImpl implements TenantService {
 
 
     @Override
-    public Tenant findByUserId(Long userId) throws NotFoundResponseException {
+    public Tenant findByUserId(String userId) throws NotFoundResponseException {
         return tenantRepository.findByIdentity_UserId(userId)
                 .orElseThrow(() -> {
                     logger.error("Tenant not found for user ID: {}", userId);

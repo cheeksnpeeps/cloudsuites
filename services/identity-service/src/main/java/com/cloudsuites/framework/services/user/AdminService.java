@@ -23,5 +23,5 @@ public interface AdminService {
 
     Admin findByName(String email) throws NotFoundResponseException;
 
-    Admin findByUserId(Long userId) throws NotFoundResponseException;
+    Admin findByUserId(String userId) throws NotFoundResponseException;
 }
