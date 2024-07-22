@@ -12,6 +12,7 @@ import java.util.List;
 @Table(name = "owner")
 public class Owner {
 
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "owner_id")

@@ -122,7 +122,7 @@ public class StaffRestController {
     @ApiResponse(responseCode = "404", description = "Staff not found")
     @GetMapping("/{id}")
     @JsonView(Views.StaffView.class)
-    public ResponseEntity<StaffDto> getStaffById(@Parameter(description = "ID of the staff to be retrieved") @PathVariable Long id) {
+    public ResponseEntity<StaffDto> getStaffById(@Parameter(description = "ID of the staff to be retrieved") @PathVariable String id) {
         logger.info("Fetching staff with ID: {}", id);
         try {
             Staff staff = staffService.getStaffById(id);
@@ -139,7 +139,7 @@ public class StaffRestController {
     @ApiResponse(responseCode = "404", description = "Staff not found")
     @PutMapping("/{id}")
     @JsonView(Views.StaffView.class)
-    public ResponseEntity<StaffDto> updateStaff(@Parameter(description = "ID of the staff to be updated") @PathVariable Long id,
+    public ResponseEntity<StaffDto> updateStaff(@Parameter(description = "ID of the staff to be updated") @PathVariable String id,
                                                 @RequestBody @Parameter(description = "Updated staff details") StaffDto staffDto) {
         logger.info("Updating staff with ID: {}", id);
         try {
@@ -157,7 +157,7 @@ public class StaffRestController {
     @ApiResponse(responseCode = "204", description = "Staff deleted successfully")
     @ApiResponse(responseCode = "404", description = "Staff not found")
     @DeleteMapping("/{staffId}")
-    public ResponseEntity<Void> deleteStaff(@Parameter(description = "ID of the staff to be deleted") @PathVariable Long staffId) throws NotFoundResponseException {
+    public ResponseEntity<Void> deleteStaff(@Parameter(description = "ID of the staff to be deleted") @PathVariable String staffId) throws NotFoundResponseException {
         logger.info("Deleting staff with ID: {}", staffId);
         staffService.deleteStaff(staffId);
         logger.info("Staff deleted successfully with ID: {}", staffId);

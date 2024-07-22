@@ -8,9 +8,9 @@ import java.util.List;
 
 public interface StaffService {
 
-    Staff getStaffById(Long staffId) throws NotFoundResponseException;
+    Staff getStaffById(String staffId) throws NotFoundResponseException;
 
-    Staff updateStaff(Long staffId, Staff staff) throws NotFoundResponseException;
+    Staff updateStaff(String staffId, Staff staff) throws NotFoundResponseException;
 
     List<Staff> getAllStaffsByBuilding(String buildingId) throws NotFoundResponseException;
 
@@ -21,5 +21,5 @@ public interface StaffService {
     @Transactional(readOnly = true)
     List<Staff> getAllStaffByCompany(String companyId) throws NotFoundResponseException;
 
-    void deleteStaff(Long id) throws NotFoundResponseException;
+    void deleteStaff(String staffId) throws NotFoundResponseException;
 }
