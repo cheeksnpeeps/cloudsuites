@@ -27,20 +27,35 @@ public class Tenant {
     @Column(name = "tenant_id", unique = true, nullable = false)
     private String tenantId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     private Identity identity;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "unit_id")
     private Unit unit;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "building_id")
     private Building building;
 
+    @Column(name = "is_owner")
+    private Boolean isOwner;
+
+    @Column(name = "is_primary_tenant")
+    private Boolean isPrimaryTenant;
+
+    @Enumerated(EnumType.STRING)
+    private TenantStatus status;
+
     public List<GrantedAuthority> getAuthorities() {
         return Collections.singletonList(new SimpleGrantedAuthority(UserType.TENANT.name()));
+    }
+
+    public Tenant() {
+        this.isOwner = false; // Default value
+        this.isPrimaryTenant = false;
+        this.status = TenantStatus.INACTIVE;// Default value
     }
 
     @PrePersist

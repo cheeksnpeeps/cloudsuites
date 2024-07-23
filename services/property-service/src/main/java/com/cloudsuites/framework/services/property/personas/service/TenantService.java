@@ -6,9 +6,11 @@ import com.cloudsuites.framework.services.property.personas.entities.Tenant;
 import java.util.List;
 
 public interface TenantService {
+
     Tenant getTenantById(String tenantId) throws NotFoundResponseException;
 
     Tenant updateTenant(String tenantId, Tenant tenant) throws NotFoundResponseException;
+
     List<Tenant> getAllTenants();
 
     List<Tenant> getAllTenantsByBuildingAndUnit(String buildingId, String unitId) throws NotFoundResponseException;
@@ -20,4 +22,6 @@ public interface TenantService {
     Tenant createTenant(Tenant tenant, String unitId) throws NotFoundResponseException;
 
     Tenant findByUserId(String userId) throws NotFoundResponseException;
+
+    void deleteByTenantId(String tenantId);
 }
