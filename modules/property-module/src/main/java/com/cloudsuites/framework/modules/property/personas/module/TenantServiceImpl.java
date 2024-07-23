@@ -139,13 +139,13 @@ public class TenantServiceImpl implements TenantService {
         if (Boolean.FALSE.equals(existingTenant.getIsOwner()) && Boolean.TRUE.equals(tenant.getIsOwner())) {
             logger.debug("Tenant is marked as owner. Creating or updating owner.");
             ownerService.createOrUpdateOwner(tenant);
+            unitService.setOwnerForUnit(tenant);
+            tenant.setIsPrimaryTenant(true);
         } else {
             tenant.getUnit().setOwner(existingTenant.getUnit().getOwner());
             logger.debug("No changes to owner status or tenant is not an owner.");
         }
 
-        // Update other tenant fields
-//        existingTenant.setIsPrimaryTenant(tenant.getIsPrimaryTenant());
         existingTenant.setIsOwner(tenant.getIsOwner());
         if (tenant.getStatus() != null) {
             logger.debug("Updating tenant status to: {}", tenant.getStatus());
