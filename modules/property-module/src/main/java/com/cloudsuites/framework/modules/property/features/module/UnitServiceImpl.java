@@ -1,9 +1,11 @@
 package com.cloudsuites.framework.modules.property.features.module;
 
 import com.cloudsuites.framework.modules.property.features.repository.UnitRepository;
+import com.cloudsuites.framework.modules.property.personas.repository.TenantRepository;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.property.features.service.UnitService;
+import com.cloudsuites.framework.services.property.personas.entities.Tenant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,13 +15,14 @@ import java.util.List;
 @Component
 public class UnitServiceImpl implements UnitService {
 
+    private static final Logger logger = LoggerFactory.getLogger(UnitServiceImpl.class);
+    private final TenantRepository tenantRepository;
     private final UnitRepository unitRepository;
 
-    private static final Logger logger = LoggerFactory.getLogger(UnitServiceImpl.class);
-
     @Autowired
-    public UnitServiceImpl(UnitRepository unitRepository) {
+    public UnitServiceImpl(UnitRepository unitRepository, TenantRepository tenantRepository) {
         this.unitRepository = unitRepository;
+        this.tenantRepository = tenantRepository;
     }
 
     @Override
@@ -87,5 +90,23 @@ public class UnitServiceImpl implements UnitService {
         logger.debug("Entering deleteAllUnitInBatch with units: {}", units.size());
         unitRepository.deleteAllInBatch(units);
         logger.debug("units {} deleted successfully", units.size());
+    }
+
+    @Override
+    public void setOwnerForUnit(Tenant tenant) throws NotFoundResponseException {
+        Unit unit = tenant.getUnit();
+        List<Tenant> tenants = tenantRepository.findByBuilding_BuildingIdAndUnit_UnitId(unit.getBuilding().getBuildingId(), unit.getUnitId())
+                .orElseThrow(() -> {
+                    logger.error("Unit not found for buildingId: {} and unitId: {}", unit.getBuilding().getBuildingId(), unit.getUnitId());
+                    return new NotFoundResponseException("Unit not found: " + unit.getUnitId());
+                });
+        // Update tenants isOwner flag to false except for the current tenant
+        tenants.forEach(t -> {
+            if (!t.getTenantId().equals(tenant.getTenantId())) {
+                t.setIsOwner(false);
+                tenantRepository.save(t);
+                t.setIsPrimaryTenant(false);
+            }
+        });
     }
 }
