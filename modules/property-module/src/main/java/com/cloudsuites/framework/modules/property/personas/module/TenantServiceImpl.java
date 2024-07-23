@@ -92,6 +92,11 @@ public class TenantServiceImpl implements TenantService {
                 });
     }
 
+    @Override
+    public void deleteByTenantId(String tenantId) {
+        tenantRepository.deleteById(tenantId);
+    }
+
     @Transactional
     @Override
     public Tenant getTenantById(String tenantId) throws NotFoundResponseException {
@@ -140,7 +145,7 @@ public class TenantServiceImpl implements TenantService {
         }
 
         // Update other tenant fields
-        existingTenant.setIsPrimaryTenant(tenant.getIsPrimaryTenant());
+//        existingTenant.setIsPrimaryTenant(tenant.getIsPrimaryTenant());
         existingTenant.setIsOwner(tenant.getIsOwner());
         if (tenant.getStatus() != null) {
             logger.debug("Updating tenant status to: {}", tenant.getStatus());

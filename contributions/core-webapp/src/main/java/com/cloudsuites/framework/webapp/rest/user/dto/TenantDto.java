@@ -43,6 +43,10 @@ public class TenantDto{
     @JsonView({Views.TenantView.class, Views.UnitView.class, Views.OwnerView.class})
     private Boolean isPrimaryTenant;
 
+    @Schema(hidden = true)
+    @JsonView(Views.TenantView.class)
+    private OwnerDto owner;
+
     @Schema(description = "Tenant status", example = "ACTIVE")
     @JsonView({Views.TenantView.class, Views.UnitView.class, Views.OwnerView.class})
     private TenantStatus status;
