@@ -23,7 +23,7 @@ public class OwnerDto {
     @Schema(hidden = true)
     private String ownerId;
 
-    @JsonView({Views.OwnerView.class, Views.UnitView.class})
+    @JsonView({Views.OwnerView.class, Views.TenantView.class, Views.UnitView.class})
     @Schema(description = "Owner's identity details")
     private IdentityDto identity;
 
@@ -34,4 +34,12 @@ public class OwnerDto {
     @JsonView({Views.OwnerView.class})
     @Schema(hidden = true)
     private List<BuildingDto> buildings;
+
+    @Schema(description = "Owner is the Tenant of the same unit", example = "true")
+    @JsonView(Views.OwnerView.class)
+    private Boolean isTenant;
+
+    @JsonView(Views.OwnerView.class)
+    @Schema(hidden = true)
+    private TenantDto tenant;
 }
