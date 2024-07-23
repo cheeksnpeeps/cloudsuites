@@ -12,7 +12,9 @@ public class Views {
 
     public static class FloorView {
     }
-    public static class UnitView extends FloorView {}
+
+    public static class UnitView {
+    }
 
     public static class OwnerView {
     }

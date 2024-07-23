@@ -36,7 +36,7 @@ public class OwnerDto {
     private List<BuildingDto> buildings;
 
     @Schema(description = "Owner is the Tenant of the same unit", example = "true")
-    @JsonView(Views.TenantView.class)
+    @JsonView(Views.OwnerView.class)
     private Boolean isTenant;
 
     @JsonView(Views.OwnerView.class)
