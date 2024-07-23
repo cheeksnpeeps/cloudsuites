@@ -5,6 +5,7 @@ import com.cloudsuites.framework.services.common.exception.NotFoundResponseExcep
 import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.property.features.service.UnitService;
 import com.cloudsuites.framework.services.property.personas.entities.Tenant;
+import com.cloudsuites.framework.services.property.personas.service.OwnerService;
 import com.cloudsuites.framework.services.property.personas.service.TenantService;
 import com.cloudsuites.framework.services.user.UserService;
 import com.cloudsuites.framework.services.user.entities.Identity;
@@ -12,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,11 +26,13 @@ public class TenantServiceImpl implements TenantService {
     private final UnitService unitService;
 
     private static final Logger logger = LoggerFactory.getLogger(TenantServiceImpl.class);
+    private final OwnerService ownerService;
 
-    public TenantServiceImpl(TenantRepository tenantRepository, UserService userService, UnitService unitService) {
+    public TenantServiceImpl(TenantRepository tenantRepository, UserService userService, UnitService unitService, OwnerService ownerService) {
         this.tenantRepository = tenantRepository;
         this.userService = userService;
         this.unitService = unitService;
+        this.ownerService = ownerService;
     }
 
     @Transactional
@@ -78,7 +82,7 @@ public class TenantServiceImpl implements TenantService {
         return savedTenant;
     }
 
-
+    @Transactional
     @Override
     public Tenant findByUserId(String userId) throws NotFoundResponseException {
         return tenantRepository.findByIdentity_UserId(userId)
@@ -88,6 +92,7 @@ public class TenantServiceImpl implements TenantService {
                 });
     }
 
+    @Transactional
     @Override
     public Tenant getTenantById(String tenantId) throws NotFoundResponseException {
         logger.info("Fetching tenant with ID: {}", tenantId);
@@ -98,16 +103,83 @@ public class TenantServiceImpl implements TenantService {
                 });
     }
 
+    @Transactional
     @Override
     public Tenant updateTenant(String tenantId, Tenant tenant) throws NotFoundResponseException {
+        // Log the start of the tenant update process
         logger.info("Updating tenant with ID: {}", tenantId);
-        Tenant existingTenant = getTenantById(tenantId);
-        existingTenant.setIdentity(tenant.getIdentity());
+
+        // Fetch the existing tenant
+        Tenant existingTenant = tenantRepository.findById(tenantId)
+                .orElseThrow(() -> {
+                    logger.error("Tenant not found with ID: {}", tenantId);
+                    return new NotFoundResponseException("Tenant not found with ID: " + tenantId);
+                });
+
+        // Log the existing tenant details
+        logger.debug("Found existing tenant: {}", existingTenant);
+
+        // Update identity if provided
+        if (tenant.getIdentity() != null) {
+            logger.debug("Updating tenant identity.");
+            Identity savedIdentity = updateTenantIdentity(tenant, existingTenant);
+            logger.debug("Updated identity: {}", savedIdentity);
+            userService.updateUser(savedIdentity.getUserId(), savedIdentity);
+            tenant.setIdentity(savedIdentity);
+        } else {
+            logger.debug("No identity update required.");
+        }
+
+        // Check and handle owner status changes
+        if (Boolean.FALSE.equals(existingTenant.getIsOwner()) && Boolean.TRUE.equals(tenant.getIsOwner())) {
+            logger.debug("Tenant is marked as owner. Creating or updating owner.");
+            ownerService.createOrUpdateOwner(tenant);
+        } else {
+            tenant.getUnit().setOwner(existingTenant.getUnit().getOwner());
+            logger.debug("No changes to owner status or tenant is not an owner.");
+        }
+
+        // Update other tenant fields
+        existingTenant.setIsPrimaryTenant(tenant.getIsPrimaryTenant());
+        existingTenant.setIsOwner(tenant.getIsOwner());
+        if (tenant.getStatus() != null) {
+            logger.debug("Updating tenant status to: {}", tenant.getStatus());
+            existingTenant.setStatus(tenant.getStatus());
+        } else {
+            logger.debug("No status update required.");
+        }
         existingTenant.setUnit(tenant.getUnit());
-        // Update other fields as necessary
+        logger.debug("Updated tenant details: {}", existingTenant);
+
+        // Save the updated tenant
         Tenant updatedTenant = tenantRepository.save(existingTenant);
         logger.info("Tenant updated successfully with ID: {}", updatedTenant.getTenantId());
+
         return updatedTenant;
+    }
+
+    private Identity updateTenantIdentity(Tenant tenant, Tenant existingTenant) {
+        Identity identity = tenant.getIdentity();
+        Identity existingIdentity = existingTenant.getIdentity();
+        if (StringUtils.hasText(identity.getFirstName())) {
+            existingIdentity.setFirstName(identity.getFirstName());
+        }
+        if (StringUtils.hasText(identity.getLastName())) {
+            existingIdentity.setLastName(identity.getLastName());
+        }
+        if (StringUtils.hasText(identity.getEmail())) {
+            existingIdentity.setEmail(identity.getEmail());
+        }
+        if (StringUtils.hasText(identity.getPhoneNumber())) {
+            existingIdentity.setPhoneNumber(identity.getPhoneNumber());
+        }
+        if (identity.getGender() != null) {
+            existingIdentity.setGender(identity.getGender());
+        }
+        if (StringUtils.hasText(identity.getUsername())) {
+            existingIdentity.setUsername(identity.getUsername());
+        }
+        return existingIdentity;
     }
 
     @Override

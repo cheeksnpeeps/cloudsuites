@@ -8,7 +8,8 @@ import com.cloudsuites.framework.services.property.features.service.UnitService;
 import com.cloudsuites.framework.services.property.personas.entities.Tenant;
 import com.cloudsuites.framework.services.property.personas.service.TenantService;
 import com.cloudsuites.framework.services.user.UserService;
-import com.cloudsuites.framework.services.user.entities.Identity;
+import com.cloudsuites.framework.webapp.authentication.util.MoveTenantRequest;
+import com.cloudsuites.framework.webapp.authentication.util.TenantUpdateRequest;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
 import com.cloudsuites.framework.webapp.rest.user.dto.TenantDto;
 import com.cloudsuites.framework.webapp.rest.user.mapper.IdentityMapper;
@@ -29,8 +30,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/v1/")
-@Tags(value = {@Tag(name = "Tenants", description = "Operations related to tenants")})
+@RequestMapping("/api/v1")
+@Tags(value = {@Tag(name = "Tenants Rev", description = "Operations related to tenants")})
 public class TenantRestController {
 
     private static final Logger logger = LoggerFactory.getLogger(TenantRestController.class);
@@ -54,37 +55,13 @@ public class TenantRestController {
         this.identityMapper = identityMapper;
     }
 
-    @Operation(summary = "Create Tenant", description = "Create a new tenant")
-    @ApiResponse(responseCode = "201", description = "Tenant created successfully", content = @Content(mediaType = "application/json"))
-    @PostMapping("/buildings/{buildingId}/units/{unitId}/tenants")
-    @JsonView(Views.TenantView.class)
-    public ResponseEntity<TenantDto> createTenant(
-            @PathVariable String buildingId,
-            @PathVariable String unitId,
-            @RequestBody TenantDto tenantDto) throws NotFoundResponseException {
-
-        if (tenantDto.getIdentity() == null) {
-            throw new NotFoundResponseException("Identity details are required");
-        }
-        Building building = buildingService.getBuildingById(buildingId);
-        Unit unit = unitService.getUnitById(buildingId, unitId);
-        Identity identity = userService.createUser(identityMapper.convertToEntity(tenantDto.getIdentity()));
-        Tenant tenant = tenantMapper.convertToEntity(tenantDto);
-        tenant.setIdentity(identity);
-        tenant.setBuilding(building);
-        tenant.setUnit(unit);
-        logger.info("Creating new tenant in building ID: {} and unit ID: {}", buildingId, unitId);
-        Tenant newTenant = tenantService.createTenant(tenant, unitId);
-        TenantDto newTenantDto = tenantMapper.convertToDTO(newTenant);
-        return ResponseEntity.status(201).body(newTenantDto);
-    }
 
     @Operation(summary = "Get Tenant by ID", description = "Retrieve a tenant by its ID")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Tenant not found")
     @GetMapping("/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}")
     @JsonView(Views.TenantView.class)
-    public ResponseEntity<TenantDto> getTenant(
+    public ResponseEntity<TenantDto> getTenantById(
             @PathVariable String buildingId,
             @PathVariable String unitId,
             @PathVariable String tenantId) throws NotFoundResponseException {
@@ -108,14 +85,16 @@ public class TenantRestController {
         Tenant tenant = tenantMapper.convertToEntity(tenantDto);
         Building building = buildingService.getBuildingById(buildingId);
         Unit unit = unitService.getUnitById(buildingId, unitId);
-
         if (building == null) {
             throw new NotFoundResponseException("Building not found for ID: " + buildingId);
         }
-        if (unit == null) {
+        if (unit == null
+                || !unit.getBuilding().getBuildingId().equals(buildingId)
+                || !unit.getUnitId().equals(unitId)) {
             throw new NotFoundResponseException("Unit not found for ID: " + unitId);
         }
         tenant.setBuilding(building);
+        tenant.setUnit(unit);
         Tenant updatedTenant = tenantService.updateTenant(tenantId, tenant);
         TenantDto updatedTenantDto = tenantMapper.convertToDTO(updatedTenant);
         return ResponseEntity.ok(updatedTenantDto);
@@ -135,29 +114,47 @@ public class TenantRestController {
         return ResponseEntity.ok(tenants);
     }
 
-    @Operation(summary = "List All Tenants for a given building", description = "Retrieve a list of all tenants for a given building")
-    @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
-    @GetMapping("/buildings/{buildingId}/tenants")
-    @JsonView(Views.TenantView.class)
-    public ResponseEntity<List<TenantDto>> listTenantsByBuilding(
-            @PathVariable String buildingId) throws NotFoundResponseException {
-        logger.info("Listing all tenants for building ID: {}", buildingId);
-        List<TenantDto> tenants = tenantService.getAllTenantsByBuilding(buildingId).stream()
-                .map(tenantMapper::convertToDTO)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(tenants);
+    // Delete Tenant
+    @DeleteMapping("/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}")
+    public ResponseEntity<?> deleteTenant(@PathVariable String buildingId, @PathVariable String unitId, @PathVariable String tenantId) {
+        // Implementation here
+        return ResponseEntity.ok().body("Delete Tenant");
     }
 
-    @Operation(summary = "List All Tenants", description = "Retrieve a list of all tenants")
-    @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
-    @GetMapping("/tenants")
-    @JsonView(Views.TenantView.class)
-    public ResponseEntity<List<TenantDto>> listTenants() {
-        logger.info("Listing all tenants");
-        List<TenantDto> tenants = tenantService.getAllTenants().stream()
-                .map(tenantMapper::convertToDTO)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(tenants);
+    // Move Out and New Tenant Moves In
+    @PutMapping("/buildings/{buildingId}/units/{unitId}/tenants/move-out-in")
+    public ResponseEntity<?> moveOutAndIn(@PathVariable String unitId, @RequestBody MoveTenantRequest request) {
+        // Implementation here
+        return ResponseEntity.ok().body("Move Out and New Tenant Moves In");
     }
+
+    // Transfer Tenant to a Different Unit
+    @PutMapping("/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}/transfer-to-unit/{newUnitId}")
+    public ResponseEntity<?> transferTenant(@PathVariable String tenantId, @PathVariable String newUnitId) {
+        // Implementation here
+        return ResponseEntity.ok().body("Transfer Tenant");
+    }
+
+    // Tenant Resigns or Leaves the Building
+    @DeleteMapping("/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}/resigns")
+    public ResponseEntity<?> tenantResigns(@PathVariable String tenantId) {
+        // Implementation here
+        return ResponseEntity.ok().body("Tenant Resigns or Leaves the Building");
+    }
+
+    // Tenant Changes Contact Information or Preferences
+    @PutMapping("/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}/update-info")
+    public ResponseEntity<?> updateTenantInfo(@PathVariable String tenantId, @RequestBody TenantUpdateRequest request) {
+        // Implementation here
+        return ResponseEntity.ok().body("Tenant Changes Contact Information or Preferences");
+    }
+
+    // Tenant is Marked as Inactive or Suspended
+    @PutMapping("/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}/inactive")
+    public ResponseEntity<?> markTenantInactive(@PathVariable String tenantId) {
+        // Implementation here
+        return ResponseEntity.ok().body("Tenant is Marked as Inactive or Suspended");
+    }
+
 
 }
