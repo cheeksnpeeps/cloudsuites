@@ -114,12 +114,36 @@ public class TenantRestController {
         return ResponseEntity.ok(tenants);
     }
 
-    // Delete Tenant
+    @Operation(summary = "Delete Tenant", description = "Delete a tenant by its ID")
+    @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @DeleteMapping("/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}")
-    public ResponseEntity<?> deleteTenant(@PathVariable String buildingId, @PathVariable String unitId, @PathVariable String tenantId) {
-        // Implementation here
-        return ResponseEntity.ok().body("Delete Tenant");
+    public ResponseEntity<String> deleteTenant(@PathVariable String buildingId, @PathVariable String unitId, @PathVariable String tenantId) throws NotFoundResponseException {
+        Building building = buildingService.getBuildingById(buildingId);
+        // Check if the unit exists
+        Unit unit = unitService.getUnitById(buildingId, unitId);
+
+        if (building == null) {
+            throw new NotFoundResponseException("Building not found for ID: " + buildingId);
+        }
+        if (unit == null
+                || !unit.getBuilding().getBuildingId().equals(buildingId)
+                || !unit.getUnitId().equals(unitId)) {
+            throw new NotFoundResponseException("Unit not found for ID: " + unitId);
+        }
+        Tenant tenant = tenantService.getTenantById(tenantId);
+        // Remove tenant from unit
+        if (tenant == null && !tenant.getTenantId().equals(tenantId)) {
+            throw new NotFoundResponseException("Tenant not associated with the specified unit.");
+        }
+        unit.getTenants().stream()
+                .filter(t -> t.getTenantId().equals(tenantId))
+                .forEach(t -> unit.getTenants().remove(t));
+        unitService.saveUnit(buildingId, unit.getFloor().getFloorId(), unit); // Save the updated unit
+        // Delete tenant
+        tenantService.deleteByTenantId(tenantId);
+        return ResponseEntity.ok().body("Tenant successfully deleted");
     }
+
 
     // Move Out and New Tenant Moves In
     @PutMapping("/buildings/{buildingId}/units/{unitId}/tenants/move-out-in")
