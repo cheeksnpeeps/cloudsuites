@@ -2,6 +2,7 @@ package com.cloudsuites.framework.services.property.features.service;
 
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
+import com.cloudsuites.framework.services.property.personas.entities.Tenant;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,4 +23,6 @@ public interface UnitService {
     List<Unit> getAllUnitsByFloor(String buildingId, String floorId) throws NotFoundResponseException;
 
     void deleteAllUnitInBatch(List<Unit> units);
+
+    void setOwnerForUnit(Tenant tenant) throws NotFoundResponseException;
 }

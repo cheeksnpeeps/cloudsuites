@@ -7,12 +7,10 @@ import com.cloudsuites.framework.services.property.features.service.BuildingServ
 import com.cloudsuites.framework.services.property.features.service.UnitService;
 import com.cloudsuites.framework.services.property.personas.entities.Tenant;
 import com.cloudsuites.framework.services.property.personas.service.TenantService;
-import com.cloudsuites.framework.services.user.UserService;
 import com.cloudsuites.framework.webapp.authentication.util.MoveTenantRequest;
 import com.cloudsuites.framework.webapp.authentication.util.TenantUpdateRequest;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
 import com.cloudsuites.framework.webapp.rest.user.dto.TenantDto;
-import com.cloudsuites.framework.webapp.rest.user.mapper.IdentityMapper;
 import com.cloudsuites.framework.webapp.rest.user.mapper.TenantMapper;
 import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.v3.oas.annotations.Operation;
@@ -40,19 +38,14 @@ public class TenantRestController {
     private final TenantMapper tenantMapper;
     private final BuildingService buildingService;
     private final UnitService unitService;
-    private final UserService userService;
-    private final IdentityMapper identityMapper;
 
     @Autowired
     public TenantRestController(TenantService tenantService, TenantMapper tenantMapper,
-                                BuildingService buildingService, UnitService unitService,
-                                UserService userService, IdentityMapper identityMapper) {
+                                BuildingService buildingService, UnitService unitService) {
         this.tenantService = tenantService;
         this.tenantMapper = tenantMapper;
         this.buildingService = buildingService;
         this.unitService = unitService;
-        this.userService = userService;
-        this.identityMapper = identityMapper;
     }
 
 
