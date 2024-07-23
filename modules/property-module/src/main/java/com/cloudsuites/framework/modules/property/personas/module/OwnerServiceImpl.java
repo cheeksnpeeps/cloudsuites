@@ -2,11 +2,13 @@ package com.cloudsuites.framework.modules.property.personas.module;
 
 import com.cloudsuites.framework.modules.property.personas.repository.OwnerRepository;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
+import com.cloudsuites.framework.services.property.features.entities.Unit;
+import com.cloudsuites.framework.services.property.features.service.UnitService;
 import com.cloudsuites.framework.services.property.personas.entities.Owner;
+import com.cloudsuites.framework.services.property.personas.entities.Tenant;
 import com.cloudsuites.framework.services.property.personas.service.OwnerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -15,8 +17,14 @@ import java.util.List;
 public class OwnerServiceImpl implements OwnerService {
 
     private static final Logger logger = LoggerFactory.getLogger(OwnerServiceImpl.class);
-    @Autowired
-    private OwnerRepository ownerRepository;
+    private final OwnerRepository ownerRepository;
+    private final UnitService unitService;
+
+    public OwnerServiceImpl(OwnerRepository ownerRepository, UnitService unitService) {
+        this.ownerRepository = ownerRepository;
+        this.unitService = unitService;
+    }
+
 
     @Override
     public Owner getOwnerById(String ownerId) throws NotFoundResponseException {
@@ -33,6 +41,50 @@ public class OwnerServiceImpl implements OwnerService {
         Owner savedOwner = ownerRepository.save(owner);
         logger.info("Owner created successfully with ID: {}", savedOwner.getOwnerId());
         return savedOwner;
+    }
+
+    @Override
+    public void createOrUpdateOwner(Tenant tenant) throws NotFoundResponseException {
+        // Log the initial state of the tenant
+        logger.info("Creating or updating owner for tenant: {}", tenant);
+
+        // Find or create the owner based on tenant's identity
+        String userId = tenant.getIdentity().getUserId();
+        logger.debug("Finding or creating owner with user ID: {}", userId);
+        Owner savedOwner = ownerRepository.findByIdentity_UserId(userId)
+                .orElseGet(() -> {
+                    logger.debug("Owner not found for user ID: {}. Creating new owner.", userId);
+                    return createOwner(tenant);
+                });
+        // Log the owner details after creation or finding
+        logger.debug("Owner found or created: {}", savedOwner);
+
+        // Retrieve building and unit IDs
+        String buildingId = tenant.getBuilding().getBuildingId();
+        String unitId = tenant.getUnit().getUnitId();
+        logger.debug("Building ID: {}, Unit ID: {}", buildingId, unitId);
+
+        // Retrieve the unit
+        logger.debug("Fetching unit with ID: {} for building ID: {}", unitId, buildingId);
+        Unit unit = unitService.getUnitById(buildingId, unitId);
+
+        // Log the unit details
+        logger.debug("Unit retrieved: {}", unit);
+
+        // Update the unit with the saved owner
+        logger.debug("Setting owner for unit: {}", savedOwner);
+        unit.setOwner(savedOwner);
+        logger.debug("Saving updated unit with owner.");
+        Unit savedUnit = unitService.saveUnit(buildingId, unit.getFloor().getFloorId(), unit);
+        tenant.setUnit(savedUnit);
+        // Log the successful update
+        logger.info("Owner created or updated successfully for tenant: {}", tenant);
+    }
+
+    private Owner createOwner(Tenant tenant) {
+        Owner owner = new Owner();
+        owner.setIdentity(tenant.getIdentity());
+        return ownerRepository.save(owner);
     }
 
     @Override
@@ -87,4 +139,5 @@ public class OwnerServiceImpl implements OwnerService {
                     return new NotFoundResponseException("Owner not found for User ID: " + userId);
                 });
     }
+
 }
