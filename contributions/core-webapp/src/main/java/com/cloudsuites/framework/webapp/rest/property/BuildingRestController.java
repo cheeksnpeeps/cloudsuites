@@ -44,7 +44,7 @@ public class BuildingRestController {
     @Operation(summary = "Get Buildings", description = "Get a list of buildings based on optional management company ID - Use -1 to get all buildings")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Not Found")
-    @JsonView(Views.UnitView.class)
+    @JsonView(Views.BuildingView.class)
     @GetMapping("")
     public ResponseEntity<List<BuildingDto>> getBuildings(@PathVariable String companyId) throws NotFoundResponseException {
         logger.debug("Getting all buildings for management company: {}", companyId);

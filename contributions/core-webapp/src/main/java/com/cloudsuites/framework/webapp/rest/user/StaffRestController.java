@@ -47,24 +47,7 @@ public class StaffRestController {
         this.buildingService = buildingService;
     }
 
-    @Operation(summary = "Get All Staffs", description = "Retrieve all staffs")
-    @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
-    @ApiResponse(responseCode = "404", description = "Staffs not found")
-    @GetMapping("/buildings/{buildingId}")
-    @JsonView(Views.StaffView.class)
-    public ResponseEntity<List<StaffDto>> getAllStaffsByBuildingId(@PathVariable String buildingId) {
-        logger.info("Fetching all staffs");
-        try {
-            List<Staff> staffs = staffService.getAllStaffsByBuilding(buildingId);
-            logger.info("Fetched {} staffs", staffs.size());
-            return ResponseEntity.ok().body(mapper.convertToDTOList(staffs));
-        } catch (NotFoundResponseException e) {
-            logger.error("Staffs not found: {}", e.getMessage());
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    @Operation(summary = "Get All Staffs", description = "Retrieve all staffs")
+    @Operation(summary = "Get All Staffs by Company ID", description = "Retrieve all staffs")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Staffs not found")
     @GetMapping("/companies/{companyId}")
@@ -81,6 +64,40 @@ public class StaffRestController {
         }
     }
 
+    @Operation(summary = "Create a new Staff for Company", description = "Create a new staff for Company")
+    @ApiResponse(responseCode = "201", description = "Staff created successfully", content = @Content(mediaType = "application/json"))
+    @ApiResponse(responseCode = "400", description = "Bad Request")
+    @PostMapping("/companies/{companyId}")
+    @JsonView(Views.StaffView.class)
+    public ResponseEntity<StaffDto> createStaff(@RequestBody @Parameter(description = "Staff details to be saved") StaffDto staffDto,
+                                                @PathVariable String companyId) throws NotFoundResponseException {
+        Staff staff = mapper.convertToEntity(staffDto);
+        staff.setCompany(companyService.getCompanyById(companyId));
+        logger.info("Creating a new staff for Company with ID: {}", companyId);
+        Identity identity = userService.createUser(staff.getIdentity());
+        staff.setIdentity(identity);
+        Staff createdStaff = staffService.createStaff(staff);
+        logger.info("Staff created with ID: {}", createdStaff.getStaffId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(mapper.convertToDTO(createdStaff));
+    }
+
+    @Operation(summary = "Get All Staffs by Building ID", description = "Retrieve all staffs")
+    @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
+    @ApiResponse(responseCode = "404", description = "Staffs not found")
+    @GetMapping("/buildings/{buildingId}")
+    @JsonView(Views.StaffView.class)
+    public ResponseEntity<List<StaffDto>> getAllStaffsByBuildingId(@PathVariable String buildingId) {
+        logger.info("Fetching all staffs");
+        try {
+            List<Staff> staffs = staffService.getAllStaffsByBuilding(buildingId);
+            logger.info("Fetched {} staffs", staffs.size());
+            return ResponseEntity.ok().body(mapper.convertToDTOList(staffs));
+        } catch (NotFoundResponseException e) {
+            logger.error("Staffs not found: {}", e.getMessage());
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @Operation(summary = "Create a new Building Staff", description = "Create a new Building staff")
     @ApiResponse(responseCode = "201", description = "Staff created successfully", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "400", description = "Bad Request")
@@ -93,23 +110,6 @@ public class StaffRestController {
         staff.setCompany(companyService.getCompanyById(companyId));
         staff.setBuilding(buildingService.getBuildingById(buildingId));
         logger.info("Creating a new staff");
-        Identity identity = userService.createUser(staff.getIdentity());
-        staff.setIdentity(identity);
-        Staff createdStaff = staffService.createStaff(staff);
-        logger.info("Staff created with ID: {}", createdStaff.getStaffId());
-        return ResponseEntity.status(HttpStatus.CREATED).body(mapper.convertToDTO(createdStaff));
-    }
-
-    @Operation(summary = "Create a new Staff for Company", description = "Create a new staff for Company")
-    @ApiResponse(responseCode = "201", description = "Staff created successfully", content = @Content(mediaType = "application/json"))
-    @ApiResponse(responseCode = "400", description = "Bad Request")
-    @PostMapping("/companies/{companyId}")
-    @JsonView(Views.StaffView.class)
-    public ResponseEntity<StaffDto> createStaff(@RequestBody @Parameter(description = "Staff details to be saved") StaffDto staffDto,
-                                                @PathVariable String companyId) throws NotFoundResponseException {
-        Staff staff = mapper.convertToEntity(staffDto);
-        staff.setCompany(companyService.getCompanyById(companyId));
-        logger.info("Creating a new staff for Company with ID: {}", companyId);
         Identity identity = userService.createUser(staff.getIdentity());
         staff.setIdentity(identity);
         Staff createdStaff = staffService.createStaff(staff);
