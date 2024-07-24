@@ -6,6 +6,7 @@ import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.property.features.service.BuildingService;
 import com.cloudsuites.framework.services.property.features.service.UnitService;
 import com.cloudsuites.framework.services.property.personas.entities.Tenant;
+import com.cloudsuites.framework.services.property.personas.entities.TenantStatus;
 import com.cloudsuites.framework.services.property.personas.service.TenantService;
 import com.cloudsuites.framework.webapp.authentication.util.MoveTenantRequest;
 import com.cloudsuites.framework.webapp.authentication.util.TenantUpdateRequest;
@@ -53,9 +54,13 @@ public class TenantRestController {
     @GetMapping("/buildings/{buildingId}/tenants")
     @JsonView(Views.TenantView.class)
     public ResponseEntity<List<TenantDto>> listTenantsByBuildingId(
-            @PathVariable String buildingId) throws NotFoundResponseException {
+            @PathVariable String buildingId,
+            @RequestParam(value = "status", required = false, defaultValue = "ACTIVE") TenantStatus status) throws NotFoundResponseException {
         logger.info("Listing all tenants for building ID: {}", buildingId);
-        List<TenantDto> tenants = tenantService.getAllTenantsByBuilding(buildingId).stream()
+        if (buildingService.getBuildingById(buildingId) == null) {
+            throw new NotFoundResponseException("Building not found for ID: " + buildingId);
+        }
+        List<TenantDto> tenants = tenantService.getAllTenantsByBuilding(buildingId, status).stream()
                 .map(tenantMapper::convertToDTO)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(tenants);
@@ -67,9 +72,10 @@ public class TenantRestController {
     @JsonView(Views.TenantView.class)
     public ResponseEntity<List<TenantDto>> listTenantsByUnit(
             @PathVariable String buildingId,
-            @PathVariable String unitId) throws NotFoundResponseException {
+            @PathVariable String unitId,
+            @RequestParam(value = "status", required = false, defaultValue = "ACTIVE") TenantStatus status) throws NotFoundResponseException {
         logger.info("Listing all tenants for building ID: {} and unit ID: {}", buildingId, unitId);
-        List<TenantDto> tenants = tenantService.getAllTenantsByBuildingAndUnit(buildingId, unitId).stream()
+        List<TenantDto> tenants = tenantService.getAllTenantsByBuildingAndUnit(buildingId, unitId, status).stream()
                 .map(tenantMapper::convertToDTO)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(tenants);
@@ -122,7 +128,10 @@ public class TenantRestController {
     @Operation(summary = "Delete Tenant", description = "Delete a tenant by its ID")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @DeleteMapping("/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}")
-    public ResponseEntity<String> deleteTenant(@PathVariable String buildingId, @PathVariable String unitId, @PathVariable String tenantId) throws NotFoundResponseException {
+    public ResponseEntity<String> deleteTenant(
+            @PathVariable String buildingId,
+            @PathVariable String unitId,
+            @PathVariable String tenantId) throws NotFoundResponseException {
         Building building = buildingService.getBuildingById(buildingId);
         // Check if the unit exists
         Unit unit = unitService.getUnitById(buildingId, unitId);
