@@ -29,7 +29,6 @@ public class Floor {
     @OneToMany(mappedBy = "floor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Unit> units;
 
-    // Other floor attributes
     @Column(name = "floor_number")
     private Integer floorNumber;
 
