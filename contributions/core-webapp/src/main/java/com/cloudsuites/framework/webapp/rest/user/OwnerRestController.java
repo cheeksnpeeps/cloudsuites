@@ -62,6 +62,23 @@ public class OwnerRestController {
         }
     }
 
+    @Operation(summary = "Get Owner by ID", description = "Retrieve owner details by ID")
+    @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
+    @ApiResponse(responseCode = "404", description = "Owner not found")
+    @GetMapping("/{ownerId}")
+    @JsonView(Views.OwnerView.class)
+    public ResponseEntity<OwnerDto> getOwnerById(@Parameter(description = "ID of the owner to be retrieved") @PathVariable String ownerId) {
+        logger.info("Fetching owner with ID: {}", ownerId);
+        try {
+            Owner owner = ownerService.getOwnerById(ownerId);
+            logger.info("Owner fetched with ID: {}", owner.getOwnerId());
+            return ResponseEntity.ok().body(mapper.convertToDTO(owner));
+        } catch (NotFoundResponseException e) {
+            logger.error("Owner not found with ID: {}", ownerId);
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @Operation(summary = "Create a new Owner", description = "Create a new owner")
     @ApiResponse(responseCode = "201", description = "Owner created successfully", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "400", description = "Bad Request")
@@ -75,23 +92,6 @@ public class OwnerRestController {
         Owner createdOwner = ownerService.createOwner(owner);
         logger.info("Owner created with ID: {}", createdOwner.getOwnerId());
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.convertToDTO(createdOwner));
-    }
-
-    @Operation(summary = "Get Owner by ID", description = "Retrieve owner details by ID")
-    @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
-    @ApiResponse(responseCode = "404", description = "Owner not found")
-    @GetMapping("/{id}")
-    @JsonView(Views.OwnerView.class)
-    public ResponseEntity<OwnerDto> getOwnerById(@Parameter(description = "ID of the owner to be retrieved") @PathVariable String ownerId) {
-        logger.info("Fetching owner with ID: {}", ownerId);
-        try {
-            Owner owner = ownerService.getOwnerById(ownerId);
-            logger.info("Owner fetched with ID: {}", owner.getOwnerId());
-            return ResponseEntity.ok().body(mapper.convertToDTO(owner));
-        } catch (NotFoundResponseException e) {
-            logger.error("Owner not found with ID: {}", ownerId);
-            return ResponseEntity.notFound().build();
-        }
     }
 
     @Operation(summary = "Update Owner by ID", description = "Update owner details by ID")
