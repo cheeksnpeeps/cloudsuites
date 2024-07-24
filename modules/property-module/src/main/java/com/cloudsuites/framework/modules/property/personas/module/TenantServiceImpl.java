@@ -130,35 +130,31 @@ public class TenantServiceImpl implements TenantService {
             Identity savedIdentity = updateTenantIdentity(tenant, existingTenant);
             logger.debug("Updated identity: {}", savedIdentity);
             userService.updateUser(savedIdentity.getUserId(), savedIdentity);
-            tenant.setIdentity(savedIdentity);
+            existingTenant.setIdentity(savedIdentity);
         } else {
             logger.debug("No identity update required.");
         }
 
         // Check and handle owner status changes
         if (Boolean.FALSE.equals(existingTenant.getIsOwner()) && Boolean.TRUE.equals(tenant.getIsOwner())) {
-            logger.debug("Tenant is marked as owner. Creating or updating owner.");
-            ownerService.createOrUpdateOwner(tenant);
-            unitService.setOwnerForUnit(tenant);
-            tenant.setIsPrimaryTenant(true);
+            logger.debug("Tenant is now marked as owner. Creating or updating owner.");
+            ownerService.createOrUpdateOwner(existingTenant);
+            unitService.setOwnerForUnit(existingTenant);
+            existingTenant.setIsPrimaryTenant(true);
+            existingTenant.setIsOwner(tenant.getIsOwner());
         } else {
-            tenant.getUnit().setOwner(existingTenant.getUnit().getOwner());
             logger.debug("No changes to owner status or tenant is not an owner.");
         }
-
-        existingTenant.setIsOwner(tenant.getIsOwner());
         if (tenant.getStatus() != null) {
             logger.debug("Updating tenant status to: {}", tenant.getStatus());
             existingTenant.setStatus(tenant.getStatus());
         } else {
             logger.debug("No status update required.");
         }
-        existingTenant.setUnit(tenant.getUnit());
-        logger.debug("Updated tenant details: {}", existingTenant);
-
+        logger.debug("Updated tenant details for: {}", existingTenant.getTenantId());
         // Save the updated tenant
         Tenant updatedTenant = tenantRepository.save(existingTenant);
-        logger.info("Tenant updated successfully with ID: {}", updatedTenant.getTenantId());
+        logger.info("Tenant updated successfully {} ", updatedTenant.getTenantId());
 
         return updatedTenant;
     }

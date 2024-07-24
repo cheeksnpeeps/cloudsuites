@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1")
-@Tags(value = {@Tag(name = "Tenants Rev", description = "Operations related to tenants")})
+@Tags(value = {@Tag(name = "Tenants", description = "Operations related to tenants")})
 public class TenantRestController {
 
     private static final Logger logger = LoggerFactory.getLogger(TenantRestController.class);
@@ -48,6 +48,32 @@ public class TenantRestController {
         this.unitService = unitService;
     }
 
+    @Operation(summary = "List All Tenants by Building ID", description = "Retrieve a list of all tenants for a given Building")
+    @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
+    @GetMapping("/buildings/{buildingId}/tenants")
+    @JsonView(Views.TenantView.class)
+    public ResponseEntity<List<TenantDto>> listTenantsByBuildingId(
+            @PathVariable String buildingId) throws NotFoundResponseException {
+        logger.info("Listing all tenants for building ID: {}", buildingId);
+        List<TenantDto> tenants = tenantService.getAllTenantsByBuilding(buildingId).stream()
+                .map(tenantMapper::convertToDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(tenants);
+    }
+
+    @Operation(summary = "List All Tenants for a given unit", description = "Retrieve a list of all tenants for a given unit")
+    @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
+    @GetMapping("/buildings/{buildingId}/units/{unitId}/tenants")
+    @JsonView(Views.TenantView.class)
+    public ResponseEntity<List<TenantDto>> listTenantsByUnit(
+            @PathVariable String buildingId,
+            @PathVariable String unitId) throws NotFoundResponseException {
+        logger.info("Listing all tenants for building ID: {} and unit ID: {}", buildingId, unitId);
+        List<TenantDto> tenants = tenantService.getAllTenantsByBuildingAndUnit(buildingId, unitId).stream()
+                .map(tenantMapper::convertToDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(tenants);
+    }
 
     @Operation(summary = "Get Tenant by ID", description = "Retrieve a tenant by its ID")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
@@ -93,20 +119,6 @@ public class TenantRestController {
         return ResponseEntity.ok(updatedTenantDto);
     }
 
-    @Operation(summary = "List All Tenants for a given unit", description = "Retrieve a list of all tenants for a given unit")
-    @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
-    @GetMapping("/buildings/{buildingId}/units/{unitId}/tenants")
-    @JsonView(Views.TenantView.class)
-    public ResponseEntity<List<TenantDto>> listTenants(
-            @PathVariable String buildingId,
-            @PathVariable String unitId) throws NotFoundResponseException {
-        logger.info("Listing all tenants for building ID: {} and unit ID: {}", buildingId, unitId);
-        List<TenantDto> tenants = tenantService.getAllTenantsByBuildingAndUnit(buildingId, unitId).stream()
-                .map(tenantMapper::convertToDTO)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(tenants);
-    }
-
     @Operation(summary = "Delete Tenant", description = "Delete a tenant by its ID")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @DeleteMapping("/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}")
@@ -125,7 +137,7 @@ public class TenantRestController {
         }
         Tenant tenant = tenantService.getTenantById(tenantId);
         // Remove tenant from unit
-        if (tenant == null && !tenant.getTenantId().equals(tenantId)) {
+        if (tenant == null || !tenant.getTenantId().equals(tenantId)) {
             throw new NotFoundResponseException("Tenant not associated with the specified unit.");
         }
         unit.getTenants().stream()
@@ -172,6 +184,5 @@ public class TenantRestController {
         // Implementation here
         return ResponseEntity.ok().body("Tenant is Marked as Inactive or Suspended");
     }
-
 
 }

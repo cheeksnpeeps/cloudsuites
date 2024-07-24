@@ -51,6 +51,20 @@ public class FloorRestController {
         return ResponseEntity.ok().body(floors);
     }
 
+    @Operation(summary = "Get a Floor by ID", description = "Retrieve floor details based on building ID and floor ID")
+    @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
+    @ApiResponse(responseCode = "404", description = "Building or floor not found")
+    @JsonView(Views.FloorView.class)
+    @GetMapping("/{floorId}")
+    public ResponseEntity<FloorDto> getFloorById(
+            @Parameter(description = "ID of the building") @PathVariable String buildingId,
+            @Parameter(description = "ID of the floor to be retrieved") @PathVariable String floorId) throws NotFoundResponseException {
+        logger.debug("Fetching floor ID: {} for building ID: {}", floorId, buildingId);
+        FloorDto floor = mapper.convertToDTO(floorService.getFloorById(buildingId, floorId));
+        logger.info("Successfully retrieved floor ID: {} for building ID: {}", floorId, buildingId);
+        return ResponseEntity.ok().body(floor);
+    }
+
     @Operation(summary = "Save a Floor", description = "Create a new floor for a building based on its ID")
     @ApiResponse(responseCode = "201", description = "Floor created successfully", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "400", description = "Bad Request")
@@ -65,20 +79,6 @@ public class FloorRestController {
         floor = floorService.saveFloorAndUnits(buildingId, floor);
         logger.info("Successfully saved floor ID: {} for building ID: {}", floor.getFloorId(), buildingId);
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.convertToDTO(floor));
-    }
-
-    @Operation(summary = "Get a Floor by ID", description = "Retrieve floor details based on building ID and floor ID")
-    @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
-    @ApiResponse(responseCode = "404", description = "Building or floor not found")
-    @JsonView(Views.FloorView.class)
-    @GetMapping("/{floorId}")
-    public ResponseEntity<FloorDto> getFloorById(
-            @Parameter(description = "ID of the building") @PathVariable String buildingId,
-            @Parameter(description = "ID of the floor to be retrieved") @PathVariable String floorId) throws NotFoundResponseException {
-        logger.debug("Fetching floor ID: {} for building ID: {}", floorId, buildingId);
-        FloorDto floor = mapper.convertToDTO(floorService.getFloorById(buildingId, floorId));
-        logger.info("Successfully retrieved floor ID: {} for building ID: {}", floorId, buildingId);
-        return ResponseEntity.ok().body(floor);
     }
 
     @Operation(summary = "Delete a Floor by ID", description = "Delete a floor based on building ID and floor ID")
