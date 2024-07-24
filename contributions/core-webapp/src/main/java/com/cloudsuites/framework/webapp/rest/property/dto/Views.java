@@ -7,7 +7,7 @@ public class Views {
     public static class AddressView extends CompanyView {
     }
 
-    public static class BuildingView extends CompanyView {
+    public static class BuildingView {
     }
 
     public static class FloorView {
