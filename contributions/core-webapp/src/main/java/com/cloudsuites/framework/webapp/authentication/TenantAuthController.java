@@ -36,8 +36,8 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/v1/rev/buildings/{buildingId}/units/{unitId}")
-@Tags(value = {@Tag(name = "Tenant Authentication Rev", description = "Operations related to tenant authentication")})
+@RequestMapping("/api/v1/buildings/{buildingId}/units/{unitId}")
+@Tags(value = {@Tag(name = "Tenant Authentication", description = "Operations related to tenant authentication")})
 public class TenantAuthController {
 
     private static final Logger logger = LoggerFactory.getLogger(TenantAuthController.class);
@@ -147,6 +147,10 @@ public class TenantAuthController {
 
         validateBuildingAndUnit(buildingId, unitId);
         Tenant tenant = tenantService.getTenantByBuildingIdAndUnitIdAndTenantId(buildingId, unitId, tenantId);
+        if (tenant.getStatus() == TenantStatus.ACTIVE || tenant.getStatus() == TenantStatus.PENDING) {
+            logger.error("Tenant is inactive");
+            return ResponseEntity.status(400).body(Map.of("error", "Tenant is inactive"));
+        }
         Identity identity = tenant.getIdentity();
 
         if (otpService.verifyOtp(identity.getPhoneNumber(), otp)) {
@@ -169,7 +173,11 @@ public class TenantAuthController {
             @PathVariable String unitId,
             @PathVariable String tenantId,
             @RequestParam @Parameter(description = "Refresh token") String refreshToken) throws NotFoundResponseException {
-
+        Tenant tenant = tenantService.getTenantByBuildingIdAndUnitIdAndTenantId(buildingId, unitId, tenantId);
+        if (tenant.getStatus() == TenantStatus.ACTIVE || tenant.getStatus() == TenantStatus.PENDING) {
+            logger.error("Tenant is inactive");
+            return ResponseEntity.status(400).body(Map.of("error", "Tenant is inactive"));
+        }
         if (!jwtTokenProvider.validateToken(refreshToken)) {
             logger.error("Invalid refresh token");
             return ResponseEntity.status(400).body(Map.of("error", "Invalid refresh token"));
@@ -181,8 +189,6 @@ public class TenantAuthController {
         }
 
         Identity identity = userService.getUserById(claims.get("userId", String.class));
-        Tenant tenant = tenantService.getTenantByBuildingIdAndUnitIdAndTenantId(buildingId, unitId, tenantId);
-
         if (tenant.getIdentity().getUserId().equals(identity.getUserId())) {
             String token = generateToken(tenantId, buildingId, unitId, identity.getUserId());
 
