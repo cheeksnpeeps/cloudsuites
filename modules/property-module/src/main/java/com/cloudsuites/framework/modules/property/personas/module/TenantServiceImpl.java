@@ -5,6 +5,7 @@ import com.cloudsuites.framework.services.common.exception.NotFoundResponseExcep
 import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.property.features.service.UnitService;
 import com.cloudsuites.framework.services.property.personas.entities.Tenant;
+import com.cloudsuites.framework.services.property.personas.entities.TenantStatus;
 import com.cloudsuites.framework.services.property.personas.service.OwnerService;
 import com.cloudsuites.framework.services.property.personas.service.TenantService;
 import com.cloudsuites.framework.services.user.UserService;
@@ -12,7 +13,6 @@ import com.cloudsuites.framework.services.user.entities.Identity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
@@ -35,7 +35,6 @@ public class TenantServiceImpl implements TenantService {
         this.ownerService = ownerService;
     }
 
-    @Transactional
     @Override
     public Tenant createTenant(Tenant tenant, String unitId) throws NotFoundResponseException {
         // Log the start of the tenant creation process
@@ -82,7 +81,6 @@ public class TenantServiceImpl implements TenantService {
         return savedTenant;
     }
 
-    @Transactional
     @Override
     public Tenant findByUserId(String userId) throws NotFoundResponseException {
         return tenantRepository.findByIdentity_UserId(userId)
@@ -97,7 +95,6 @@ public class TenantServiceImpl implements TenantService {
         tenantRepository.deleteById(tenantId);
     }
 
-    @Transactional
     @Override
     public Tenant getTenantById(String tenantId) throws NotFoundResponseException {
         logger.info("Fetching tenant with ID: {}", tenantId);
@@ -108,7 +105,6 @@ public class TenantServiceImpl implements TenantService {
                 });
     }
 
-    @Transactional
     @Override
     public Tenant updateTenant(String tenantId, Tenant tenant) throws NotFoundResponseException {
         // Log the start of the tenant update process
@@ -184,18 +180,32 @@ public class TenantServiceImpl implements TenantService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<Tenant> getAllTenants() {
+    public List<Tenant> getAllTenants(TenantStatus status) throws NotFoundResponseException {
         logger.info("Fetching all tenants");
+        if (status != null) {
+            logger.info("Fetching all tenants with status: {}", status);
+            return tenantRepository.findByStatus(status).orElseThrow(() -> {
+                logger.error("No tenants found with status: {}", status);
+                return new NotFoundResponseException("No tenants found with status: " + status);
+            });
+        }
         List<Tenant> tenants = tenantRepository.findAll();
         logger.info("Total tenants found: {}", tenants.size());
         return tenants;
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<Tenant> getAllTenantsByBuildingAndUnit(String buildingId, String unitId) throws NotFoundResponseException {
+    public List<Tenant> getAllTenantsByBuildingAndUnit(String buildingId, String unitId, TenantStatus status) throws NotFoundResponseException {
         logger.info("Fetching all tenants for building ID: {} and unit ID: {}", buildingId, unitId);
+        if (status != null) {
+            logger.info("Fetching all tenants with status: {}", status);
+            List<Tenant> tenants = tenantRepository.findByBuilding_BuildingIdAndUnit_UnitIdAndStatus(buildingId, unitId, status)
+                    .orElseThrow(() -> {
+                        logger.error("No tenants found for building ID: {} and unit ID: {}", buildingId, unitId);
+                        return new NotFoundResponseException("No active tenants found for Building ID: " + buildingId + " and Unit ID: " + unitId);
+                    });
+            return tenants;
+        }
         return tenantRepository.findByBuilding_BuildingIdAndUnit_UnitId(buildingId, unitId)
                 .orElseThrow(() -> {
                     logger.error("No tenants found for building ID: {} and unit ID: {}", buildingId, unitId);
@@ -204,9 +214,16 @@ public class TenantServiceImpl implements TenantService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<Tenant> getAllTenantsByBuilding(String buildingId) throws NotFoundResponseException {
+    public List<Tenant> getAllTenantsByBuilding(String buildingId, TenantStatus status) throws NotFoundResponseException {
         logger.info("Fetching all tenants for building ID: {}", buildingId);
+        if (status != null) {
+            logger.info("Fetching all tenants with status: {}", status);
+            return tenantRepository.findByBuilding_BuildingIdAndStatus(buildingId, status)
+                    .orElseThrow(() -> {
+                        logger.error("No tenants found for building ID: {} with status: {}", buildingId, status);
+                        return new NotFoundResponseException("No tenants found for Building ID: " + buildingId + " with status: " + status);
+                    });
+        }
         return tenantRepository.findByBuilding_BuildingId(buildingId)
                 .orElseThrow(() -> {
                     logger.error("No tenants found for building ID: {}", buildingId);
@@ -215,7 +232,6 @@ public class TenantServiceImpl implements TenantService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public Tenant getTenantByBuildingIdAndUnitIdAndTenantId(String buildingId, String unitId, String tenantId) throws NotFoundResponseException {
         logger.info("Fetching tenant for building ID: {}, unit ID: {}, and tenant ID: {}", buildingId, unitId, tenantId);
         return tenantRepository.findByBuilding_BuildingIdAndUnit_UnitIdAndTenantId(buildingId, unitId, tenantId)

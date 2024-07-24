@@ -90,7 +90,7 @@ public class TenantAuthController {
             logger.debug("Tenant is marked as primary. Fetching existing tenants for unit: {}", unitId);
 
             // Fetch existing tenants for the specified building and unit
-            List<Tenant> existingTenants = tenantService.getAllTenantsByBuildingAndUnit(buildingId, unitId);
+            List<Tenant> existingTenants = tenantService.getAllTenantsByBuildingAndUnit(buildingId, unitId, TenantStatus.ACTIVE);
 
             // Log basic information about existing tenants
             logger.debug("Existing tenants for unit {}: {}", unitId, existingTenants.size());
