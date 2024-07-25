@@ -144,7 +144,7 @@ public class TenantRestController {
             throw new NotFoundResponseException("Unit not found for ID: " + unitId);
         }
         Tenant tenant = tenantService.getTenantById(tenantId);
-        tenantService.disableTenant(tenant);
+        tenantService.inactivateTenant(tenant);
         return ResponseEntity.ok().body("Tenant successfully deleted");
     }
 
@@ -186,7 +186,7 @@ public class TenantRestController {
         if (tenant == null || !unitId.equals(tenant.getUnit().getUnitId()))
             throw new NotFoundResponseException("Tenant not found for ID: " + tenantId + " in unit " + unitId);
 
-        tenantService.disableTenant(tenant);
+        tenantService.inactivateTenant(tenant);
 
         return ResponseEntity.ok().body("Tenant inactivated");
     }

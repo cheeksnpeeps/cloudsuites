@@ -39,7 +39,7 @@ public interface TenantService {
 
     void transferTenant(Tenant tenant, Unit newUnit, Unit oldUnit) throws InvalidOperationException;
 
-    void disableTenant(Tenant tenant);
+    void inactivateTenant(Tenant tenant);
 
     void saveTenant(Tenant tenant);
 }
