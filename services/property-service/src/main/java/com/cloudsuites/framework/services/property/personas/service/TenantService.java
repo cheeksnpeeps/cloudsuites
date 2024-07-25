@@ -38,4 +38,8 @@ public interface TenantService {
     void deleteByTenantId(String tenantId);
 
     void transferTenant(Tenant tenant, Unit newUnit, Unit oldUnit) throws InvalidOperationException;
+
+    void disableTenant(Tenant tenant);
+
+    void saveTenant(Tenant tenant);
 }

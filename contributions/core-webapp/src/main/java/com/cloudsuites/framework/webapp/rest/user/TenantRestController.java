@@ -9,7 +9,6 @@ import com.cloudsuites.framework.services.property.features.service.UnitService;
 import com.cloudsuites.framework.services.property.personas.entities.Tenant;
 import com.cloudsuites.framework.services.property.personas.entities.TenantStatus;
 import com.cloudsuites.framework.services.property.personas.service.TenantService;
-import com.cloudsuites.framework.webapp.authentication.util.TenantUpdateRequest;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
 import com.cloudsuites.framework.webapp.rest.user.dto.TenantDto;
 import com.cloudsuites.framework.webapp.rest.user.mapper.TenantMapper;
@@ -145,13 +144,7 @@ public class TenantRestController {
             throw new NotFoundResponseException("Unit not found for ID: " + unitId);
         }
         Tenant tenant = tenantService.getTenantById(tenantId);
-        // Remove tenant from unit
-        unit.getTenants().stream()
-                .filter(t -> t.getTenantId().equals(tenantId))
-                .forEach(t -> unit.getTenants().remove(t));
-        unitService.saveUnit(buildingId, unit.getFloor().getFloorId(), unit); // Save the updated unit
-        // Delete tenant
-        tenantService.deleteByTenantId(tenantId);
+        tenantService.disableTenant(tenant);
         return ResponseEntity.ok().body("Tenant successfully deleted");
     }
 
@@ -159,49 +152,43 @@ public class TenantRestController {
     @Operation(summary = "Update Tenant", description = "Transfer Tenant to a Different Unit")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Tenant not found")
-    @PutMapping("/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}/transfer-to-unit/{newUnitId}")
+    @PutMapping("/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}/transfer/{newUnitId}")
     public ResponseEntity<String> transferTenant(@PathVariable String buildingId,
                                                  @PathVariable String tenantId,
                                                  @PathVariable String unitId,
                                                  @PathVariable String newUnitId) throws NotFoundResponseException, InvalidOperationException {
         Building building = buildingService.getBuildingById(buildingId);
-        if (building == null) {
-            throw new NotFoundResponseException("Building not found for ID: " + buildingId);
-        }
+        if (building == null) throw new NotFoundResponseException("Building not found for ID: " + buildingId);
+
         Unit newUnit = unitService.getUnitById(buildingId, newUnitId);
-        if (newUnit == null) {
-            throw new NotFoundResponseException("Unit not found for ID: " + newUnitId);
-        }
+        if (newUnit == null) throw new NotFoundResponseException("Unit not found for ID: " + newUnitId);
+
         Tenant tenant = tenantService.getTenantById(tenantId);
-        if (tenant == null || !unitId.equals(tenant.getUnit().getUnitId())) {
+        if (tenant == null || !unitId.equals(tenant.getUnit().getUnitId()))
             throw new NotFoundResponseException("Tenant not found for ID: " + tenantId + " in unit " + unitId);
-        }
+
         Unit oldUnit = unitService.getUnitById(buildingId, unitId);
-        // if tenant is primary tenant, transfer all tenants in the unit
+
         tenantService.transferTenant(tenant, newUnit, oldUnit);
 
         return ResponseEntity.ok().body("Tenant transferred to new unit");
     }
 
-    // Tenant Resigns or Leaves the Building
-    @DeleteMapping("/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}/resigns")
-    public ResponseEntity<?> tenantResigns(@PathVariable String tenantId) {
-        // Implementation here
-        return ResponseEntity.ok().body("Tenant Resigns or Leaves the Building");
-    }
 
-    // Tenant Changes Contact Information or Preferences
-    @PutMapping("/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}/update-info")
-    public ResponseEntity<?> updateTenantInfo(@PathVariable String tenantId, @RequestBody TenantUpdateRequest request) {
-        // Implementation here
-        return ResponseEntity.ok().body("Tenant Changes Contact Information or Preferences");
-    }
+    @DeleteMapping("/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}/inactivate")
+    public ResponseEntity<String> inactivateTenant(@PathVariable String buildingId,
+                                                   @PathVariable String tenantId,
+                                                   @PathVariable String unitId) throws NotFoundResponseException, InvalidOperationException {
+        Building building = buildingService.getBuildingById(buildingId);
+        if (building == null) throw new NotFoundResponseException("Building not found for ID: " + buildingId);
 
-    // Tenant is Marked as Inactive or Suspended
-    @PutMapping("/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}/inactive")
-    public ResponseEntity<?> markTenantInactive(@PathVariable String tenantId) {
-        // Implementation here
-        return ResponseEntity.ok().body("Tenant is Marked as Inactive or Suspended");
+        Tenant tenant = tenantService.getTenantById(tenantId);
+        if (tenant == null || !unitId.equals(tenant.getUnit().getUnitId()))
+            throw new NotFoundResponseException("Tenant not found for ID: " + tenantId + " in unit " + unitId);
+
+        tenantService.disableTenant(tenant);
+
+        return ResponseEntity.ok().body("Tenant inactivated");
     }
 
 }

@@ -130,6 +130,24 @@ public class TenantServiceImpl implements TenantService {
     }
 
     @Override
+    public void disableTenant(Tenant tenant) {
+        if (tenant.getUnit() == null) {
+            logger.error("No unit found for tenant: {}", tenant.getTenantId());
+            return;
+        }
+        tenant.setStatus(TenantStatus.INACTIVE);
+        if (Boolean.TRUE.equals(tenant.getIsPrimaryTenant())) {
+            tenant.getUnit().getTenants().forEach(t -> t.setStatus(TenantStatus.INACTIVE));
+        }
+        tenantRepository.save(tenant);
+    }
+
+    @Override
+    public void saveTenant(Tenant tenant) {
+        tenantRepository.save(tenant);
+    }
+
+    @Override
     public Tenant getTenantById(String tenantId) throws NotFoundResponseException {
         logger.info("Fetching tenant with ID: {}", tenantId);
         return tenantRepository.findById(tenantId)
@@ -233,12 +251,11 @@ public class TenantServiceImpl implements TenantService {
         logger.info("Fetching all tenants for building ID: {} and unit ID: {}", buildingId, unitId);
         if (status != null) {
             logger.info("Fetching all tenants with status: {}", status);
-            List<Tenant> tenants = tenantRepository.findByBuilding_BuildingIdAndUnit_UnitIdAndStatus(buildingId, unitId, status)
+            return tenantRepository.findByBuilding_BuildingIdAndUnit_UnitIdAndStatus(buildingId, unitId, status)
                     .orElseThrow(() -> {
                         logger.error("No tenants found for building ID: {} and unit ID: {}", buildingId, unitId);
                         return new NotFoundResponseException("No active tenants found for Building ID: " + buildingId + " and Unit ID: " + unitId);
                     });
-            return tenants;
         }
         return tenantRepository.findByBuilding_BuildingIdAndUnit_UnitId(buildingId, unitId)
                 .orElseThrow(() -> {
