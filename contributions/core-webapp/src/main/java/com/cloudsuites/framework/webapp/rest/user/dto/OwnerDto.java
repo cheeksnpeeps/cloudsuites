@@ -1,6 +1,5 @@
 package com.cloudsuites.framework.webapp.rest.user.dto;
 
-import com.cloudsuites.framework.webapp.rest.property.dto.BuildingDto;
 import com.cloudsuites.framework.webapp.rest.property.dto.UnitDto;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -30,10 +29,6 @@ public class OwnerDto {
     @JsonView({Views.OwnerView.class})
     @Schema(hidden = true)
     private List<UnitDto> units;
-
-    @JsonView({Views.OwnerView.class})
-    @Schema(hidden = true)
-    private List<BuildingDto> buildings;
 
     @Schema(description = "Owner is the Tenant of the same unit", example = "true")
     @JsonView(Views.OwnerView.class)

@@ -17,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -61,11 +60,6 @@ public class TenantServiceImpl implements TenantService {
             throw new NotFoundResponseException(errorMsg);
         }
         // Step 3: Add tenant to the unit's list of tenants
-        logger.debug("Adding tenant to unit's tenant list");
-        if (unit.getTenants() == null) {
-            unit.setTenants(new ArrayList<>());
-        }
-        unit.getTenants().add(tenant);
         unit.setBuilding(tenant.getBuilding());
 
         // Save the updated unit
@@ -79,7 +73,8 @@ public class TenantServiceImpl implements TenantService {
         // Step 4: Save the tenant
         logger.debug("Saving tenant to repository");
         Tenant savedTenant = tenantRepository.save(tenant);
-
+        unit.addTenant(savedTenant);
+        unitRepository.save(unit);
         // Log success and return the saved tenant
         logger.info("Tenant created successfully with ID: {}", savedTenant.getTenantId());
         return savedTenant;
@@ -130,7 +125,7 @@ public class TenantServiceImpl implements TenantService {
     }
 
     @Override
-    public void disableTenant(Tenant tenant) {
+    public void inactivateTenant(Tenant tenant) {
         if (tenant.getUnit() == null) {
             logger.error("No unit found for tenant: {}", tenant.getTenantId());
             return;

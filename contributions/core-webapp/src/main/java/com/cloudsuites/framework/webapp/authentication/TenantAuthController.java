@@ -79,8 +79,6 @@ public class TenantAuthController {
 
         // Convert TenantDto to Tenant entity
         Tenant tenant = tenantMapper.convertToEntity(tenantDto);
-        logger.debug("Converted TenantDto to Tenant entity with ID: {}", tenant.getTenantId());
-
         // Set the building information for the tenant
         tenant.setBuilding(buildingService.getBuildingById(buildingId));
         logger.debug("Assigned building ID to tenant: {}", tenant.getBuilding() != null ? tenant.getBuilding().getBuildingId() : "null");
