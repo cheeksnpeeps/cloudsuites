@@ -101,18 +101,50 @@ public class TenantServiceImpl implements TenantService {
 
     @Override
     public void transferTenant(Tenant tenant, Unit newUnit, Unit oldUnit) throws InvalidOperationException {
-        if (newUnit.getTenants() == null) {
-            newUnit.setTenants(List.of(tenant));
-        } else if (newUnit.getTenants().stream().anyMatch(t -> t.getStatus().equals(TenantStatus.ACTIVE))) {
+        if (newUnit.getTenants().stream().anyMatch(t -> t.getStatus().equals(TenantStatus.ACTIVE))) {
             throw new InvalidOperationException("Unit already contains active tenants");
+        }
+        if (Boolean.TRUE.equals(tenant.getIsPrimaryTenant())) {
+            // transfer all active tenants to the new unit
+            List<Tenant> activeTenants = oldUnit.getTenants().stream()
+                    .filter(t -> t.getStatus().equals(TenantStatus.ACTIVE))
+                    .toList();
+            activeTenants.forEach(t -> {
+                t.setUnit(newUnit);
+                newUnit.getTenants().add(t);
+            });
         } else {
             newUnit.getTenants().add(tenant);
         }
+        unitRepository.save(newUnit);
+
         tenant.setUnit(newUnit);
         tenantRepository.save(tenant);
-        unitRepository.save(newUnit);
-        oldUnit.getTenants().remove(tenant);
+        // disable old tenant
+        if (oldUnit.getTenants() == null) return;
+        oldUnit.getTenants().stream()
+                .filter(t -> t.getTenantId().equals(tenant.getTenantId()))
+                .findFirst()
+                .ifPresent(t -> t.setStatus(TenantStatus.INACTIVE));
         unitRepository.save(oldUnit);
+    }
+
+    @Override
+    public void disableTenant(Tenant tenant) {
+        if (tenant.getUnit() == null) {
+            logger.error("No unit found for tenant: {}", tenant.getTenantId());
+            return;
+        }
+        tenant.setStatus(TenantStatus.INACTIVE);
+        if (Boolean.TRUE.equals(tenant.getIsPrimaryTenant())) {
+            tenant.getUnit().getTenants().forEach(t -> t.setStatus(TenantStatus.INACTIVE));
+        }
+        tenantRepository.save(tenant);
+    }
+
+    @Override
+    public void saveTenant(Tenant tenant) {
+        tenantRepository.save(tenant);
     }
 
     @Override
@@ -219,12 +251,11 @@ public class TenantServiceImpl implements TenantService {
         logger.info("Fetching all tenants for building ID: {} and unit ID: {}", buildingId, unitId);
         if (status != null) {
             logger.info("Fetching all tenants with status: {}", status);
-            List<Tenant> tenants = tenantRepository.findByBuilding_BuildingIdAndUnit_UnitIdAndStatus(buildingId, unitId, status)
+            return tenantRepository.findByBuilding_BuildingIdAndUnit_UnitIdAndStatus(buildingId, unitId, status)
                     .orElseThrow(() -> {
                         logger.error("No tenants found for building ID: {} and unit ID: {}", buildingId, unitId);
                         return new NotFoundResponseException("No active tenants found for Building ID: " + buildingId + " and Unit ID: " + unitId);
                     });
-            return tenants;
         }
         return tenantRepository.findByBuilding_BuildingIdAndUnit_UnitId(buildingId, unitId)
                 .orElseThrow(() -> {
