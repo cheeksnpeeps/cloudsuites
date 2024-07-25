@@ -8,6 +8,7 @@ import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -46,6 +47,21 @@ public class Unit {
 	protected void onCreate() {
 		this.unitId = IdGenerator.generateULID("UN-");
 		logger.debug("Generated unitId: {}", this.unitId);
+	}
+
+	public void addTenant(Tenant tenant) {
+		if (this.tenants == null) {
+			logger.debug("Initializing tenants list for unit: {}", this.unitId);
+			this.tenants = new ArrayList<>();
+		} else {
+			// add tenant if it doesn't exist in the list
+			tenants.stream().filter(t -> t.getTenantId().equals(tenant.getTenantId())).findFirst().ifPresentOrElse(
+					t -> logger.debug("Tenant already exists in the list: {}", tenant.getTenantId()),
+					() -> this.tenants.add(tenant)
+			);
+		}
+		this.tenants.add(tenant);
+		tenant.setUnit(this);
 	}
 }
 
