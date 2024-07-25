@@ -1,6 +1,8 @@
 package com.cloudsuites.framework.modules.property.personas.module;
 
+import com.cloudsuites.framework.modules.property.features.repository.UnitRepository;
 import com.cloudsuites.framework.modules.property.personas.repository.TenantRepository;
+import com.cloudsuites.framework.services.common.exception.InvalidOperationException;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.property.features.service.UnitService;
@@ -27,12 +29,14 @@ public class TenantServiceImpl implements TenantService {
 
     private static final Logger logger = LoggerFactory.getLogger(TenantServiceImpl.class);
     private final OwnerService ownerService;
+    private final UnitRepository unitRepository;
 
-    public TenantServiceImpl(TenantRepository tenantRepository, UserService userService, UnitService unitService, OwnerService ownerService) {
+    public TenantServiceImpl(TenantRepository tenantRepository, UserService userService, UnitService unitService, OwnerService ownerService, UnitRepository unitRepository) {
         this.tenantRepository = tenantRepository;
         this.userService = userService;
         this.unitService = unitService;
         this.ownerService = ownerService;
+        this.unitRepository = unitRepository;
     }
 
     @Override
@@ -93,6 +97,22 @@ public class TenantServiceImpl implements TenantService {
     @Override
     public void deleteByTenantId(String tenantId) {
         tenantRepository.deleteById(tenantId);
+    }
+
+    @Override
+    public void transferTenant(Tenant tenant, Unit newUnit, Unit oldUnit) throws InvalidOperationException {
+        if (newUnit.getTenants() == null) {
+            newUnit.setTenants(List.of(tenant));
+        } else if (newUnit.getTenants().stream().anyMatch(t -> t.getStatus().equals(TenantStatus.ACTIVE))) {
+            throw new InvalidOperationException("Unit already contains active tenants");
+        } else {
+            newUnit.getTenants().add(tenant);
+        }
+        tenant.setUnit(newUnit);
+        tenantRepository.save(tenant);
+        unitRepository.save(newUnit);
+        oldUnit.getTenants().remove(tenant);
+        unitRepository.save(oldUnit);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.cloudsuites.framework.webapp.rest.user;
 
+import com.cloudsuites.framework.services.common.exception.InvalidOperationException;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import com.cloudsuites.framework.services.property.features.entities.Building;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
@@ -8,7 +9,6 @@ import com.cloudsuites.framework.services.property.features.service.UnitService;
 import com.cloudsuites.framework.services.property.personas.entities.Tenant;
 import com.cloudsuites.framework.services.property.personas.entities.TenantStatus;
 import com.cloudsuites.framework.services.property.personas.service.TenantService;
-import com.cloudsuites.framework.webapp.authentication.util.MoveTenantRequest;
 import com.cloudsuites.framework.webapp.authentication.util.TenantUpdateRequest;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
 import com.cloudsuites.framework.webapp.rest.user.dto.TenantDto;
@@ -146,9 +146,6 @@ public class TenantRestController {
         }
         Tenant tenant = tenantService.getTenantById(tenantId);
         // Remove tenant from unit
-        if (tenant == null || !tenant.getTenantId().equals(tenantId)) {
-            throw new NotFoundResponseException("Tenant not associated with the specified unit.");
-        }
         unit.getTenants().stream()
                 .filter(t -> t.getTenantId().equals(tenantId))
                 .forEach(t -> unit.getTenants().remove(t));
@@ -159,18 +156,30 @@ public class TenantRestController {
     }
 
 
-    // Move Out and New Tenant Moves In
-    @PutMapping("/buildings/{buildingId}/units/{unitId}/tenants/move-out-in")
-    public ResponseEntity<?> moveOutAndIn(@PathVariable String unitId, @RequestBody MoveTenantRequest request) {
-        // Implementation here
-        return ResponseEntity.ok().body("Move Out and New Tenant Moves In");
-    }
-
-    // Transfer Tenant to a Different Unit
+    @Operation(summary = "Update Tenant", description = "Transfer Tenant to a Different Unit")
+    @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
+    @ApiResponse(responseCode = "404", description = "Tenant not found")
     @PutMapping("/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}/transfer-to-unit/{newUnitId}")
-    public ResponseEntity<?> transferTenant(@PathVariable String tenantId, @PathVariable String newUnitId) {
-        // Implementation here
-        return ResponseEntity.ok().body("Transfer Tenant");
+    public ResponseEntity<String> transferTenant(@PathVariable String buildingId,
+                                                 @PathVariable String tenantId,
+                                                 @PathVariable String unitId,
+                                                 @PathVariable String newUnitId) throws NotFoundResponseException, InvalidOperationException {
+        Building building = buildingService.getBuildingById(buildingId);
+        if (building == null) {
+            throw new NotFoundResponseException("Building not found for ID: " + buildingId);
+        }
+        Unit newUnit = unitService.getUnitById(buildingId, newUnitId);
+        if (newUnit == null) {
+            throw new NotFoundResponseException("Unit not found for ID: " + newUnitId);
+        }
+        Tenant tenant = tenantService.getTenantById(tenantId);
+        if (tenant == null || !unitId.equals(tenant.getUnit().getUnitId())) {
+            throw new NotFoundResponseException("Tenant not found for ID: " + tenantId + " in unit " + unitId);
+        }
+        Unit oldUnit = unitService.getUnitById(buildingId, unitId);
+        tenantService.transferTenant(tenant, newUnit, oldUnit);
+
+        return ResponseEntity.ok().body("Tenant transferred to new unit");
     }
 
     // Tenant Resigns or Leaves the Building
