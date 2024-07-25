@@ -1,6 +1,8 @@
 package com.cloudsuites.framework.services.property.personas.service;
 
+import com.cloudsuites.framework.services.common.exception.InvalidOperationException;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
+import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.property.personas.entities.Tenant;
 import com.cloudsuites.framework.services.property.personas.entities.TenantStatus;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,4 +36,6 @@ public interface TenantService {
 
     @Transactional
     void deleteByTenantId(String tenantId);
+
+    void transferTenant(Tenant tenant, Unit newUnit, Unit oldUnit) throws InvalidOperationException;
 }
