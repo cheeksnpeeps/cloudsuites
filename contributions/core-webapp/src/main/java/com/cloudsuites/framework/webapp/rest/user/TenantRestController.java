@@ -177,6 +177,7 @@ public class TenantRestController {
             throw new NotFoundResponseException("Tenant not found for ID: " + tenantId + " in unit " + unitId);
         }
         Unit oldUnit = unitService.getUnitById(buildingId, unitId);
+        // if tenant is primary tenant, transfer all tenants in the unit
         tenantService.transferTenant(tenant, newUnit, oldUnit);
 
         return ResponseEntity.ok().body("Tenant transferred to new unit");
