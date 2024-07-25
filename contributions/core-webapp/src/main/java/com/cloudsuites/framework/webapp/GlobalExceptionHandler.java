@@ -1,9 +1,6 @@
 package com.cloudsuites.framework.webapp;
 
-import com.cloudsuites.framework.services.common.exception.CustomException;
-import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
-import com.cloudsuites.framework.services.common.exception.ProblemDetails;
-import com.cloudsuites.framework.services.common.exception.ValidationException;
+import com.cloudsuites.framework.services.common.exception.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +45,20 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(problemDetails);
+    }
+
+    @ExceptionHandler(InvalidOperationException.class)
+    protected ResponseEntity<ProblemDetails> handleNotFoundResponseException(InvalidOperationException ex, HttpServletRequest request) {
+        logger.error("InvalidOperationException occurred: URI={}, Message={}", request.getRequestURI(), ex.getMessage(), ex);
+        ProblemDetails problemDetails = ProblemDetails.builder()
+                .withTitle("Invalid Operation")
+                .withStatus(HttpStatus.BAD_REQUEST.value())
+                .withDetail(ex.getMessage())
+                .withInstance(URI.create(request.getRequestURI()).getPath())
+                .withTimestamp(ZonedDateTime.now())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problemDetails);
     }
 
     @ExceptionHandler(Exception.class)
