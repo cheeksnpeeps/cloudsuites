@@ -12,8 +12,6 @@ public interface OwnerService {
 
     Owner getOwnerById(String ownerId) throws NotFoundResponseException;
 
-    Owner createOwner(Owner owner);
-
     Owner updateOwner(String ownerId, Owner owner) throws NotFoundResponseException;
 
     void deleteOwner(String ownerId) throws NotFoundResponseException;
@@ -26,5 +24,8 @@ public interface OwnerService {
 
     Owner findByUserId(String userId) throws NotFoundResponseException;
 
+    Owner creatOwner(Owner owner, String buildingId, String unitId) throws NotFoundResponseException;
+
     void createOrUpdateOwner(Tenant tenant) throws NotFoundResponseException;
+
 }

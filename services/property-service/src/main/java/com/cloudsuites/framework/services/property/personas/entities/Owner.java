@@ -8,6 +8,7 @@ import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -33,4 +34,14 @@ public class Owner {
         this.ownerId = IdGenerator.generateULID("OW-");
         logger.debug("Generated ownerId: {}", this.ownerId);
     }
+
+    public void addUnit(Unit unit) {
+        if (this.units == null) {
+            logger.debug("Initializing units list for owner: {}", this.ownerId);
+            this.units = new ArrayList<>();
+        }
+        this.units.add(unit);
+        unit.setOwner(this);
+    }
+
 }

@@ -5,8 +5,6 @@ import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.property.features.service.UnitService;
 import com.cloudsuites.framework.services.property.personas.entities.Owner;
 import com.cloudsuites.framework.services.property.personas.service.OwnerService;
-import com.cloudsuites.framework.services.user.UserService;
-import com.cloudsuites.framework.services.user.entities.Identity;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
 import com.cloudsuites.framework.webapp.rest.user.dto.OwnerDto;
 import com.cloudsuites.framework.webapp.rest.user.mapper.OwnerMapper;
@@ -20,7 +18,6 @@ import io.swagger.v3.oas.annotations.tags.Tags;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,14 +32,12 @@ public class OwnerRestController {
     private final OwnerService ownerService;
     private final OwnerMapper mapper;
     private final UnitService unitService;
-    private final UserService userService;
 
     @Autowired
-    public OwnerRestController(OwnerService ownerService, OwnerMapper mapper, UnitService unitService, UserService userService) {
+    public OwnerRestController(OwnerService ownerService, OwnerMapper mapper, UnitService unitService) {
         this.ownerService = ownerService;
         this.mapper = mapper;
         this.unitService = unitService;
-        this.userService = userService;
     }
 
     @Operation(summary = "Get All Owners", description = "Retrieve all owners")
@@ -77,21 +72,6 @@ public class OwnerRestController {
             logger.error("Owner not found with ID: {}", ownerId);
             return ResponseEntity.notFound().build();
         }
-    }
-
-    @Operation(summary = "Create a new Owner", description = "Create a new owner")
-    @ApiResponse(responseCode = "201", description = "Owner created successfully", content = @Content(mediaType = "application/json"))
-    @ApiResponse(responseCode = "400", description = "Bad Request")
-    @PostMapping("")
-    @JsonView(Views.OwnerView.class)
-    public ResponseEntity<OwnerDto> createOwner(@RequestBody @Parameter(description = "Owner details to be saved") OwnerDto ownerDto) {
-        logger.info("Creating a new owner");
-        Owner owner = mapper.convertToEntity(ownerDto);
-        Identity identity = userService.createUser(owner.getIdentity());
-        owner.setIdentity(identity);
-        Owner createdOwner = ownerService.createOwner(owner);
-        logger.info("Owner created with ID: {}", createdOwner.getOwnerId());
-        return ResponseEntity.status(HttpStatus.CREATED).body(mapper.convertToDTO(createdOwner));
     }
 
     @Operation(summary = "Update Owner by ID", description = "Update owner details by ID")
