@@ -13,11 +13,11 @@ import com.cloudsuites.framework.services.user.UserService;
 import com.cloudsuites.framework.services.user.entities.Identity;
 import com.cloudsuites.framework.webapp.authentication.service.OtpService;
 import com.cloudsuites.framework.webapp.authentication.util.JwtTokenProvider;
-import com.cloudsuites.framework.webapp.authentication.util.RefreshTokenRequest;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
 import com.cloudsuites.framework.webapp.rest.user.dto.OwnerDto;
 import com.cloudsuites.framework.webapp.rest.user.mapper.OwnerMapper;
 import com.fasterxml.jackson.annotation.JsonView;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.swagger.v3.oas.annotations.Operation;
@@ -134,12 +134,39 @@ public class OwnerAuthController {
         }
     }
 
-    // Refresh Token
-    @PostMapping("/{ownerId}/refresh-token")
-    public ResponseEntity<?> refreshToken(@PathVariable String ownerId, @RequestBody RefreshTokenRequest request) {
-        // Implementation here
-        return ResponseEntity.ok().body("Refresh Token");
+    @Operation(summary = "Refresh Token", description = "Refresh the authentication token using a valid refresh token")
+    @PostMapping("/owners/{ownerId}/refresh-token")
+    public ResponseEntity<Map<String, String>> refreshToken(
+            @PathVariable String buildingId,
+            @PathVariable String unitId,
+            @PathVariable String ownerId,
+            @RequestParam @Parameter(description = "Refresh token") String refreshToken) throws NotFoundResponseException {
+
+        Building building = buildingService.getBuildingById(buildingId);
+        if (building == null) throw new NotFoundResponseException("Building not found for ID: " + buildingId);
+
+        Unit unit = unitService.getUnitById(buildingId, unitId);
+        if (unit == null) throw new NotFoundResponseException("Unit not found for ID: " + unitId);
+
+        Owner owner = ownerService.getOwnerById(ownerId);
+
+        Claims claims = jwtTokenProvider.extractAllClaims(refreshToken);
+        if (!validateTokenClaims(claims, buildingId, unitId, ownerId)) {
+            return ResponseEntity.status(400).body(Map.of("error", "Invalid refresh token"));
+        }
+
+        Identity identity = userService.getUserById(claims.get("userId", String.class));
+        if (owner.getIdentity().getUserId().equals(identity.getUserId())) {
+            String token = generateToken(ownerId, buildingId, unitId, identity.getUserId());
+
+            logger.debug("Token refreshed successfully for tenant: {}", ownerId);
+            return ResponseEntity.ok(Map.of("token", token, "refreshToken", refreshToken));
+        } else {
+            logger.error("User identity does not match with the token claims");
+            return ResponseEntity.status(400).body(Map.of("error", "Invalid refresh token"));
+        }
     }
+
 
     private void sendOtp(String otp, String phoneNumber) {
         // Send OTP to tenant (this would involve integrating with an SMS/email service)
@@ -170,6 +197,18 @@ public class OwnerAuthController {
                 .claim("unitId", unitId)
                 .claim("userId", userId);
         return jwtTokenProvider.generateRefreshToken(claims);
+    }
+
+    private boolean validateTokenClaims(Claims claims, String buildingId, String unitId, String ownerId) {
+        String ownerIdClaim = claims.get("personaId", String.class);
+        String buildingIdClaim = claims.get("buildingId", String.class);
+        String unitIdClaim = claims.get("unitId", String.class);
+
+        if (!(ownerIdClaim.equals(ownerId) && buildingIdClaim.equals(buildingId) && unitIdClaim.equals(unitId))) {
+            logger.error("Token claims do not match with the request parameters {} {} {}", ownerId, buildingId, unitId);
+            return false;
+        }
+        return true;
     }
 }
 
