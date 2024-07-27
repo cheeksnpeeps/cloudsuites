@@ -52,13 +52,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         logger.error("InvalidOperationException occurred: URI={}, Message={}", request.getRequestURI(), ex.getMessage(), ex);
         ProblemDetails problemDetails = ProblemDetails.builder()
                 .withTitle("Invalid Operation")
-                .withStatus(HttpStatus.BAD_REQUEST.value())
+                .withStatus(HttpStatus.NOT_FOUND.value())
                 .withDetail(ex.getMessage())
                 .withInstance(URI.create(request.getRequestURI()).getPath())
                 .withTimestamp(ZonedDateTime.now())
                 .build();
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problemDetails);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(problemDetails);
     }
 
     @ExceptionHandler(Exception.class)
