@@ -15,9 +15,9 @@ import com.cloudsuites.framework.services.user.entities.Identity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class TenantServiceImpl implements TenantService {
@@ -52,7 +52,6 @@ public class TenantServiceImpl implements TenantService {
 
         // Step 2: Retrieve the unit by building and unit ID
         String buildingId = tenant.getBuilding().getBuildingId();
-        logger.debug("Fetching unit with ID: {} for building ID: {}", unitId, buildingId);
         Unit unit = unitService.getUnitById(buildingId, unitId);
         if (unit == null) {
             String errorMsg = "Unit not found for building ID: " + buildingId + " and unit ID: " + unitId;
@@ -78,15 +77,6 @@ public class TenantServiceImpl implements TenantService {
         // Log success and return the saved tenant
         logger.info("Tenant created successfully with ID: {}", savedTenant.getTenantId());
         return savedTenant;
-    }
-
-    @Override
-    public Tenant findByUserId(String userId) throws NotFoundResponseException {
-        return tenantRepository.findByIdentity_UserId(userId)
-                .orElseThrow(() -> {
-                    logger.error("Tenant not found for user ID: {}", userId);
-                    return new NotFoundResponseException("Tenant not found for User ID: " + userId);
-                });
     }
 
     @Override
@@ -154,26 +144,19 @@ public class TenantServiceImpl implements TenantService {
 
     @Override
     public Tenant updateTenant(String tenantId, Tenant tenant) throws NotFoundResponseException {
-        // Log the start of the tenant update process
         logger.info("Updating tenant with ID: {}", tenantId);
-
-        // Fetch the existing tenant
         Tenant existingTenant = tenantRepository.findById(tenantId)
                 .orElseThrow(() -> {
                     logger.error("Tenant not found with ID: {}", tenantId);
                     return new NotFoundResponseException("Tenant not found with ID: " + tenantId);
                 });
-
-        // Log the existing tenant details
         logger.debug("Found existing tenant: {}", existingTenant);
 
-        // Update identity if provided
         if (tenant.getIdentity() != null) {
             logger.debug("Updating tenant identity.");
-            Identity savedIdentity = updateTenantIdentity(tenant, existingTenant);
-            logger.debug("Updated identity: {}", savedIdentity);
-            userService.updateUser(savedIdentity.getUserId(), savedIdentity);
-            existingTenant.setIdentity(savedIdentity);
+            existingTenant.getIdentity().updateTenantIdentity(tenant.getIdentity());
+            userService.updateUser(existingTenant.getIdentity().getUserId(), existingTenant.getIdentity());
+            logger.debug("Updated Tenant Identity: {}", existingTenant.getIdentity().getUserId());
         } else {
             logger.debug("No identity update required.");
         }
@@ -202,30 +185,6 @@ public class TenantServiceImpl implements TenantService {
         return updatedTenant;
     }
 
-    private Identity updateTenantIdentity(Tenant tenant, Tenant existingTenant) {
-        Identity identity = tenant.getIdentity();
-        Identity existingIdentity = existingTenant.getIdentity();
-        if (StringUtils.hasText(identity.getFirstName())) {
-            existingIdentity.setFirstName(identity.getFirstName());
-        }
-        if (StringUtils.hasText(identity.getLastName())) {
-            existingIdentity.setLastName(identity.getLastName());
-        }
-        if (StringUtils.hasText(identity.getEmail())) {
-            existingIdentity.setEmail(identity.getEmail());
-        }
-        if (StringUtils.hasText(identity.getPhoneNumber())) {
-            existingIdentity.setPhoneNumber(identity.getPhoneNumber());
-        }
-        if (identity.getGender() != null) {
-            existingIdentity.setGender(identity.getGender());
-        }
-        if (StringUtils.hasText(identity.getUsername())) {
-            existingIdentity.setUsername(identity.getUsername());
-        }
-        return existingIdentity;
-    }
-
     @Override
     public List<Tenant> getAllTenants(TenantStatus status) throws NotFoundResponseException {
         logger.info("Fetching all tenants");
@@ -246,17 +205,9 @@ public class TenantServiceImpl implements TenantService {
         logger.info("Fetching all tenants for building ID: {} and unit ID: {}", buildingId, unitId);
         if (status != null) {
             logger.info("Fetching all tenants with status: {}", status);
-            return tenantRepository.findByBuilding_BuildingIdAndUnit_UnitIdAndStatus(buildingId, unitId, status)
-                    .orElseThrow(() -> {
-                        logger.error("No tenants found for building ID: {} and unit ID: {}", buildingId, unitId);
-                        return new NotFoundResponseException("No active tenants found for Building ID: " + buildingId + " and Unit ID: " + unitId);
-                    });
+            Optional<List<Tenant>> tenants = tenantRepository.findByBuilding_BuildingIdAndUnit_UnitIdAndStatus(buildingId, unitId, status);
         }
-        return tenantRepository.findByBuilding_BuildingIdAndUnit_UnitId(buildingId, unitId)
-                .orElseThrow(() -> {
-                    logger.error("No tenants found for building ID: {} and unit ID: {}", buildingId, unitId);
-                    return new NotFoundResponseException("No tenants found for Building ID: " + buildingId + " and Unit ID: " + unitId);
-                });
+        return tenantRepository.findByBuilding_BuildingIdAndUnit_UnitId(buildingId, unitId).get();
     }
 
     @Override
@@ -284,6 +235,15 @@ public class TenantServiceImpl implements TenantService {
                 .orElseThrow(() -> {
                     logger.error("Tenant not found for building ID: {}, unit ID: {}, and tenant ID: {}", buildingId, unitId, tenantId);
                     return new NotFoundResponseException("Tenant not found for Building ID: " + buildingId + ", Unit ID: " + unitId + " and Tenant ID: " + tenantId);
+                });
+    }
+
+    @Override
+    public Tenant findByUserId(String userId) throws NotFoundResponseException {
+        return tenantRepository.findByIdentity_UserId(userId)
+                .orElseThrow(() -> {
+                    logger.error("Tenant not found for user ID: {}", userId);
+                    return new NotFoundResponseException("Tenant not found for User ID: " + userId);
                 });
     }
 }
