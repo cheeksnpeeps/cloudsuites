@@ -140,8 +140,8 @@ public class OwnerServiceImpl implements OwnerService {
     public List<Owner> getAllOwners() throws NotFoundResponseException {
         List<Owner> owners = ownerRepository.findAll();
         if (owners.isEmpty()) {
-            logger.error("No owners found");
-            throw new NotFoundResponseException("No owners found");
+            logger.error("No owner found");
+            throw new NotFoundResponseException("No owner found");
         }
         return owners;
     }
