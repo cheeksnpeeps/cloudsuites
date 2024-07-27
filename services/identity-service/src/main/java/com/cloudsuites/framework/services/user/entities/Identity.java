@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 
@@ -61,6 +62,27 @@ public class Identity {
 	@PreUpdate
 	protected void onUpdate() {
 		this.lastModifiedAt = LocalDateTime.now();
+	}
+
+	public void updateTenantIdentity(Identity identity) {
+		if (StringUtils.hasText(identity.getFirstName())) {
+			this.setFirstName(identity.getFirstName());
+		}
+		if (StringUtils.hasText(identity.getLastName())) {
+			this.setLastName(identity.getLastName());
+		}
+		if (StringUtils.hasText(identity.getEmail())) {
+			this.setEmail(identity.getEmail());
+		}
+		if (StringUtils.hasText(identity.getPhoneNumber())) {
+			this.setPhoneNumber(identity.getPhoneNumber());
+		}
+		if (identity.getGender() != null) {
+			this.setGender(identity.getGender());
+		}
+		if (StringUtils.hasText(identity.getUsername())) {
+			this.setUsername(identity.getUsername());
+		}
 	}
 }
 
