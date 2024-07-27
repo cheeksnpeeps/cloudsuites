@@ -14,7 +14,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -34,11 +33,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(classes = CloudsuitesCoreApplication.class)
 @ActiveProfiles("test")
-@TestPropertySource(locations = "classpath:application-test.yml")  // Specify your properties file
+@TestPropertySource(locations = "classpath:application-test.yml")
 class OwnerRestControllerTest {
 
-    @Value("${web.datasource.url}")
-    private String datasourceUrl;
     private MockMvc mockMvc;
     @Mock
     private OwnerService ownerService;
@@ -46,20 +43,10 @@ class OwnerRestControllerTest {
     private OwnerMapper mapper;
     @InjectMocks
     private OwnerRestController ownerRestController;
+    @Mock
     private ObjectMapper objectMapper;
     @MockBean
     private GlobalExceptionHandler globalExceptionHandler;
-
-    @Test
-    void contextLoads() {
-        // Just loading the context to see if it picks up the local profile
-    }
-
-    @Test
-    void testDatasourceUrl() {
-        System.out.println("Datasource URL: " + datasourceUrl);
-        // You can add assertions here if needed
-    }
 
     @BeforeEach
     void setUp() {
@@ -163,5 +150,41 @@ class OwnerRestControllerTest {
                 .andExpect(status().isNotFound());
 
         verify(ownerService).updateOwner(eq(ownerId), any(Owner.class));
+    }
+
+    @Test
+    void getAllOwners() {
+        OwnerDto ownerDto = new OwnerDto();
+        ownerDto.setOwnerId("OW-01J3M43433R0TR0ZXR8M4ZDC9T");
+        OwnerDto ownerDto2 = new OwnerDto();
+        ownerDto2.setOwnerId("OW-013433R0TR0ZXR8M4ZDC9TWWDW");
+        List<OwnerDto> ownerDtos = List.of(ownerDto, ownerDto2);
+        try {
+            when(ownerService.getAllOwners()).thenReturn(List.of(new Owner(), new Owner()));
+        } catch (NotFoundResponseException e) {
+            e.printStackTrace();
+        }
+        when(mapper.convertToDTOList(any())).thenReturn(ownerDtos);
+
+    }
+
+    @Test
+    void getOwnerById() {
+    }
+
+    @Test
+    void updateOwner() {
+    }
+
+    @Test
+    void deleteOwner() {
+    }
+
+    @Test
+    void addUnitToOwner() {
+    }
+
+    @Test
+    void removeUnitFromOwner() {
     }
 }
