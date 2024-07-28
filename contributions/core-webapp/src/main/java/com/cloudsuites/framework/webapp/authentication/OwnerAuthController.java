@@ -61,7 +61,8 @@ public class OwnerAuthController {
         this.unitService = unitService;
     }
 
-
+    //New Owner is Tenant of the Same Unit: True
+    // New Owner is Not a Tenant in the Building: True
     @Operation(summary = "Register an Owner", description = "Register a new owner with building and unit information")
     @PostMapping("/owner/register")
     @JsonView(Views.OwnerView.class)
@@ -80,7 +81,7 @@ public class OwnerAuthController {
         // if the owner of the unit is still
         // Convert OwnerDto to Owner entity
         Owner owner = ownerMapper.convertToEntity(ownerDto);
-        owner = ownerService.creatOwner(owner, buildingId, unitId);
+        owner = ownerService.createOwner(owner, building, unit);
 
         // Handle OTP generation and sending
         String phoneNumber = owner.getIdentity().getPhoneNumber();
