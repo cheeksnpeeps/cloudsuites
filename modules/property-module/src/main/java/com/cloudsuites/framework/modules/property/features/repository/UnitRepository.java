@@ -11,4 +11,6 @@ import java.util.Optional;
 public interface UnitRepository extends JpaRepository<Unit, String> {
 
     Optional<List<Unit>> findAllByFloor_FloorId(String floorId);
+
+    Optional<Unit> findByBuilding_BuildingIdAndUnitId(String buildingId, String unitId);
 }
