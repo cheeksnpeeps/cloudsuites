@@ -14,7 +14,7 @@ public interface UnitService {
 
     List<Unit> getAllUnits(String buildingId);
 
-    Unit saveUnit(String buildingId, String floorId, Unit unit);
+    Unit saveUnit(Unit unit);
 
     List<Unit> saveAllUnits(List<Unit> units);
 

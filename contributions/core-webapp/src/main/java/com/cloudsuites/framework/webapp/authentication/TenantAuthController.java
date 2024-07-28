@@ -95,7 +95,7 @@ public class TenantAuthController {
 
             // Deactivate existing tenants if the new tenant is primary
             for (Tenant existingTenant : existingTenants) {
-                existingTenant.setStatus(TenantStatus.INACTIVE); // Or another appropriate status
+                existingTenant.setStatus(TenantStatus.INACTIVE);
                 tenantService.updateTenant(existingTenant.getTenantId(), existingTenant);
                 logger.debug("Deactivated existing tenant ID: {}", existingTenant.getTenantId());
             }
