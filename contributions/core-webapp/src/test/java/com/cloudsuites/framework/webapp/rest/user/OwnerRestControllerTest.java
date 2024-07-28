@@ -25,8 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -134,6 +133,15 @@ public class OwnerRestControllerTest {
                     assertThat(ownerDto.getIdentity().getUsername()).isEqualTo("test3");
                 });
     }
+
+    @Test
+    void deleteOwner() throws Exception {
+        mockMvc.perform(delete("/api/v1/owners/{ownerId}", validOwnerId1))
+                .andExpect(status().isNoContent());
+        mockMvc.perform(get("/api/v1/owners/{ownerId}", validOwnerId1))
+                .andExpect(status().isNotFound());
+    }
+
 
     private void clearDatabase() {
         ownerRepository.deleteAll();
