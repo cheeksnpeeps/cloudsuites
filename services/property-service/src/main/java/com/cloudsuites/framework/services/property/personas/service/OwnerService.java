@@ -1,6 +1,8 @@
 package com.cloudsuites.framework.services.property.personas.service;
 
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
+import com.cloudsuites.framework.services.property.features.entities.Building;
+import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.property.personas.entities.Owner;
 import com.cloudsuites.framework.services.property.personas.entities.Tenant;
 import org.springframework.stereotype.Service;
@@ -24,7 +26,9 @@ public interface OwnerService {
 
     Owner findByUserId(String userId) throws NotFoundResponseException;
 
-    Owner creatOwner(Owner owner, String buildingId, String unitId) throws NotFoundResponseException;
+    Owner createOwner(Owner owner);
+
+    Owner createOwner(Owner owner, Building building, Unit unit) throws NotFoundResponseException;
 
     void createOrUpdateOwner(Tenant tenant) throws NotFoundResponseException;
 
