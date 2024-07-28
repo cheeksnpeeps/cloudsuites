@@ -29,6 +29,17 @@ public class Owner {
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Identity identity;
 
+    @Column(name = "is_primary_tenant")
+    private Boolean isPrimaryTenant;
+
+    @Enumerated(EnumType.STRING)
+    private OwnerStatus status;
+
+    public Owner() {
+        this.isPrimaryTenant = false;
+        this.status = OwnerStatus.INACTIVE;// Default value
+    }
+
     @PrePersist
     protected void onCreate() {
         this.ownerId = IdGenerator.generateULID("OW-");
