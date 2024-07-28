@@ -21,11 +21,11 @@ import java.util.List;
 public class UnitDto {
 
 	@Schema(hidden = true)
-	@JsonView({Views.UnitView.class, Views.FloorView.class, Views.TenantView.class})
+	@JsonView({Views.UnitView.class, Views.FloorView.class, Views.OwnerView.class, Views.TenantView.class})
 	private String unitId;
 
 	@Schema(description = "Building of the unit")
-	@JsonView({Views.UnitView.class})
+	@JsonView({Views.UnitView.class, Views.OwnerView.class})
 	private BuildingDto building;
 
 	@Schema(description = "Owner of the unit")
