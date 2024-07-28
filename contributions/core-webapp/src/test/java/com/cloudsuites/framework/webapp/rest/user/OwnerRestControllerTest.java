@@ -26,6 +26,7 @@ import java.util.List;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -119,6 +120,20 @@ public class OwnerRestControllerTest {
                 });
     }
 
+
+    @Test
+    void updateOwner() throws Exception {
+        mockMvc.perform(put("/api/v1/owners/{ownerId}", validOwnerId1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"identity\":{\"username\":\"test3\"}}"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(result -> {
+                    String jsonResponse = result.getResponse().getContentAsString();
+                    OwnerDto ownerDto = objectMapper.readValue(jsonResponse, OwnerDto.class);
+                    assertThat(ownerDto.getIdentity().getUsername()).isEqualTo("test3");
+                });
+    }
 
     private void clearDatabase() {
         ownerRepository.deleteAll();
