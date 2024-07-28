@@ -5,6 +5,7 @@ import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.property.features.service.UnitService;
 import com.cloudsuites.framework.services.property.personas.entities.Owner;
 import com.cloudsuites.framework.services.property.personas.service.OwnerService;
+import com.cloudsuites.framework.webapp.authentication.util.WebAppConstants;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
 import com.cloudsuites.framework.webapp.rest.user.dto.OwnerDto;
 import com.cloudsuites.framework.webapp.rest.user.mapper.OwnerMapper;
@@ -47,10 +48,10 @@ public class OwnerRestController {
     @GetMapping("")
     @JsonView(Views.OwnerView.class)
     public ResponseEntity<List<OwnerDto>> getAllOwners() throws NotFoundResponseException {
-        logger.info("Fetching all owners");
+        logger.info(WebAppConstants.Owner.LOG_FETCHING_OWNERS);
         List<Owner> owners = ownerService.getAllOwners();
         logger.info("Fetched {} owners", owners.size());
-        return ResponseEntity.ok().body(mapper.convertToDTOList(owners));
+        return ResponseEntity.ok(mapper.convertToDTOList(owners));
     }
 
     @Operation(summary = "Get Owner by ID", description = "Retrieve owner details by ID")
@@ -58,34 +59,28 @@ public class OwnerRestController {
     @ApiResponse(responseCode = "404", description = "Owner not found")
     @GetMapping("/{ownerId}")
     @JsonView(Views.OwnerView.class)
-    public ResponseEntity<OwnerDto> getOwnerById(@Parameter(description = "ID of the owner to be retrieved") @PathVariable String ownerId) throws NotFoundResponseException {
-        logger.info("Fetching owner with ID: {}", ownerId);
-        Owner owner = ownerService.getOwnerById(ownerId);
-        logger.info("Owner fetched with ID: {}", owner.getOwnerId());
-        return ResponseEntity.ok().body(mapper.convertToDTO(owner));
+    public ResponseEntity<OwnerDto> getOwnerById(@Parameter(description = "ID of the owner to be retrieved") @PathVariable String ownerId) {
+        logger.info(WebAppConstants.Owner.LOG_FETCHING_OWNER_BY_ID, ownerId);
+        try {
+            Owner owner = ownerService.getOwnerById(ownerId);
+            logger.info(WebAppConstants.Owner.LOG_OWNER_FETCHED, owner.getOwnerId());
+            return ResponseEntity.ok(mapper.convertToDTO(owner));
+        } catch (NotFoundResponseException e) {
+            logger.error(WebAppConstants.Owner.LOG_OWNER_NOT_FOUND, ownerId);
+            return ResponseEntity.notFound().build();
+        }
     }
 
-    @Operation(summary = "Create Owner", description = "Creat owner with details")
+    @Operation(summary = "Create Owner", description = "Create owner with details")
     @ApiResponse(responseCode = "201", description = "Owner created successfully", content = @Content(mediaType = "application/json"))
     @PostMapping("")
     @JsonView(Views.OwnerView.class)
     public ResponseEntity<OwnerDto> createOwner(@Valid @RequestBody @Parameter(description = "Owner details") OwnerDto ownerDto) {
-
-        // Log the phone number of the owner being registered
-        logger.debug("Creating owner: {}", ownerDto.getIdentity().getUsername());
-
-        // if the owner of the unit is still
-        // Convert OwnerDto to Owner entity
+        logger.debug(WebAppConstants.Owner.LOG_REGISTERING_OWNER, ownerDto.getIdentity().getUsername());
         Owner owner = mapper.convertToEntity(ownerDto);
         owner = ownerService.createOwner(owner);
-
-        logger.info("Owner created successfully with ID: {}", owner.getOwnerId());
-
-        // Convert entity to DTO and return
-        OwnerDto ownerDtoResponse = mapper.convertToDTO(owner);
-        logger.debug("Converted Owner entity to OwnerDto with ID: {}", ownerDtoResponse.getOwnerId());
-
-        return ResponseEntity.ok(ownerDtoResponse);
+        logger.info(WebAppConstants.Owner.LOG_OWNER_REGISTERED_SUCCESS, owner.getOwnerId(), ownerDto.getIdentity().getUsername());
+        return ResponseEntity.ok(mapper.convertToDTO(owner));
     }
 
     @Operation(summary = "Update Owner by ID", description = "Update owner details by ID")
@@ -93,16 +88,17 @@ public class OwnerRestController {
     @ApiResponse(responseCode = "404", description = "Owner not found")
     @PutMapping("/{ownerId}")
     @JsonView(Views.OwnerView.class)
-    public ResponseEntity<OwnerDto> updateOwner(@Parameter(description = "ID of the owner to be updated") @PathVariable String ownerId,
-                                                @RequestBody @Parameter(description = "Updated owner details") OwnerDto ownerDto) {
-        logger.info("Updating owner with ID: {}", ownerId);
+    public ResponseEntity<OwnerDto> updateOwner(
+            @Parameter(description = "ID of the owner to be updated") @PathVariable String ownerId,
+            @RequestBody @Parameter(description = "Updated owner details") OwnerDto ownerDto) {
+        logger.info(WebAppConstants.Owner.LOG_UPDATING_OWNER, ownerId);
         try {
             Owner owner = mapper.convertToEntity(ownerDto);
             owner = ownerService.updateOwner(ownerId, owner);
-            logger.info("Owner updated successfully with ID: {}", ownerId);
-            return ResponseEntity.ok().body(mapper.convertToDTO(owner));
+            logger.info(WebAppConstants.Owner.LOG_OWNER_UPDATED, ownerId);
+            return ResponseEntity.ok(mapper.convertToDTO(owner));
         } catch (NotFoundResponseException e) {
-            logger.error("Owner not found with ID: {}", ownerId);
+            logger.error(WebAppConstants.Owner.LOG_OWNER_NOT_FOUND, ownerId);
             return ResponseEntity.notFound().build();
         }
     }
@@ -112,21 +108,19 @@ public class OwnerRestController {
     @ApiResponse(responseCode = "404", description = "Owner not found")
     @DeleteMapping("/{ownerId}")
     public ResponseEntity<Void> deleteOwner(@Parameter(description = "ID of the owner to be deleted") @PathVariable String ownerId) {
-        logger.info("Deleting owner with ID: {}", ownerId);
+        logger.info(WebAppConstants.Owner.LOG_DELETING_OWNER, ownerId);
         try {
             ownerService.deleteOwner(ownerId);
-            logger.info("Owner deleted successfully with ID: {}", ownerId);
+            logger.info(WebAppConstants.Owner.LOG_OWNER_DELETED, ownerId);
             return ResponseEntity.noContent().build();
         } catch (NotFoundResponseException e) {
-            logger.error("Owner not found with ID: {}", ownerId);
+            logger.error(WebAppConstants.Owner.LOG_OWNER_NOT_FOUND, ownerId);
             return ResponseEntity.notFound().build();
         }
     }
 
-    @Operation(summary = "Add Unit to Owner", description = "Add an existing unit to an owner by owner ID, building ID, and unit ID. " +
-            "This operation transfers ownership of the unit to the specified owner.")
-    @ApiResponse(responseCode = "200", description = "Unit added to owner successfully",
-            content = @Content(mediaType = "application/json"))
+    @Operation(summary = "Add Unit to Owner", description = "Add an existing unit to an owner by owner ID, building ID, and unit ID. This operation transfers ownership of the unit to the specified owner.")
+    @ApiResponse(responseCode = "200", description = "Unit added to owner successfully", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Owner or Unit not found")
     @PostMapping("/{ownerId}/buildings/{buildingId}/units/{unitId}/transfer")
     @JsonView(Views.OwnerView.class)
@@ -134,43 +128,27 @@ public class OwnerRestController {
             @Parameter(description = "ID of the owner") @PathVariable String ownerId,
             @Parameter(description = "ID of the building to be added") @PathVariable String buildingId,
             @Parameter(description = "ID of the unit to be added") @PathVariable String unitId) {
-        logger.info("Adding unit to owner with ownerId={}, buildingId={}, unitId={}", ownerId, buildingId, unitId);
+        logger.info(WebAppConstants.Owner.LOG_ADDING_UNIT_TO_OWNER, ownerId, buildingId, unitId);
         try {
-            logger.info("Fetching owner with ID: {}", ownerId);
             Owner owner = ownerService.getOwnerById(ownerId);
-            logger.info("Owner fetched with ID: {}", owner.getOwnerId());
-
-            logger.info("Fetching unit with building ID: {} and unit ID: {}", buildingId, unitId);
             Unit unit = unitService.getUnitById(buildingId, unitId);
-            logger.info("Unit fetched with ID: {}", unit.getUnitId());
-
-            // Remove unit from previous owner, if any
             if (unit.getOwner() != null) {
-                logger.info("Removing unit from previous owner with ID: {}", unit.getOwner().getOwnerId());
+                logger.info(WebAppConstants.Owner.LOG_REMOVING_UNIT_FROM_PREVIOUS_OWNER, unit.getOwner().getOwnerId());
                 unit.getOwner().getUnits().remove(unit);
             }
-
-            // Transfer unit to new owner
-            if (owner.getUnits().stream().noneMatch(
-                    u -> u.getUnitId().equals(unitId) && u.getBuilding().getBuildingId().equals(buildingId)
-            )) {
-                logger.info("Adding unit to new owner with ID: {}", ownerId);
+            if (owner.getUnits().stream().noneMatch(u -> u.getUnitId().equals(unitId))) {
+                logger.info(WebAppConstants.Owner.LOG_UNIT_ADDED_TO_OWNER, ownerId);
                 owner.getUnits().add(unit);
             } else {
-                logger.info("Unit already exists for owner with ID: {}", ownerId);
+                logger.info(WebAppConstants.Owner.LOG_UNIT_ALREADY_EXISTS, ownerId);
             }
             unit.setOwner(owner);
-
-            // Save updates
-            logger.info("Updating owner with ID: {}", ownerId);
-            Owner updatedOwner = ownerService.updateOwner(ownerId, owner);
-
+            ownerService.updateOwner(ownerId, owner);
             unitService.saveUnit(unit);
-
-            logger.info("Unit successfully added to owner with ID: {}", updatedOwner.getOwnerId());
-            return ResponseEntity.ok().body(mapper.convertToDTO(updatedOwner));
+            logger.info(WebAppConstants.Owner.LOG_UNIT_ADDED_SUCCESSFULLY, ownerId);
+            return ResponseEntity.ok(mapper.convertToDTO(owner));
         } catch (NotFoundResponseException e) {
-            logger.error("Owner or Unit not found: ownerId={}, buildingId={}, unitId={}", ownerId, buildingId, unitId);
+            logger.error(WebAppConstants.Owner.LOG_OWNER_OR_UNIT_NOT_FOUND, ownerId, buildingId, unitId);
             return ResponseEntity.notFound().build();
         }
     }
@@ -180,17 +158,18 @@ public class OwnerRestController {
     @ApiResponse(responseCode = "404", description = "Owner or Unit not found")
     @DeleteMapping("/{ownerId}/units/{unitId}")
     @JsonView(Views.OwnerView.class)
-    public ResponseEntity<OwnerDto> removeUnitFromOwner(@Parameter(description = "ID of the owner") @PathVariable String ownerId,
-                                                        @Parameter(description = "ID of the unit to be removed") @PathVariable String unitId) {
-        logger.info("Removing unit from owner with ownerId={}, unitId={}", ownerId, unitId);
+    public ResponseEntity<OwnerDto> removeUnitFromOwner(
+            @Parameter(description = "ID of the owner") @PathVariable String ownerId,
+            @Parameter(description = "ID of the unit to be removed") @PathVariable String unitId) {
+        logger.info(WebAppConstants.Owner.LOG_REMOVING_UNIT_FROM_OWNER, ownerId, unitId);
         try {
             Owner owner = ownerService.getOwnerById(ownerId);
             owner.getUnits().removeIf(unit -> unit.getUnitId().equals(unitId));
             Owner updatedOwner = ownerService.updateOwner(ownerId, owner);
-            logger.info("Unit successfully removed from owner with ID: {}", ownerId);
-            return ResponseEntity.ok().body(mapper.convertToDTO(updatedOwner));
+            logger.info(WebAppConstants.Owner.LOG_UNIT_REMOVED_SUCCESSFULLY, ownerId);
+            return ResponseEntity.ok(mapper.convertToDTO(updatedOwner));
         } catch (NotFoundResponseException e) {
-            logger.error("Owner or Unit not found: ownerId={}, unitId={}", ownerId, unitId);
+            logger.error(WebAppConstants.Owner.LOG_OWNER_OR_UNIT_NOT_FOUND, ownerId, unitId);
             return ResponseEntity.notFound().build();
         }
     }
