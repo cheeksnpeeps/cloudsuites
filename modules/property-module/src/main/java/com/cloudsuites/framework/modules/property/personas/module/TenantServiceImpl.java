@@ -63,7 +63,7 @@ public class TenantServiceImpl implements TenantService {
 
         // Save the updated unit
         logger.debug("Saving updated unit with tenants");
-        unitService.saveUnit(buildingId, unit.getFloor().getFloorId(), unit);
+        unitService.saveUnit(unit);
 
         // Set the unit in the tenant object
         tenant.setUnit(unit);

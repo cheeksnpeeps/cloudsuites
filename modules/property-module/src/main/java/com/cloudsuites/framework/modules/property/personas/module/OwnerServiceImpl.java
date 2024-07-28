@@ -1,11 +1,15 @@
 package com.cloudsuites.framework.modules.property.personas.module;
 
 import com.cloudsuites.framework.modules.property.personas.repository.OwnerRepository;
+import com.cloudsuites.framework.modules.property.personas.repository.TenantRepository;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
+import com.cloudsuites.framework.services.property.features.entities.Building;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.property.features.service.UnitService;
 import com.cloudsuites.framework.services.property.personas.entities.Owner;
+import com.cloudsuites.framework.services.property.personas.entities.OwnerStatus;
 import com.cloudsuites.framework.services.property.personas.entities.Tenant;
+import com.cloudsuites.framework.services.property.personas.entities.TenantStatus;
 import com.cloudsuites.framework.services.property.personas.service.OwnerService;
 import com.cloudsuites.framework.services.user.UserService;
 import com.cloudsuites.framework.services.user.entities.Identity;
@@ -22,11 +26,13 @@ public class OwnerServiceImpl implements OwnerService {
     private final OwnerRepository ownerRepository;
     private final UnitService unitService;
     private final UserService userService;
+    private final TenantRepository tenantRepository;
 
-    public OwnerServiceImpl(OwnerRepository ownerRepository, UnitService unitService, UserService userService) {
+    public OwnerServiceImpl(OwnerRepository ownerRepository, UnitService unitService, UserService userService, TenantRepository tenantRepository) {
         this.ownerRepository = ownerRepository;
         this.unitService = unitService;
         this.userService = userService;
+        this.tenantRepository = tenantRepository;
     }
 
     @Override
@@ -39,41 +45,70 @@ public class OwnerServiceImpl implements OwnerService {
     }
 
     @Override
-    public Owner creatOwner(Owner owner, String buildingId, String unitId) throws NotFoundResponseException {
+    public Owner createOwner(Owner newOwner) {
+        Owner owner = createIdentiy(newOwner);
+        owner = ownerRepository.save(owner);
+        logger.info("Owner created successfully with ID: {}", owner.getOwnerId());
+        return owner;
+    }
+
+    @Override
+    public Owner createOwner(Owner newOwner, Building building, Unit unit) throws NotFoundResponseException {
+        Owner owner = createIdentiy(newOwner);
+
+        // Save the updated unit
+        logger.debug("Saving updated unit with owner: {}", owner.getOwnerId());
+        Unit savedUnit = unitService.saveUnit(unit);
+
+        owner.setStatus(OwnerStatus.ACTIVE);
+        if (Boolean.TRUE.equals(owner.getIsPrimaryTenant())) {
+            if (unit.getTenants() != null) {
+                for (Tenant existingTenant : unit.getTenants()) {
+                    existingTenant.setStatus(TenantStatus.INACTIVE); // Or another appropriate status
+                    tenantRepository.save(existingTenant);
+                    logger.debug("Deactivated existing tenant ID: {}", existingTenant.getTenantId());
+                }
+            }
+            Tenant tenant = createTenantFromOwnerInfo(building, savedUnit, owner.getIdentity());
+            unit.addTenant(tenant);
+        }
+
+        // Set the unit in the owner object
+        owner.addUnit(savedUnit);
+        logger.debug("Owner unit set to: {}", unit.getUnitId());
+
+
+        // Step 4: Save the owner
+        logger.debug("Saving owner {} with unit: {}", owner.getOwnerId(), owner.getOwnerId());
+        Owner savedOwner = ownerRepository.save(owner);
+        savedUnit.setOwner(savedOwner);
+        unitService.saveUnit(unit);
+        // Log success and return the saved owner
+        logger.info("Owner created successfully with ID: {}", savedOwner.getOwnerId());
+        return savedOwner;
+    }
+
+    private Owner createIdentiy(Owner owner) {
         // Log the start of the tenant creation process
         logger.debug("Starting owner creation process for owner: {}", owner);
-
         // Step 1: Create and save the identity for the tenant
         Identity identity = owner.getIdentity();
         logger.debug("Creating identity: {}", identity.getUserId());
         Identity savedIdentity = userService.createUser(identity);
         owner.setIdentity(savedIdentity);
         logger.debug("Identity created and saved: {}", savedIdentity.getUserId());
+        return owner;
+    }
 
-        // Step 2: Retrieve the unit by building and unit ID
-        logger.debug("Fetching unit with ID: {} for building ID: {}", unitId, buildingId);
-        Unit unit = unitService.getUnitById(buildingId, unitId);
-        if (unit == null) {
-            String errorMsg = "Unit not found for building ID: " + buildingId + " and unit ID: " + unitId;
-            logger.error(errorMsg);
-            throw new NotFoundResponseException(errorMsg);
-        }
-        // Save the updated unit
-        logger.debug("Saving updated unit with owner");
-        Unit savedUnit = unitService.saveUnit(buildingId, unit.getFloor().getFloorId(), unit);
-
-        // Set the unit in the owner object
-        owner.addUnit(savedUnit);
-        logger.debug("Owner unit set to: {}", unit.getUnitId());
-
-        // Step 4: Save the owner
-        logger.debug("Saving owner to repository");
-        Owner savedOwner = ownerRepository.save(owner);
-        savedUnit.setOwner(savedOwner);
-        unitService.saveUnit(buildingId, unit.getFloor().getFloorId(), unit);
-        // Log success and return the saved owner
-        logger.info("Tenant created successfully with ID: {}", savedOwner.getOwnerId());
-        return savedOwner;
+    private Tenant createTenantFromOwnerInfo(Building building, Unit savedUnit, Identity savedIdentity) {
+        Tenant tenant = new Tenant();
+        tenant.setBuilding(building);
+        tenant.setUnit(savedUnit);
+        tenant.setIdentity(savedIdentity);
+        tenant.setIsPrimaryTenant(true);
+        tenant.setIsOwner(true);
+        tenant.setStatus(TenantStatus.ACTIVE);
+        return tenantRepository.save(tenant);
     }
 
     @Override
@@ -108,7 +143,7 @@ public class OwnerServiceImpl implements OwnerService {
         logger.debug("Setting owner for unit: {}", savedOwner);
         unit.setOwner(savedOwner);
         logger.debug("Saving updated unit with owner.");
-        Unit savedUnit = unitService.saveUnit(buildingId, unit.getFloor().getFloorId(), unit);
+        Unit savedUnit = unitService.saveUnit(unit);
         tenant.setUnit(savedUnit);
         // Log the successful update
         logger.info("Owner created or updated successfully for tenant: {}", tenant);

@@ -62,8 +62,7 @@ public class UnitServiceImpl implements UnitService {
     }
 
     @Override
-    public Unit saveUnit(String buildingId, String floorId, Unit unit) {
-        logger.debug("Entering saveUnit with buildingId: {}, floorId: {}", buildingId, floorId);
+    public Unit saveUnit(Unit unit) {
         Unit savedUnit = unitRepository.save(unit);
         logger.debug("Unit saved successfully: {}", savedUnit.getUnitNumber());
         return savedUnit;
