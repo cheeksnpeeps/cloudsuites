@@ -1,5 +1,6 @@
 package com.cloudsuites.framework.webapp.rest.user.dto;
 
+import com.cloudsuites.framework.services.property.personas.entities.OwnerStatus;
 import com.cloudsuites.framework.webapp.rest.property.dto.UnitDto;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -32,9 +33,9 @@ public class OwnerDto {
 
     @Schema(description = "Owner is the Tenant of the same unit", example = "true")
     @JsonView(Views.OwnerView.class)
-    private Boolean isTenant;
+    private Boolean isPrimaryTenant;
 
     @JsonView(Views.OwnerView.class)
-    @Schema(hidden = true)
-    private TenantDto tenant;
+    @Schema(description = "Owner status", example = "ACTIVE")
+    private OwnerStatus status;
 }
