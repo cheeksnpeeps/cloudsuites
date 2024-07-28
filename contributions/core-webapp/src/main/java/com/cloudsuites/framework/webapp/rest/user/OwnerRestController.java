@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.tags.Tags;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,6 +63,29 @@ public class OwnerRestController {
         Owner owner = ownerService.getOwnerById(ownerId);
         logger.info("Owner fetched with ID: {}", owner.getOwnerId());
         return ResponseEntity.ok().body(mapper.convertToDTO(owner));
+    }
+
+    @Operation(summary = "Create Owner", description = "Creat owner with details")
+    @ApiResponse(responseCode = "201", description = "Owner created successfully", content = @Content(mediaType = "application/json"))
+    @PostMapping("")
+    @JsonView(Views.OwnerView.class)
+    public ResponseEntity<OwnerDto> createOwner(@Valid @RequestBody @Parameter(description = "Owner details") OwnerDto ownerDto) {
+
+        // Log the phone number of the owner being registered
+        logger.debug("Creating owner: {}", ownerDto.getIdentity().getUsername());
+
+        // if the owner of the unit is still
+        // Convert OwnerDto to Owner entity
+        Owner owner = mapper.convertToEntity(ownerDto);
+        owner = ownerService.createOwner(owner);
+
+        logger.info("Owner created successfully with ID: {}", owner.getOwnerId());
+
+        // Convert entity to DTO and return
+        OwnerDto ownerDtoResponse = mapper.convertToDTO(owner);
+        logger.debug("Converted Owner entity to OwnerDto with ID: {}", ownerDtoResponse.getOwnerId());
+
+        return ResponseEntity.ok(ownerDtoResponse);
     }
 
     @Operation(summary = "Update Owner by ID", description = "Update owner details by ID")
@@ -141,8 +165,7 @@ public class OwnerRestController {
             logger.info("Updating owner with ID: {}", ownerId);
             Owner updatedOwner = ownerService.updateOwner(ownerId, owner);
 
-            logger.info("Saving unit with building ID: {} and floor ID: {}", buildingId, unit.getFloor().getFloorId());
-            unitService.saveUnit(buildingId, unit.getFloor().getFloorId(), unit);
+            unitService.saveUnit(unit);
 
             logger.info("Unit successfully added to owner with ID: {}", updatedOwner.getOwnerId());
             return ResponseEntity.ok().body(mapper.convertToDTO(updatedOwner));
