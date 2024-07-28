@@ -86,7 +86,7 @@ public class OwnerRestController {
     @Operation(summary = "Delete Owner by ID", description = "Delete an owner by ID")
     @ApiResponse(responseCode = "204", description = "Owner deleted successfully")
     @ApiResponse(responseCode = "404", description = "Owner not found")
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{ownerId}")
     public ResponseEntity<Void> deleteOwner(@Parameter(description = "ID of the owner to be deleted") @PathVariable String ownerId) {
         logger.info("Deleting owner with ID: {}", ownerId);
         try {
