@@ -142,6 +142,24 @@ public class OwnerRestControllerTest {
                 .andExpect(status().isNotFound());
     }
 
+    @Test
+    void addUnitToOwner() throws Exception {
+        mockMvc.perform(post("/api/v1/owners/{ownerId}/buildings/{buildingId}/units/{unitId}/transfer", validOwnerId2, validBuildingId1, validUnitId1))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(result -> {
+                    String jsonResponse = result.getResponse().getContentAsString();
+                    OwnerDto ownerDto = objectMapper.readValue(jsonResponse, OwnerDto.class);
+                    assertThat(ownerDto.getUnits()).hasSize(2);
+                    assertThat(ownerDto.getUnits().get(1).getUnitId()).isEqualTo(validUnitId1);
+                    assertThat(ownerDto.getUnits().get(1).getBuilding().getBuildingId()).isEqualTo(validBuildingId1);
+                });
+    }
+
+    @Test
+    void removeUnitFromOwner() {
+
+    }
 
     private void clearDatabase() {
         ownerRepository.deleteAll();
