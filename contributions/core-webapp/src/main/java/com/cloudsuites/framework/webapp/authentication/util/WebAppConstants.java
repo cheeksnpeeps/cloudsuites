@@ -43,4 +43,29 @@ public final class WebAppConstants {
         private Claim() {
         }
     }
+
+    public static class Owner {
+        public static final String LOG_FETCHING_OWNERS = "Fetching all owners";
+        public static final String LOG_FETCHING_OWNER_BY_ID = "Fetching owner with ID: {}";
+        public static final String LOG_OWNER_FETCHED = "Owner fetched with ID: {}";
+        public static final String LOG_OWNER_NOT_FOUND = "Owner not found with ID: {}";
+        public static final String LOG_UPDATING_OWNER = "Updating owner with ID: {}";
+        public static final String LOG_OWNER_UPDATED = "Owner updated successfully with ID: {}";
+        public static final String LOG_DELETING_OWNER = "Deleting owner with ID: {}";
+        public static final String LOG_OWNER_DELETED = "Owner deleted successfully with ID: {}";
+        public static final String LOG_ADDING_UNIT_TO_OWNER = "Adding unit to owner with ownerId={}, buildingId={}, unitId={}";
+        public static final String LOG_UNIT_ADDED_TO_OWNER = "Unit successfully added to owner with ID: {}";
+        public static final String LOG_UNIT_ALREADY_EXISTS = "Unit already exists for owner with ID: {}";
+        public static final String LOG_UNIT_REMOVED_SUCCESSFULLY = "Unit successfully removed from owner with ID: {}";
+        public static final String LOG_REMOVING_UNIT_FROM_PREVIOUS_OWNER = "Removing unit from previous owner with ID: {}";
+        public static final String LOG_OWNER_OR_UNIT_NOT_FOUND = "Owner or Unit not found: ownerId={}, buildingId={}, unitId={}";
+        public static final String LOG_REGISTERING_OWNER = "Registering owner with username: {}";
+        public static final String LOG_OWNER_REGISTERED_SUCCESS = "Owner registered successfully with ID: {} and username: {}";
+        public static final String LOG_UNIT_ADDED_SUCCESSFULLY = "Unit added successfully to owner with ID: {}";
+        public static final String LOG_REMOVING_UNIT_FROM_OWNER = "Removing unit from owner with ID: {}";
+
+        private Owner() {
+        }
+    }
+
 }
