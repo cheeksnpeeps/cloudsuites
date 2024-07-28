@@ -10,14 +10,24 @@ import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.property.personas.entities.Owner;
 import com.cloudsuites.framework.services.user.entities.Address;
 import com.cloudsuites.framework.services.user.entities.Identity;
+import com.cloudsuites.framework.webapp.rest.user.dto.OwnerDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -25,18 +35,23 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional // Rollback after each test
 public class OwnerRestControllerTest {
 
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private OwnerRepository ownerRepository;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Autowired
+    private BuildingRepository buildingRepository;
+
     String validOwnerId1;
     String validOwnerId2;
     String invalidOwnerId = "invalidOwnerId";
     String invalidUnitId = "invalidUnitId";
-    @Autowired
-    private MockMvc mockMvc;
-    @Autowired
-    private OwnerRepository ownerRepository;
-    @Autowired
-    private ObjectMapper objectMapper;
-    @Autowired
-    private BuildingRepository buildingRepository;
+
     @Autowired
     private UnitRepository unitRepository;
     private String validUnitId1;
@@ -75,6 +90,21 @@ public class OwnerRestControllerTest {
         this.validUnitId2 = unit2.getUnitId();
         this.validOwnerId1 = owner1.getOwnerId();
         this.validOwnerId2 = owner2.getOwnerId();
+    }
+
+
+    @Test
+    void testGetAllOwners() throws Exception {
+        mockMvc.perform(get("/api/v1/owners"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(result -> {
+                    String jsonResponse = result.getResponse().getContentAsString();
+                    List<OwnerDto> ownerDtos = objectMapper.readValue(jsonResponse, objectMapper.getTypeFactory().constructCollectionType(List.class, OwnerDto.class));
+                    assertThat(ownerDtos).hasSize(2);
+                    assertThat(ownerDtos.get(0).getIdentity().getUsername()).isEqualTo("test1");
+                    assertThat(ownerDtos.get(1).getIdentity().getUsername()).isEqualTo("test2");
+                });
     }
 
 
