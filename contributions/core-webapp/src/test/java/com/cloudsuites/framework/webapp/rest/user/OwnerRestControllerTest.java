@@ -107,6 +107,18 @@ public class OwnerRestControllerTest {
                 });
     }
 
+    @Test
+    void getOwnerById() throws Exception {
+        mockMvc.perform(get("/api/v1/owners/{ownerId}", validOwnerId1))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(result -> {
+                    String jsonResponse = result.getResponse().getContentAsString();
+                    OwnerDto ownerDto = objectMapper.readValue(jsonResponse, OwnerDto.class);
+                    assertThat(ownerDto.getIdentity().getUsername()).isEqualTo("test1");
+                });
+    }
+
 
     private void clearDatabase() {
         ownerRepository.deleteAll();
