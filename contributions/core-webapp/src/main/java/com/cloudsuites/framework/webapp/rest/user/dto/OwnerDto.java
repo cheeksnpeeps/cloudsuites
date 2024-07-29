@@ -6,6 +6,8 @@ import com.cloudsuites.framework.webapp.rest.property.dto.Views;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,6 +27,8 @@ public class OwnerDto {
 
     @JsonView({Views.OwnerView.class, Views.TenantView.class, Views.UnitView.class})
     @Schema(description = "Owner's identity details")
+    @Valid // Ensure that the Identity object is validated
+    @NotNull(message = "Identity is required")
     private IdentityDto identity;
 
     @JsonView({Views.OwnerView.class})
