@@ -20,7 +20,7 @@ public class Identity {
 	@Column(name = "user_id", unique = true, nullable = false)
 	private String userId;
 
-	@Column
+	@Column(name = "username", unique = true, nullable = false)
 	private String username;
 
 	@Column
