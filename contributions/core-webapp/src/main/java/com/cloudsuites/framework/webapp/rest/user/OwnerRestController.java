@@ -1,6 +1,8 @@
 package com.cloudsuites.framework.webapp.rest.user;
 
+import com.cloudsuites.framework.services.common.exception.InvalidOperationException;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
+import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.property.features.service.UnitService;
 import com.cloudsuites.framework.services.property.personas.entities.Owner;
@@ -77,7 +79,7 @@ public class OwnerRestController {
     @ApiResponse(responseCode = "201", description = "Owner created successfully", content = @Content(mediaType = "application/json"))
     @PostMapping("")
     @JsonView(Views.OwnerView.class)
-    public ResponseEntity<OwnerDto> createOwner(@Valid @RequestBody @Parameter(description = "Owner details") OwnerDto ownerDto) {
+    public ResponseEntity<OwnerDto> createOwner(@Valid @RequestBody @Parameter(description = "Owner details") OwnerDto ownerDto) throws InvalidOperationException, UsernameAlreadyExistsException {
         logger.debug(WebAppConstants.Owner.LOG_REGISTERING_OWNER, ownerDto.getIdentity().getUsername());
         Owner owner = mapper.convertToEntity(ownerDto);
         owner = ownerService.createOwner(owner);
@@ -104,16 +106,11 @@ public class OwnerRestController {
     @ApiResponse(responseCode = "204", description = "Owner deleted successfully")
     @ApiResponse(responseCode = "404", description = "Owner not found")
     @DeleteMapping("/{ownerId}")
-    public ResponseEntity<Void> deleteOwner(@Parameter(description = "ID of the owner to be deleted") @PathVariable String ownerId) {
+    public ResponseEntity<Void> deleteOwner(@Parameter(description = "ID of the owner to be deleted") @PathVariable String ownerId) throws InvalidOperationException, NotFoundResponseException {
         logger.info(WebAppConstants.Owner.LOG_DELETING_OWNER, ownerId);
-        try {
             ownerService.deleteOwner(ownerId);
             logger.info(WebAppConstants.Owner.LOG_OWNER_DELETED, ownerId);
             return ResponseEntity.noContent().build();
-        } catch (NotFoundResponseException e) {
-            logger.error(WebAppConstants.Owner.LOG_OWNER_NOT_FOUND, ownerId);
-            return ResponseEntity.notFound().build();
-        }
     }
 
     @Operation(summary = "Add Unit to Owner", description = "Add an existing unit to an owner by owner ID, building ID, and unit ID. This operation transfers ownership of the unit to the specified owner.")
