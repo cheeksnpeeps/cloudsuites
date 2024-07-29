@@ -28,7 +28,10 @@ public class UnitServiceImpl implements UnitService {
     @Override
     public Unit getUnitById(String buildingId, String unitId) throws NotFoundResponseException {
         logger.debug("Entering getUnitById with buildingId: {} and unitId: {}", buildingId, unitId);
-
+        if (!unitRepository.existsById(unitId)) {
+            logger.error("Unit not found for buildingId: {} and unitId: {}", buildingId, unitId);
+            throw new NotFoundResponseException("Unit not found: " + unitId);
+        }
         Unit unit = unitRepository.findById(unitId)
                 .orElseThrow(() -> {
                     logger.error("Unit not found for buildingId: {} and unitId: {}", buildingId, unitId);
