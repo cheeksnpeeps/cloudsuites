@@ -1,6 +1,8 @@
 package com.cloudsuites.framework.services.property.personas.service;
 
+import com.cloudsuites.framework.services.common.exception.InvalidOperationException;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
+import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
 import com.cloudsuites.framework.services.property.features.entities.Building;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.property.personas.entities.Owner;
@@ -16,7 +18,7 @@ public interface OwnerService {
 
     Owner updateOwner(String ownerId, Owner owner) throws NotFoundResponseException;
 
-    void deleteOwner(String ownerId) throws NotFoundResponseException;
+    void deleteOwner(String ownerId) throws NotFoundResponseException, InvalidOperationException;
 
     List<Owner> getAllOwners() throws NotFoundResponseException;
 
@@ -26,9 +28,9 @@ public interface OwnerService {
 
     Owner findByUserId(String userId) throws NotFoundResponseException;
 
-    Owner createOwner(Owner owner);
+    Owner createOwner(Owner owner) throws UsernameAlreadyExistsException;
 
-    Owner createOwner(Owner owner, Building building, Unit unit) throws NotFoundResponseException;
+    Owner createOwner(Owner owner, Building building, Unit unit) throws NotFoundResponseException, UsernameAlreadyExistsException;
 
     void createOrUpdateOwner(Tenant tenant) throws NotFoundResponseException;
 
