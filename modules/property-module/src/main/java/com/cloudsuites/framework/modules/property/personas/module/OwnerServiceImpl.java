@@ -2,7 +2,9 @@ package com.cloudsuites.framework.modules.property.personas.module;
 
 import com.cloudsuites.framework.modules.property.personas.repository.OwnerRepository;
 import com.cloudsuites.framework.modules.property.personas.repository.TenantRepository;
+import com.cloudsuites.framework.services.common.exception.InvalidOperationException;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
+import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
 import com.cloudsuites.framework.services.property.features.entities.Building;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.property.features.service.UnitService;
@@ -18,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class OwnerServiceImpl implements OwnerService {
@@ -45,7 +48,7 @@ public class OwnerServiceImpl implements OwnerService {
     }
 
     @Override
-    public Owner createOwner(Owner newOwner) {
+    public Owner createOwner(Owner newOwner) throws UsernameAlreadyExistsException {
         Owner owner = createIdentiy(newOwner);
         owner = ownerRepository.save(owner);
         logger.info("Owner created successfully with ID: {}", owner.getOwnerId());
@@ -53,7 +56,7 @@ public class OwnerServiceImpl implements OwnerService {
     }
 
     @Override
-    public Owner createOwner(Owner newOwner, Building building, Unit unit) throws NotFoundResponseException {
+    public Owner createOwner(Owner newOwner, Building building, Unit unit) throws NotFoundResponseException, UsernameAlreadyExistsException {
         Owner owner = createIdentiy(newOwner);
 
         // Save the updated unit
@@ -88,12 +91,16 @@ public class OwnerServiceImpl implements OwnerService {
         return savedOwner;
     }
 
-    private Owner createIdentiy(Owner owner) {
+    private Owner createIdentiy(Owner owner) throws UsernameAlreadyExistsException {
         // Log the start of the tenant creation process
         logger.debug("Starting owner creation process for owner: {}", owner);
         // Step 1: Create and save the identity for the tenant
         Identity identity = owner.getIdentity();
-        logger.debug("Creating identity: {}", identity.getUserId());
+        logger.debug("Creating identity: {}", identity.getUsername());
+        if (userService.existsByUsername(identity.getUsername())) {
+            logger.error("User already exists with username: {}", identity.getUsername());
+            throw new UsernameAlreadyExistsException("User already exists with username: " + identity.getUsername());
+        }
         Identity savedIdentity = userService.createUser(identity);
         owner.setIdentity(savedIdentity);
         logger.debug("Identity created and saved: {}", savedIdentity.getUserId());
@@ -168,10 +175,14 @@ public class OwnerServiceImpl implements OwnerService {
     }
 
     @Override
-    public void deleteOwner(String ownerId) throws NotFoundResponseException {
-        if (ownerRepository.findById(ownerId).isEmpty()) {
+    public void deleteOwner(String ownerId) throws NotFoundResponseException, InvalidOperationException {
+        Optional<Owner> owner = ownerRepository.findById(ownerId);
+        if (owner.isEmpty()) {
             logger.error("Owner not found with ID: {}", ownerId);
             throw new NotFoundResponseException("Owner not found with ID: " + ownerId);
+        }
+        if (owner.get().getUnits() != null) {
+            throw new InvalidOperationException("Owner has units. Cannot delete owner with units.");
         }
         logger.info("Deleting owner with ID: {}", ownerId);
         Owner existingOwner = getOwnerById(ownerId);

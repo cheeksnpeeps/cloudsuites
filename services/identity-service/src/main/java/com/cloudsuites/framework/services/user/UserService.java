@@ -21,4 +21,6 @@ public interface UserService {
     Identity updateUser(String userId, Identity identity);
 
     void deleteUser(String userId);
+
+    boolean existsByUsername(String username);
 }

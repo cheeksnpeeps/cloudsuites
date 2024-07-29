@@ -1,9 +1,6 @@
 package com.cloudsuites.framework.webapp;
 
-import com.cloudsuites.framework.services.common.exception.CustomException;
-import com.cloudsuites.framework.services.common.exception.InvalidOperationException;
-import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
-import com.cloudsuites.framework.services.common.exception.ProblemDetails;
+import com.cloudsuites.framework.services.common.exception.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +17,6 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import java.net.URI;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @RestControllerAdvice
@@ -57,18 +53,32 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(problemDetails);
     }
 
-    @ExceptionHandler(InvalidOperationException.class)
-    protected ResponseEntity<ProblemDetails> handleNotFoundResponseException(InvalidOperationException ex, HttpServletRequest request) {
-        logger.error("InvalidOperationException occurred: URI={}, Message={}", request.getRequestURI(), ex.getMessage(), ex);
+    @ExceptionHandler(UsernameAlreadyExistsException.class)
+    protected ResponseEntity<ProblemDetails> usernameAlreadyExistsException(UsernameAlreadyExistsException ex, HttpServletRequest request) {
+        logger.error("UsernameAlreadyExistsException occurred: URI={}, Message={}", request.getRequestURI(), ex.getMessage(), ex);
         ProblemDetails problemDetails = ProblemDetails.builder()
-                .withTitle("Invalid Operation")
-                .withStatus(HttpStatus.NOT_FOUND.value())
+                .withTitle("Username Already Exists")
+                .withStatus(HttpStatus.CONFLICT.value())
                 .withDetail(ex.getMessage())
                 .withInstance(URI.create(request.getRequestURI()).getPath())
                 .withTimestamp(ZonedDateTime.now())
                 .build();
 
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(problemDetails);
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(problemDetails);
+    }
+
+    @ExceptionHandler(InvalidOperationException.class)
+    protected ResponseEntity<ProblemDetails> handleNotFoundResponseException(InvalidOperationException ex, HttpServletRequest request) {
+        logger.error("InvalidOperationException occurred: URI={}, Message={}", request.getRequestURI(), ex.getMessage(), ex);
+        ProblemDetails problemDetails = ProblemDetails.builder()
+                .withTitle("Invalid Operation")
+                .withStatus(HttpStatus.CONFLICT.value())
+                .withDetail(ex.getMessage())
+                .withInstance(URI.create(request.getRequestURI()).getPath())
+                .withTimestamp(ZonedDateTime.now())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(problemDetails);
     }
 
     @Override
@@ -88,12 +98,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problemDetails);
-    }
-
-    private Map<String, List<String>> getErrorsMap(List<String> errors) {
-        Map<String, List<String>> errorResponse = new HashMap<>();
-        errorResponse.put("errors", errors);
-        return errorResponse;
     }
 
     @ExceptionHandler(Exception.class)

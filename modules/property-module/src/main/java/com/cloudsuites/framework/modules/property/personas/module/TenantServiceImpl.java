@@ -46,6 +46,10 @@ public class TenantServiceImpl implements TenantService {
         // Step 1: Create and save the identity for the tenant
         Identity identity = tenant.getIdentity();
         logger.debug("Creating identity: {}", identity.getUserId());
+        if (userService.existsByUsername(identity.getUsername())) {
+            logger.error("User already exists with user ID: {}", identity.getUserId());
+            throw new IllegalArgumentException("User already exists with user ID: " + identity.getUserId());
+        }
         Identity savedIdentity = userService.createUser(identity);
         tenant.setIdentity(savedIdentity);
         logger.debug("Identity created and saved: {}", savedIdentity.getUserId());
