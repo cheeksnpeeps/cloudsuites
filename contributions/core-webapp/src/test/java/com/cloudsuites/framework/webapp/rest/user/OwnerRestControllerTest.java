@@ -238,4 +238,27 @@ public class OwnerRestControllerTest {
         unit.setBuilding(building);
         return unitRepository.save(unit);
     }
+
+    // -------------------- Additional Edge Case Tests --------------------
+
+    @Test
+    void testCreateOwner_DuplicateUsername() throws Exception {
+        String newOwnerJson = "{\"identity\":{\"username\":\"test1\"}}"; // Username already exists
+        mockMvc.perform(post("/api/v1/owners")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(newOwnerJson))
+                .andExpect(status().isConflict()); // Assuming you handle duplicates with 409
+    }
+
+    @Test
+    void testDeleteOwner_WithAssociatedUnits() throws Exception {
+        // First, add a unit to validOwnerId1
+        String newUnitId = createUnit(validBuildingId1).getUnitId();
+        mockMvc.perform(post("/api/v1/owners/{ownerId}/buildings/{buildingId}/units/{unitId}/transfer", validOwnerId1, validBuildingId1, newUnitId));
+
+        // Attempt to delete the owner while they still have associated units
+        mockMvc.perform(delete("/api/v1/owners/{ownerId}", validOwnerId1))
+                .andExpect(status().isConflict()); // Assuming your API returns 409 for conflict
+    }
+
 }
