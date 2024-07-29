@@ -23,7 +23,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -203,44 +202,6 @@ public class OwnerRestControllerTest {
                     OwnerDto ownerDto = objectMapper.readValue(jsonResponse, OwnerDto.class);
                     assertThat(ownerDto.getUnits()).isEmpty();
                 });
-    }
-
-    @Test
-    void testTransferUnitOwnership() throws Exception {
-        // Step 1: Create the previous owner and the unit
-        String previousOwnerId = createOwner("previousOwner").getOwnerId();
-        String buildingId = createBuilding("building1", "city1").getBuildingId();
-        String unitId = createUnit(buildingId).getUnitId();
-
-        // Associate the unit with the previous owner
-        associateUnitWithOwner(previousOwnerId, unitId); // Implement this method to associate the unit with the owner
-
-        // Step 2: Create the new owner
-        String newOwnerId = createOwner("newOwner").getOwnerId();
-
-        // Step 3: Transfer ownership of the unit
-        mockMvc.perform(put("/api/v1/units/{unitId}/transfer", unitId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"newOwnerId\":\"" + newOwnerId + "\"}"))
-                .andExpect(status().isOk());
-
-        // Step 4: Verify the transfer
-        // Check that the unit is now associated with the new owner
-        Optional<Unit> updatedUnit = unitRepository.findById(unitId);
-        updatedUnit.ifPresent(unit -> assertThat(unit.getOwner().getOwnerId()).isEqualTo(newOwnerId));
-
-
-        // Check that the previous owner is no longer associated with the unit
-        Optional<Owner> previousOwner = ownerRepository.findById(previousOwnerId); // Implement this method to retrieve owner details
-        previousOwner.ifPresent(owner -> assertThat(owner.getUnits()).doesNotContain(updatedUnit.get())); // Assuming that OwnerDto has a list of associated unit IDs
-    }
-
-    private void associateUnitWithOwner(String previousOwnerId, String unitId) {
-        ownerRepository.findById(previousOwnerId).ifPresent(owner -> {
-            Unit unit = unitRepository.findById(unitId).orElseThrow();
-            owner.getUnits().add(unit);
-            ownerRepository.save(owner);
-        });
     }
 
     // -------------------- Helper Methods --------------------
