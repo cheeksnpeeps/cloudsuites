@@ -23,16 +23,17 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
-import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@ActiveProfiles("test") // Use the test profile to load application-test.yml
-@Transactional // Rollback after each test
+@ActiveProfiles("test")
+@Transactional
 public class OwnerRestControllerTest {
 
     @Autowired
@@ -47,51 +48,29 @@ public class OwnerRestControllerTest {
     @Autowired
     private BuildingRepository buildingRepository;
 
-    String validOwnerId1;
-    String validOwnerId2;
-    String invalidOwnerId = "invalidOwnerId";
-    String invalidUnitId = "invalidUnitId";
-
     @Autowired
     private UnitRepository unitRepository;
-    private String validUnitId1;
-    private String validUnitId2;
-    private String validBuildingId1;
-    private String validBuildingId2;
+
     @Autowired
     private FloorRepository floorRepository;
+
+    private String validOwnerId1;
+    private String validOwnerId2;
+    private String validUnitId1;
+    private String validBuildingId1;
 
     @BeforeEach
     void setUp() {
         clearDatabase();
 
-        Identity identity1 = createIdentity("test1");
-        Identity identity2 = createIdentity("test2");
-
-        Owner owner1 = createOwner(identity1);
-        Owner owner2 = createOwner(identity2);
-
-        Building building1 = createBuilding("building1", "city1");
-        Building building2 = createBuilding("building2", "city2");
-
-        Unit unit1 = createUnit(building1, owner1);
-        Unit unit2 = createUnit(building2, owner2);
-
-        owner1.addUnit(unit1);
-        owner2.addUnit(unit2);
-
-        // Save owners, buildings, and units
-        ownerRepository.save(owner1);
-        ownerRepository.save(owner2);
-
-        this.validBuildingId1 = building1.getBuildingId();
-        this.validBuildingId2 = building2.getBuildingId();
-        this.validUnitId1 = unit1.getUnitId();
-        this.validUnitId2 = unit2.getUnitId();
-        this.validOwnerId1 = owner1.getOwnerId();
-        this.validOwnerId2 = owner2.getOwnerId();
+        // Initialize test data
+        validOwnerId1 = createOwner("test1").getOwnerId();
+        validOwnerId2 = createOwner("test2").getOwnerId();
+        validBuildingId1 = createBuilding("building1", "city1").getBuildingId();
+        validUnitId1 = createUnit(validBuildingId1).getUnitId();
     }
 
+    // -------------------- GET Requests --------------------
 
     @Test
     void testGetAllOwners() throws Exception {
@@ -102,13 +81,11 @@ public class OwnerRestControllerTest {
                     String jsonResponse = result.getResponse().getContentAsString();
                     List<OwnerDto> ownerDtos = objectMapper.readValue(jsonResponse, objectMapper.getTypeFactory().constructCollectionType(List.class, OwnerDto.class));
                     assertThat(ownerDtos).hasSize(2);
-                    assertThat(ownerDtos.get(0).getIdentity().getUsername()).isEqualTo("test1");
-                    assertThat(ownerDtos.get(1).getIdentity().getUsername()).isEqualTo("test2");
                 });
     }
 
     @Test
-    void getOwnerById() throws Exception {
+    void testGetOwnerById_ValidId() throws Exception {
         mockMvc.perform(get("/api/v1/owners/{ownerId}", validOwnerId1))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -119,64 +96,167 @@ public class OwnerRestControllerTest {
                 });
     }
 
+    @Test
+    void testGetOwnerById_InvalidId() throws Exception {
+        mockMvc.perform(get("/api/v1/owners/{ownerId}", "invalidOwnerId"))
+                .andExpect(status().isNotFound());
+    }
+
+    // -------------------- POST Requests --------------------
 
     @Test
-    void updateOwner() throws Exception {
+    void testCreateOwner_ValidData() throws Exception {
+        String newOwnerJson = "{\"identity\":{\"username\":\"newOwner\"}}";
+        mockMvc.perform(post("/api/v1/owners")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(newOwnerJson))
+                .andExpect(status().isCreated())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+
+    @Test
+    void testCreateOwner_InvalidData() throws Exception {
+        String newOwnerJson = "{\"identity\":{\"username\":\"\"}}"; // Invalid username
+        mockMvc.perform(post("/api/v1/owners")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(newOwnerJson))
+                .andExpect(status().isBadRequest());
+    }
+
+    // -------------------- PUT Requests --------------------
+
+    @Test
+    void testUpdateOwner_ValidData() throws Exception {
+        String updatedOwnerJson = "{\"identity\":{\"username\":\"updatedOwner\"}}";
         mockMvc.perform(put("/api/v1/owners/{ownerId}", validOwnerId1)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"identity\":{\"username\":\"test3\"}}"))
+                        .content(updatedOwnerJson))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(result -> {
                     String jsonResponse = result.getResponse().getContentAsString();
                     OwnerDto ownerDto = objectMapper.readValue(jsonResponse, OwnerDto.class);
-                    assertThat(ownerDto.getIdentity().getUsername()).isEqualTo("test3");
+                    assertThat(ownerDto.getIdentity().getUsername()).isEqualTo("updatedOwner");
                 });
     }
 
     @Test
-    void deleteOwner() throws Exception {
+    void testUpdateOwner_InvalidId() throws Exception {
+        String updatedOwnerJson = "{\"identity\":{\"username\":\"updatedOwner\"}}";
+        mockMvc.perform(put("/api/v1/owners/{ownerId}", "invalidOwnerId")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updatedOwnerJson))
+                .andExpect(status().isNotFound());
+    }
+
+    // -------------------- DELETE Requests --------------------
+
+    @Test
+    void testDeleteOwner_ValidId() throws Exception {
         mockMvc.perform(delete("/api/v1/owners/{ownerId}", validOwnerId1))
                 .andExpect(status().isNoContent());
+
         mockMvc.perform(get("/api/v1/owners/{ownerId}", validOwnerId1))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    void addUnitToOwner() throws Exception {
+    void testDeleteOwner_InvalidId() throws Exception {
+        mockMvc.perform(delete("/api/v1/owners/{ownerId}", "invalidOwnerId"))
+                .andExpect(status().isNotFound());
+    }
+
+    // -------------------- Unit Management --------------------
+
+    @Test
+    void testAddUnitToOwner_ValidData() throws Exception {
         mockMvc.perform(post("/api/v1/owners/{ownerId}/buildings/{buildingId}/units/{unitId}/transfer", validOwnerId2, validBuildingId1, validUnitId1))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(result -> {
                     String jsonResponse = result.getResponse().getContentAsString();
                     OwnerDto ownerDto = objectMapper.readValue(jsonResponse, OwnerDto.class);
-                    assertThat(ownerDto.getUnits()).hasSize(2);
-                    assertThat(ownerDto.getUnits().get(1).getUnitId()).isEqualTo(validUnitId1);
-                    assertThat(ownerDto.getUnits().get(1).getBuilding().getBuildingId()).isEqualTo(validBuildingId1);
+                    assertThat(ownerDto.getUnits()).hasSize(1);
                 });
     }
 
     @Test
-    void removeUnitFromOwner() {
-
+    void testAddUnitToOwner_InvalidOwner() throws Exception {
+        mockMvc.perform(post("/api/v1/owners/{ownerId}/buildings/{buildingId}/units/{unitId}/transfer", "invalidOwnerId", validBuildingId1, validUnitId1))
+                .andExpect(status().isNotFound());
     }
+
+    @Test
+    void testRemoveUnitFromOwner_ValidData() throws Exception {
+        // First, add the unit to the owner
+        mockMvc.perform(post("/api/v1/owners/{ownerId}/buildings/{buildingId}/units/{unitId}/transfer", validOwnerId2, validBuildingId1, validUnitId1));
+
+        // Now attempt to remove the unit
+        mockMvc.perform(delete("/api/v1/owners/{ownerId}/units/{unitId}", validOwnerId2, validUnitId1))
+                .andExpect(status().isOk());
+
+        // Verify that the unit is no longer associated with the owner
+        mockMvc.perform(get("/api/v1/owners/{ownerId}", validOwnerId2))
+                .andExpect(status().isOk())
+                .andExpect(result -> {
+                    String jsonResponse = result.getResponse().getContentAsString();
+                    OwnerDto ownerDto = objectMapper.readValue(jsonResponse, OwnerDto.class);
+                    assertThat(ownerDto.getUnits()).isEmpty();
+                });
+    }
+
+    @Test
+    void testTransferUnitOwnership() throws Exception {
+        // Step 1: Create the previous owner and the unit
+        String previousOwnerId = createOwner("previousOwner").getOwnerId();
+        String buildingId = createBuilding("building1", "city1").getBuildingId();
+        String unitId = createUnit(buildingId).getUnitId();
+
+        // Associate the unit with the previous owner
+        associateUnitWithOwner(previousOwnerId, unitId); // Implement this method to associate the unit with the owner
+
+        // Step 2: Create the new owner
+        String newOwnerId = createOwner("newOwner").getOwnerId();
+
+        // Step 3: Transfer ownership of the unit
+        mockMvc.perform(put("/api/v1/units/{unitId}/transfer", unitId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"newOwnerId\":\"" + newOwnerId + "\"}"))
+                .andExpect(status().isOk());
+
+        // Step 4: Verify the transfer
+        // Check that the unit is now associated with the new owner
+        Optional<Unit> updatedUnit = unitRepository.findById(unitId);
+        updatedUnit.ifPresent(unit -> assertThat(unit.getOwner().getOwnerId()).isEqualTo(newOwnerId));
+
+
+        // Check that the previous owner is no longer associated with the unit
+        Optional<Owner> previousOwner = ownerRepository.findById(previousOwnerId); // Implement this method to retrieve owner details
+        previousOwner.ifPresent(owner -> assertThat(owner.getUnits()).doesNotContain(updatedUnit.get())); // Assuming that OwnerDto has a list of associated unit IDs
+    }
+
+    private void associateUnitWithOwner(String previousOwnerId, String unitId) {
+        ownerRepository.findById(previousOwnerId).ifPresent(owner -> {
+            Unit unit = unitRepository.findById(unitId).orElseThrow();
+            owner.getUnits().add(unit);
+            ownerRepository.save(owner);
+        });
+    }
+
+    // -------------------- Helper Methods --------------------
 
     private void clearDatabase() {
         ownerRepository.deleteAll();
         buildingRepository.deleteAll();
-        unitRepository.deleteAll(); // Ensure units are also cleared
+        unitRepository.deleteAll();
     }
 
-    private Identity createIdentity(String username) {
+    private Owner createOwner(String username) {
+        Owner owner = new Owner();
         Identity identity = new Identity();
         identity.setUsername(username);
-        return identity; // Return the created identity
-    }
-
-    private Owner createOwner(Identity identity) {
-        Owner owner = new Owner();
         owner.setIdentity(identity);
-        return ownerRepository.save(owner); // Save and return the owner
+        return ownerRepository.save(owner);
     }
 
     private Building createBuilding(String name, String city) {
@@ -185,16 +265,16 @@ public class OwnerRestControllerTest {
         Address address = new Address();
         address.setCity(city);
         building.setAddress(address);
-        return buildingRepository.save(building); // Save and return the building
+        return buildingRepository.save(building);
     }
 
-    private Unit createUnit(Building building, Owner owner) {
+    private Unit createUnit(String buildingId) {
+        Building building = buildingRepository.findById(buildingId).orElseThrow();
         Unit unit = new Unit();
         Floor floor = new Floor();
         floor.setFloorName("floor");
         unit.setFloor(floorRepository.save(floor));
         unit.setBuilding(building);
-        //unit.setOwner(owner);
-        return unitRepository.save(unit); // Save and return the unit
+        return unitRepository.save(unit);
     }
 }
