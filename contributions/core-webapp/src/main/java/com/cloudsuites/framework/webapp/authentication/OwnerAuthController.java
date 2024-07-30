@@ -3,13 +3,13 @@ package com.cloudsuites.framework.webapp.authentication;
 import com.cloudsuites.framework.services.common.exception.InvalidOperationException;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
+import com.cloudsuites.framework.services.otp.OtpService;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.property.features.service.UnitService;
 import com.cloudsuites.framework.services.property.personas.entities.Owner;
 import com.cloudsuites.framework.services.property.personas.service.OwnerService;
 import com.cloudsuites.framework.services.user.UserService;
 import com.cloudsuites.framework.services.user.entities.Identity;
-import com.cloudsuites.framework.webapp.authentication.service.OtpService;
 import com.cloudsuites.framework.webapp.authentication.util.JwtTokenHelper;
 import com.cloudsuites.framework.webapp.authentication.util.JwtTokenProvider;
 import com.cloudsuites.framework.webapp.authentication.util.WebAppConstants;
@@ -63,7 +63,7 @@ public class OwnerAuthController {
     @JsonView(Views.OwnerView.class)
     public ResponseEntity<OwnerDto> registerOwner(@PathVariable String buildingId,
                                                   @PathVariable String unitId,
-                                                  @Valid @RequestBody @Parameter(description = "Owner registration details") OwnerDto ownerDto) throws NotFoundResponseException, UsernameAlreadyExistsException {
+                                                  @Valid @RequestBody @Parameter(description = "Owner registration details") OwnerDto ownerDto) throws NotFoundResponseException, UsernameAlreadyExistsException, InvalidOperationException {
         logger.debug(WebAppConstants.Auth.REGISTERING_OWNER_LOG, ownerDto.getIdentity().getPhoneNumber());
         Unit unit = unitService.getUnitById(buildingId, unitId);
 
@@ -74,6 +74,22 @@ public class OwnerAuthController {
 
         logger.info(WebAppConstants.Auth.OWNER_REGISTERED_SUCCESS_LOG, owner.getOwnerId(), owner.getIdentity().getPhoneNumber());
         return ResponseEntity.ok(ownerMapper.convertToDTO(owner));
+    }
+
+    @Operation(summary = "Request OTP", description = "Request a new OTP code to be sent to the owner's phone number")
+    @PostMapping("/owners/{ownerId}/request-otp")
+    public ResponseEntity<Map<String, String>> requestOtp(
+            @PathVariable String buildingId,
+            @PathVariable String unitId,
+            @PathVariable String ownerId) throws NotFoundResponseException, InvalidOperationException {
+
+        Unit unit = unitService.getUnitById(buildingId, unitId);
+        Owner owner = ownerService.getOwnerById(ownerId);
+
+        validateOwnerOwnership(unit, ownerId);
+
+        sendOtpToOwner(owner);
+        return ResponseEntity.ok(Map.of("message", "OTP sent successfully"));
     }
 
     @Operation(summary = "Verify OTP", description = "Verify the OTP sent to the owner's phone number")
@@ -93,7 +109,7 @@ public class OwnerAuthController {
         if (otpService.verifyOtp(identity.getPhoneNumber(), otp)) {
             String token = jwtTokenHelper.generateToken(ownerId, buildingId, unitId, identity.getUserId());
             String refreshToken = jwtTokenHelper.generateRefreshToken(ownerId, buildingId, unitId, identity.getUserId());
-            otpService.invalidateOtp(identity.getPhoneNumber());
+            otpService.verifyOtp(identity.getPhoneNumber(), otp);
             logger.debug(WebAppConstants.Otp.OTP_VERIFIED_LOG, identity.getPhoneNumber(), ownerId);
             return ResponseEntity.ok(Map.of("token", token, "refreshToken", refreshToken));
         } else {
@@ -110,6 +126,7 @@ public class OwnerAuthController {
             @PathVariable String ownerId,
             @RequestParam @Parameter(description = "Refresh token") String refreshToken) throws NotFoundResponseException, InvalidOperationException {
 
+        logger.debug("Refresh token received: {}", refreshToken);
         Unit unit = unitService.getUnitById(buildingId, unitId);
         Owner owner = ownerService.getOwnerById(ownerId);
         validateOwnerOwnership(unit, ownerId);
@@ -138,9 +155,13 @@ public class OwnerAuthController {
         }
     }
 
-    private void sendOtpToOwner(Owner owner) {
+    private void sendOtpToOwner(Owner owner) throws InvalidOperationException {
         String phoneNumber = owner.getIdentity().getPhoneNumber();
-        String otp = otpService.generateOtp(phoneNumber);
+        if (phoneNumber == null) {
+            logger.error("Phone number is null for owner: {}", owner.getOwnerId());
+            throw new InvalidOperationException("Phone number is required");
+        }
+        String otp = otpService.sendOtp(phoneNumber);
         logger.debug(WebAppConstants.Otp.OTP_GENERATED_LOG, phoneNumber, otp);
         logger.debug(WebAppConstants.Otp.OTP_SENT_LOG, phoneNumber);
     }
