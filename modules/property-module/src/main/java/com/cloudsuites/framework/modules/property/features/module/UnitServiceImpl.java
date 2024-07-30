@@ -32,7 +32,7 @@ public class UnitServiceImpl implements UnitService {
             logger.error("Unit not found for buildingId: {} and unitId: {}", buildingId, unitId);
             throw new NotFoundResponseException("Unit not found: " + unitId);
         }
-        Unit unit = unitRepository.findById(unitId)
+        Unit unit = unitRepository.findByBuilding_BuildingIdAndUnitId(buildingId, unitId)
                 .orElseThrow(() -> {
                     logger.error("Unit not found for buildingId: {} and unitId: {}", buildingId, unitId);
                     return new NotFoundResponseException("Unit not found: " + unitId);
@@ -67,7 +67,7 @@ public class UnitServiceImpl implements UnitService {
     @Override
     public Unit saveUnit(Unit unit) {
         Unit savedUnit = unitRepository.save(unit);
-        logger.debug("Unit saved successfully: {}", savedUnit.getUnitNumber());
+        logger.debug("Unit saved successfully: {}", savedUnit.getUnitId());
         return savedUnit;
     }
 

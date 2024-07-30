@@ -12,6 +12,8 @@ import com.cloudsuites.framework.webapp.rest.user.dto.OwnerDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -32,17 +34,23 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 class OwnerAuthControllerTest {
 
-    Owner testOwner;
+    private Owner testOwner;
+
     @Autowired
     private MockMvc mockMvc;
+
     @Autowired
     private OwnerRepository ownerRepository;
+
     @Autowired
     private BuildingRepository buildingRepository;
+
     @Autowired
     private UnitRepository unitRepository;
+
     @Autowired
     private ObjectMapper objectMapper;
+
     private String validOwnerId;
     private String validUnitId;
     private String validBuildingId;
@@ -75,7 +83,7 @@ class OwnerAuthControllerTest {
         OwnerDto newTestOwner = new OwnerDto();
         IdentityDto identity = new IdentityDto();
         identity.setUsername("testRegisterOwnerV");
-        identity.setPhoneNumber("+14166024669");
+        identity.setPhoneNumber("+14166024668");
         newTestOwner.setIdentity(identity);
 
         mockMvc.perform(post("/api/v1/buildings/{buildingId}/units/{unitId}/owner/register", validBuildingId, validUnitId)
@@ -94,11 +102,12 @@ class OwnerAuthControllerTest {
      * Test to register an owner with an empty username.
      * It expects a 400 Bad Request response with an appropriate error message.
      */
-    @Test
-    void testRegisterOwner_InvalidData_EmptyUsername() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"", " "})
+    void testRegisterOwner_InvalidData_EmptyUsername(String invalidUsername) throws Exception {
         OwnerDto newOwnerDto = new OwnerDto();
         IdentityDto identity = new IdentityDto();
-        identity.setUsername(""); // Invalid username
+        identity.setUsername(invalidUsername); // Invalid username
         newOwnerDto.setIdentity(identity);
 
         mockMvc.perform(post("/api/v1/buildings/{buildingId}/units/{unitId}/owner/register", validBuildingId, validUnitId)
@@ -203,13 +212,45 @@ class OwnerAuthControllerTest {
     @Test
     void testRefreshToken_InvalidToken() throws Exception {
         String refreshToken = "invalidRefreshToken"; // Invalid refresh token
-        String buildingId = "invalidBuildingId";
-        String ownerId = "invalid";
-        String unitId = "invalid";
         mockMvc.perform(post("/api/v1/buildings/{buildingId}/units/{unitId}/owners/{ownerId}/refresh-token", validBuildingId, validUnitId, validOwnerId)
                         .param("refreshToken", refreshToken))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(containsString("Invalid token")));
+    }
+
+    // -------------------- Invalid ID Tests --------------------
+
+    /**
+     * Test to register an owner with an invalid building ID.
+     * It expects a 404 Not Found response with an appropriate error message.
+     */
+    @Test
+    void testRegisterOwner_InvalidBuildingId() throws Exception {
+        OwnerDto newTestOwner = new OwnerDto();
+        IdentityDto identity = new IdentityDto();
+        identity.setUsername("testRegisterOwnerV");
+        identity.setPhoneNumber("+14166024668");
+        newTestOwner.setIdentity(identity);
+
+        mockMvc.perform(post("/api/v1/buildings/{buildingId}/units/{unitId}/owner/register", "invalidBuildingId", validUnitId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(newTestOwner)))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(containsString("Unit not found"))); // Example message check
+    }
+
+    /**
+     * Test to verify OTP for a non-existent owner.
+     * It expects a 404 Not Found response with an appropriate error message.
+     */
+    @Test
+    void testVerifyOtp_InvalidOwnerId() throws Exception {
+        String otp = "123456"; // Assume this OTP is valid
+
+        mockMvc.perform(post("/api/v1/buildings/{buildingId}/units/{unitId}/owners/{ownerId}/verify-otp", validBuildingId, validUnitId, "invalidOwnerId")
+                        .param("otp", otp))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(containsString("Owner not found"))); // Example message check
     }
 
     // -------------------- Helper Methods --------------------
@@ -224,7 +265,7 @@ class OwnerAuthControllerTest {
         Owner owner = new Owner();
         Identity identity = new Identity();
         identity.setUsername(username);
-        identity.setPhoneNumber("+14166024669");
+        identity.setPhoneNumber("+14166024668");
         owner.setIdentity(identity);
         return ownerRepository.save(owner);
     }
