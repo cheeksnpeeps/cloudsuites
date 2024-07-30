@@ -60,8 +60,21 @@ public class OwnerServiceImpl implements OwnerService {
     public Owner createOwner(Owner newOwner, Building building, Unit unit) throws NotFoundResponseException, UsernameAlreadyExistsException, InvalidOperationException {
         Owner owner = createIdentiy(newOwner);
 
+        // validate building and unit
+        if (building == null) {
+            logger.error("Building not found for owner: {}", owner);
+            throw new NotFoundResponseException("Building not found for owner: " + owner);
+        }
+        if (unit == null) {
+            logger.error("Unit not found for owner: {}", owner);
+            throw new NotFoundResponseException("Unit not found for owner: " + owner);
+        }
+        if (!unit.getBuilding().getBuildingId().equals(building.getBuildingId())) {
+            logger.error("Unit does not belong to the building");
+            throw new InvalidOperationException("Unit does not belong to the building");
+        }
         // Save the updated unit
-        logger.debug("Saving updated unit with owner: {}", owner.getOwnerId());
+        logger.debug("Saving updated unit with owner");
         Unit savedUnit = unitService.saveUnit(unit);
 
         owner.setStatus(OwnerStatus.ACTIVE);
@@ -83,7 +96,7 @@ public class OwnerServiceImpl implements OwnerService {
 
 
         // Step 4: Save the owner
-        logger.debug("Saving owner {} with unit: {}", owner.getOwnerId(), owner.getOwnerId());
+        logger.debug("Saving owner with unit: {}", unit.getUnitId());
         Owner savedOwner = ownerRepository.save(owner);
         savedUnit.setOwner(savedOwner);
         unitService.saveUnit(unit);
