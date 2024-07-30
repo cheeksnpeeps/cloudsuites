@@ -18,6 +18,7 @@ import com.cloudsuites.framework.services.user.entities.Identity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -48,7 +49,7 @@ public class OwnerServiceImpl implements OwnerService {
     }
 
     @Override
-    public Owner createOwner(Owner newOwner) throws UsernameAlreadyExistsException {
+    public Owner createOwner(Owner newOwner) throws UsernameAlreadyExistsException, InvalidOperationException {
         Owner owner = createIdentiy(newOwner);
         owner = ownerRepository.save(owner);
         logger.info("Owner created successfully with ID: {}", owner.getOwnerId());
@@ -56,7 +57,7 @@ public class OwnerServiceImpl implements OwnerService {
     }
 
     @Override
-    public Owner createOwner(Owner newOwner, Building building, Unit unit) throws NotFoundResponseException, UsernameAlreadyExistsException {
+    public Owner createOwner(Owner newOwner, Building building, Unit unit) throws NotFoundResponseException, UsernameAlreadyExistsException, InvalidOperationException {
         Owner owner = createIdentiy(newOwner);
 
         // Save the updated unit
@@ -91,12 +92,21 @@ public class OwnerServiceImpl implements OwnerService {
         return savedOwner;
     }
 
-    private Owner createIdentiy(Owner owner) throws UsernameAlreadyExistsException {
+    private Owner createIdentiy(Owner owner) throws UsernameAlreadyExistsException, InvalidOperationException {
         // Log the start of the tenant creation process
         logger.debug("Starting owner creation process for owner: {}", owner);
         // Step 1: Create and save the identity for the tenant
         Identity identity = owner.getIdentity();
-        logger.debug("Creating identity: {}", identity.getUsername());
+
+        if (identity == null) {
+            logger.error("Identity not found for owner: {}", owner);
+            throw new InvalidOperationException("Identity not found for owner: " + owner);
+        }
+        logger.debug("Creating identity with username: {}", identity.getUsername());
+        if (!StringUtils.hasText(identity.getUsername())) {
+            logger.error("Username not found for owner: {}", owner);
+            throw new InvalidOperationException("Username is required");
+        }
         if (userService.existsByUsername(identity.getUsername())) {
             logger.error("User already exists with username: {}", identity.getUsername());
             throw new UsernameAlreadyExistsException("User already exists with username: " + identity.getUsername());
