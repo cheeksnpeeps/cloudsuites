@@ -1,6 +1,7 @@
 package com.cloudsuites.framework.webapp.authentication;
 
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
+import com.cloudsuites.framework.services.otp.OtpService;
 import com.cloudsuites.framework.services.property.features.entities.Building;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.property.features.service.BuildingService;
@@ -12,7 +13,6 @@ import com.cloudsuites.framework.services.property.personas.service.OwnerService
 import com.cloudsuites.framework.services.property.personas.service.TenantService;
 import com.cloudsuites.framework.services.user.UserService;
 import com.cloudsuites.framework.services.user.entities.Identity;
-import com.cloudsuites.framework.webapp.authentication.service.OtpService;
 import com.cloudsuites.framework.webapp.authentication.util.JwtTokenProvider;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
 import com.cloudsuites.framework.webapp.rest.user.dto.TenantDto;
@@ -65,6 +65,21 @@ public class TenantAuthController {
         this.ownerService = ownerService;
     }
 
+    // Request a new OTP for tenant registration
+    @Operation(summary = "Request OTP", description = "Request an OTP for tenant registration")
+    @PostMapping("/tenants/request-otp")
+    public ResponseEntity<Map<String, String>> requestOtp(
+            @PathVariable String buildingId,
+            @PathVariable String unitId,
+            @RequestParam @Parameter(description = "Phone number to send OTP") String phoneNumber) {
+        // Generate OTP and send to the tenant
+        String otp = otpService.sendOtp(phoneNumber);
+        logger.debug("Generated OTP for phone number {}: {}", phoneNumber, otp);
+        sendOtp(otp, phoneNumber);
+        logger.debug("Sent OTP to phone number: {}", phoneNumber);
+
+        return ResponseEntity.ok(Map.of("message", "OTP sent successfully"));
+    }
 
     @Operation(summary = "Register a Tenant", description = "Register a new tenant with building and unit information")
     @PostMapping("/tenants/register")
@@ -118,7 +133,7 @@ public class TenantAuthController {
 
         // Handle OTP generation and sending
         String phoneNumber = tenant.getIdentity().getPhoneNumber();
-        String otp = otpService.generateOtp(phoneNumber);
+        String otp = otpService.sendOtp(phoneNumber);
         logger.debug("Generated OTP for phone number {}: {}", phoneNumber, otp);
         sendOtp(otp, phoneNumber);
         logger.debug("Sent OTP to phone number: {}", phoneNumber);
@@ -154,8 +169,6 @@ public class TenantAuthController {
         if (otpService.verifyOtp(identity.getPhoneNumber(), otp)) {
             String token = generateToken(tenantId, buildingId, unitId, identity.getUserId());
             String refreshToken = generateRefreshToken(tenantId, buildingId, unitId, identity.getUserId());
-            otpService.invalidateOtp(identity.getPhoneNumber());
-
             logger.debug("OTP verified successfully for tenant: {}", tenantId);
             return ResponseEntity.ok(Map.of("token", token, "refreshToken", refreshToken));
         } else {
