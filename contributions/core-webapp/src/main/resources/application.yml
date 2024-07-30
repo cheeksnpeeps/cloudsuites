@@ -41,3 +41,12 @@ management:
       show-details: always
     loggers:
       enabled: true
+twilio:
+  accountSid: ${accountSid}
+  serviceSid: ${serviceSid}
+  authToken: ${authToken}
+  phoneNumber: ${phoneNumber}
+jwt:
+  secretKey: ${secretKey}
+  accessTokenValidityMs: 86400000  # 1 day in milliseconds
+  refreshTokenValidityMs: 604800000  # 7 days in milliseconds
