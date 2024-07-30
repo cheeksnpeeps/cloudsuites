@@ -1,6 +1,8 @@
 package com.cloudsuites.framework.webapp.authentication;
 
+import com.cloudsuites.framework.services.common.exception.InvalidOperationException;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
+import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
 import com.cloudsuites.framework.services.otp.OtpService;
 import com.cloudsuites.framework.services.property.features.entities.Building;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
@@ -14,6 +16,7 @@ import com.cloudsuites.framework.services.property.personas.service.TenantServic
 import com.cloudsuites.framework.services.user.UserService;
 import com.cloudsuites.framework.services.user.entities.Identity;
 import com.cloudsuites.framework.webapp.authentication.util.JwtTokenProvider;
+import com.cloudsuites.framework.webapp.authentication.util.WebAppConstants;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
 import com.cloudsuites.framework.webapp.rest.user.dto.TenantDto;
 import com.cloudsuites.framework.webapp.rest.user.mapper.TenantMapper;
@@ -67,17 +70,15 @@ public class TenantAuthController {
 
     // Request a new OTP for tenant registration
     @Operation(summary = "Request OTP", description = "Request an OTP for tenant registration")
-    @PostMapping("/tenants/request-otp")
+    @PostMapping("/tenants/{tenantId}/request-otp")
     public ResponseEntity<Map<String, String>> requestOtp(
             @PathVariable String buildingId,
             @PathVariable String unitId,
-            @RequestParam @Parameter(description = "Phone number to send OTP") String phoneNumber) {
+            @PathVariable String tenantId) throws NotFoundResponseException, InvalidOperationException {
         // Generate OTP and send to the tenant
-        String otp = otpService.sendOtp(phoneNumber);
-        logger.debug("Generated OTP for phone number {}: {}", phoneNumber, otp);
-        sendOtp(otp, phoneNumber);
-        logger.debug("Sent OTP to phone number: {}", phoneNumber);
-
+        logger.debug("Generating OTP for tenant: {}", tenantId);
+        Tenant tenant = tenantService.getTenantByBuildingIdAndUnitIdAndTenantId(buildingId, unitId, tenantId);
+        sendOtpToTenant(tenant);
         return ResponseEntity.ok(Map.of("message", "OTP sent successfully"));
     }
 
@@ -87,7 +88,7 @@ public class TenantAuthController {
     public ResponseEntity<TenantDto> registerTenant(
             @PathVariable String buildingId,
             @PathVariable String unitId,
-            @Valid @RequestBody @Parameter(description = "Tenant registration details") TenantDto tenantDto) throws NotFoundResponseException {
+            @Valid @RequestBody @Parameter(description = "Tenant registration details") TenantDto tenantDto) throws NotFoundResponseException, UsernameAlreadyExistsException, InvalidOperationException {
 
         // Log the phone number of the tenant being registered
         logger.debug("Registering tenant with phone number: {}", tenantDto.getIdentity().getPhoneNumber());
@@ -135,7 +136,7 @@ public class TenantAuthController {
         String phoneNumber = tenant.getIdentity().getPhoneNumber();
         String otp = otpService.sendOtp(phoneNumber);
         logger.debug("Generated OTP for phone number {}: {}", phoneNumber, otp);
-        sendOtp(otp, phoneNumber);
+        sendOtpToTenant(tenant);
         logger.debug("Sent OTP to phone number: {}", phoneNumber);
 
         // Log the building ID and success message
@@ -212,10 +213,15 @@ public class TenantAuthController {
     }
 
 
-
-    private void sendOtp(String otp, String phoneNumber) {
-        // Send OTP to tenant (this would involve integrating with an SMS/email service)
-        // Assuming you have an implementation for sending the OTP
+    private void sendOtpToTenant(Tenant tenant) throws InvalidOperationException {
+        String phoneNumber = tenant.getIdentity().getPhoneNumber();
+        if (phoneNumber == null) {
+            logger.error("Phone number is null for owner: {}", tenant.getTenantId());
+            throw new InvalidOperationException("Phone number is required");
+        }
+        String otp = otpService.sendOtp(phoneNumber);
+        logger.debug(WebAppConstants.Otp.OTP_GENERATED_LOG, phoneNumber, otp);
+        logger.debug(WebAppConstants.Otp.OTP_SENT_LOG, phoneNumber);
     }
 
     private String generateToken(String tenantId, String buildingId, String unitId, String userId) {
