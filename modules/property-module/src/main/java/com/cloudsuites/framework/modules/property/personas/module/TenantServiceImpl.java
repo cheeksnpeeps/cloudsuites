@@ -4,6 +4,7 @@ import com.cloudsuites.framework.modules.property.features.repository.UnitReposi
 import com.cloudsuites.framework.modules.property.personas.repository.TenantRepository;
 import com.cloudsuites.framework.services.common.exception.InvalidOperationException;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
+import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.property.features.service.UnitService;
 import com.cloudsuites.framework.services.property.personas.entities.Tenant;
@@ -15,6 +16,7 @@ import com.cloudsuites.framework.services.user.entities.Identity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -39,16 +41,24 @@ public class TenantServiceImpl implements TenantService {
     }
 
     @Override
-    public Tenant createTenant(Tenant tenant, String unitId) throws NotFoundResponseException {
+    public Tenant createTenant(Tenant tenant, String unitId) throws NotFoundResponseException, InvalidOperationException, UsernameAlreadyExistsException {
         // Log the start of the tenant creation process
         logger.debug("Starting tenant creation process for tenant: {}", tenant);
 
         // Step 1: Create and save the identity for the tenant
         Identity identity = tenant.getIdentity();
-        logger.debug("Creating identity: {}", identity.getUserId());
+        if (identity == null) {
+            logger.error("Identity not found for tenant: {}", tenant);
+            throw new InvalidOperationException("Identity not found for tenant: " + tenant);
+        }
+        logger.debug("Creating identity with username: {}", identity.getUsername());
+        if (!StringUtils.hasText(identity.getUsername())) {
+            logger.error("Username not found for tenant: {}", tenant);
+            throw new InvalidOperationException("Username is required");
+        }
         if (userService.existsByUsername(identity.getUsername())) {
-            logger.error("User already exists with user ID: {}", identity.getUserId());
-            throw new IllegalArgumentException("User already exists with user ID: " + identity.getUserId());
+            logger.error("User already exists with username: {}", identity.getUsername());
+            throw new UsernameAlreadyExistsException("User already exists with username: " + identity.getUsername());
         }
         Identity savedIdentity = userService.createUser(identity);
         tenant.setIdentity(savedIdentity);
