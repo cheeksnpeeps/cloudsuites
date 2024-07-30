@@ -48,7 +48,7 @@ public class Owner {
 
     public void addUnit(Unit unit) {
         if (this.units == null) {
-            logger.debug("Initializing units list for owner: {}", this.ownerId);
+            logger.debug("Initializing units list");
             this.units = new ArrayList<>();
         }
         this.units.add(unit);
