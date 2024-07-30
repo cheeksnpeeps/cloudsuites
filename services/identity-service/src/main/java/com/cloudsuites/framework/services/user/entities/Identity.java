@@ -64,7 +64,7 @@ public class Identity {
 		this.lastModifiedAt = LocalDateTime.now();
 	}
 
-	public void updateTenantIdentity(Identity identity) {
+	public void updateIdentity(Identity identity) {
 		if (StringUtils.hasText(identity.getFirstName())) {
 			this.setFirstName(identity.getFirstName());
 		}

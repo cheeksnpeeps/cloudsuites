@@ -28,9 +28,9 @@ public interface OwnerService {
 
     Owner findByUserId(String userId) throws NotFoundResponseException;
 
-    Owner createOwner(Owner owner) throws UsernameAlreadyExistsException;
+    Owner createOwner(Owner owner) throws UsernameAlreadyExistsException, InvalidOperationException;
 
-    Owner createOwner(Owner owner, Building building, Unit unit) throws NotFoundResponseException, UsernameAlreadyExistsException;
+    Owner createOwner(Owner owner, Building building, Unit unit) throws NotFoundResponseException, UsernameAlreadyExistsException, InvalidOperationException;
 
     void createOrUpdateOwner(Tenant tenant) throws NotFoundResponseException;
 

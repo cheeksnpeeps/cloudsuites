@@ -1,6 +1,7 @@
 package com.cloudsuites.framework.webapp;
 
 import com.cloudsuites.framework.services.common.exception.*;
+import io.jsonwebtoken.MalformedJwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,6 +80,20 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(problemDetails);
+    }
+
+    @ExceptionHandler(MalformedJwtException.class)
+    protected ResponseEntity<ProblemDetails> handleMalformedJwtException(MalformedJwtException ex, HttpServletRequest request) {
+        logger.error("InvalidOperationException occurred: URI={}, Message={}", request.getRequestURI(), ex.getMessage(), ex);
+        ProblemDetails problemDetails = ProblemDetails.builder()
+                .withTitle("Token validation error")
+                .withStatus(HttpStatus.BAD_REQUEST.value())
+                .withDetail(ex.getMessage())
+                .withInstance(URI.create(request.getRequestURI()).getPath())
+                .withTimestamp(ZonedDateTime.now())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problemDetails);
     }
 
     @Override
