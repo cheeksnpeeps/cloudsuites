@@ -38,7 +38,7 @@ public class UnitServiceImpl implements UnitService {
                     return new NotFoundResponseException("Unit not found: " + unitId);
                 });
 
-        logger.debug("Unit found: {}", unit.getUnitNumber());
+        logger.debug("Unit found: {}", unit.getUnitId());
         return unit;
     }
 

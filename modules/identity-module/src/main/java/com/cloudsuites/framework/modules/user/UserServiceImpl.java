@@ -42,7 +42,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Identity createUser(Identity identity) {
-        return userRepository.save(identity);
+        Identity existingIdentity = userRepository.findByUsername(identity.getUsername()).orElse(new Identity());
+        existingIdentity.updateIdentity(identity);
+        return userRepository.save(existingIdentity);
     }
 
     @Override
