@@ -89,7 +89,7 @@ public class TenantAuthController {
             @PathVariable String buildingId,
             @PathVariable String unitId,
             @Valid @RequestBody @Parameter(description = "Tenant registration details") TenantDto tenantDto) throws NotFoundResponseException, UsernameAlreadyExistsException, InvalidOperationException {
-
+        Unit unit = validateBuildingAndUnit(buildingId, unitId);
         // Log the phone number of the tenant being registered
         logger.debug("Registering tenant with phone number: {}", tenantDto.getIdentity().getPhoneNumber());
 
@@ -120,7 +120,7 @@ public class TenantAuthController {
         }
 
         // Create or update the tenant
-        Tenant createdTenant = tenantService.createTenant(tenant, unitId);
+        Tenant createdTenant = tenantService.createTenant(tenant, unit);
         logger.debug("Created or updated tenant with ID: {}", tenant.getTenantId());
 
         // Handle owner registration if applicable
@@ -262,7 +262,7 @@ public class TenantAuthController {
         return true;
     }
 
-    private void validateBuildingAndUnit(String buildingId, String unitId) throws NotFoundResponseException {
+    private Unit validateBuildingAndUnit(String buildingId, String unitId) throws NotFoundResponseException {
         Building building = buildingService.getBuildingById(buildingId);
         Unit unit = unitService.getUnitById(buildingId, unitId);
 
@@ -274,5 +274,7 @@ public class TenantAuthController {
             logger.error("Unit not found for ID: {}", unitId);
             throw new NotFoundResponseException("Unit not found for ID: " + unitId);
         }
+        unit.setBuilding(building);
+        return unit;
     }
 }
