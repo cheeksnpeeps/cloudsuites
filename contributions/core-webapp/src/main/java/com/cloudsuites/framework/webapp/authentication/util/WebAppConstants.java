@@ -2,6 +2,72 @@ package com.cloudsuites.framework.webapp.authentication.util;
 
 public final class WebAppConstants {
 
+    public static class Building {
+        public static final String LOG_FETCHING_BUILDINGS = "Fetching all buildings";
+        public static final String LOG_FETCHING_BUILDING_BY_ID = "Fetching building with ID: {}";
+        public static final String LOG_BUILDING_FETCHED = "Building fetched with ID: {}";
+        public static final String LOG_BUILDING_NOT_FOUND = "Building not found with ID: {}";
+        public static final String LOG_UPDATING_BUILDING = "Updating building with ID: {}";
+        public static final String LOG_BUILDING_UPDATED = "Building updated successfully with ID: {}";
+        public static final String LOG_DELETING_BUILDING = "Deleting building with ID: {}";
+        public static final String LOG_BUILDING_DELETED = "Building deleted successfully with ID: {}";
+        public static final String LOG_REGISTERING_BUILDING = "Registering building with name: {}";
+        public static final String LOG_BUILDING_REGISTERED_SUCCESS = "Building registered successfully with ID: {} and name: {}";
+        public static final String LOG_FETCHING_BUILDING_UNITS = "Fetching all units for building with ID: {}";
+        public static final String LOG_FETCHING_BUILDING_UNIT_BY_ID = "Fetching unit with ID: {} for building with ID: {}";
+        public static final String LOG_BUILDING_UNIT_FETCHED = "Unit fetched with ID: {} for building with ID: {}";
+        public static final String LOG_BUILDING_UNIT_NOT_FOUND = "Unit not found with ID: {} for building with ID: {}";
+        public static final String LOG_UPDATING_BUILDING_UNIT = "Updating unit with ID: {} for building with ID: {}";
+        public static final String LOG_BUILDING_UNIT_UPDATED = "Unit updated successfully with ID: {} for building with ID: {}";
+        public static final String LOG_DELETING_BUILDING_UNIT = "Deleting unit with ID: {} for building with ID: {}";
+        public static final String LOG_BUILDING_UNIT_DELETED = "Unit deleted successfully with ID: {} for building with ID: {}";
+        public static final String LOG_REGISTERING_BUILDING_UNIT = "Registering unit with name: {} for building with ID: {}";
+        public static final String LOG_BUILDING_UNIT_REGISTERED_SUCCESS = "Unit registered successfully with ID: {} and name: {} for building with ID: {}";
+        public static final String LOG_UNIT_ALREADY_EXISTS = "Unit already exists for building with ID: {}";
+        public static final String LOG_UNIT_REMOVED_SUCCESS = "Unit removed successfully from building with ID: {}";
+        private Building() {
+        }
+    }
+
+    public static class Unit {
+        public static final String LOG_FETCHING_UNITS = "Fetching all units";
+        public static final String LOG_FETCHING_UNIT_BY_ID = "Fetching unit with ID: {}";
+        public static final String LOG_UNIT_FETCHED = "Unit fetched with ID: {}";
+        public static final String LOG_UNIT_NOT_FOUND = "Unit not found with ID: {}";
+        public static final String LOG_UPDATING_UNIT = "Updating unit with ID: {}";
+        public static final String LOG_UNIT_UPDATED = "Unit updated successfully with ID: {}";
+        public static final String LOG_DELETING_UNIT = "Deleting unit with ID: {}";
+        public static final String LOG_UNIT_DELETED = "Unit deleted successfully with ID: {}";
+        public static final String LOG_REGISTERING_UNIT = "Registering unit with name: {}";
+        public static final String LOG_UNIT_REGISTERED_SUCCESS = "Unit registered successfully with ID: {} and name: {}";
+        public static final String LOG_FETCHING_UNIT_TENANTS = "Fetching all tenants for unit with ID: {}";
+        public static final String LOG_FETCHING_UNIT_TENANT_BY_ID = "Fetching tenant with ID: {} for unit with ID: {}";
+        public static final String LOG_UNIT_TENANT_FETCHED = "Tenant fetched with ID: {} for unit with ID: {}";
+        public static final String LOG_UNIT_TENANT_NOT_FOUND = "Tenant not found with ID: {} for unit with ID: {}";
+        public static final String LOG_UPDATING_UNIT_TENANT = "Updating tenant with ID: {} for unit with ID: {}";
+        public static final String LOG_UNIT_TENANT_UPDATED = "Tenant updated successfully with ID: {} for unit with ID: {}";
+        public static final String LOG_DELETING_UNIT_TENANT = "Deleting tenant with ID: {} for unit with ID: {}";
+        public static final String LOG_UNIT_TENANT_DELETED = "Tenant deleted successfully with ID: {} for unit with ID: {}";
+        public static final String LOG_REGISTERING_UNIT_TENANT = "Registering tenant with phone number: {} for unit with ID: {}";
+        public static final String LOG_UNIT_TENANT_REGISTERED_SUCCESS = "Tenant registered successfully with ID: {} and phone number: {} for unit with ID: {}";
+        public static final String LOG_UNIT_TENANT_ALREADY_EXISTS = "Tenant already exists for unit with ID: {}";
+        public static final String LOG_UNIT_TENANT_REMOVED_SUCCESS = "Tenant removed successfully from unit with ID: {}";
+        private Unit() {
+        }
+    }
+
+    public static class Tenant {
+        public static final String LOG_REGISTERING_TENANT = "Registering tenant with phone number: {}";
+        public static final String LOG_TENANT_REGISTERED_SUCCESS = "Tenant registered successfully with ID: {} and phone number: {}";
+        public static final String LOG_FETCHING_TENANTS_BY_BUILDING = "Fetching all tenants for building with ID: {}";
+        public static final String LOG_FETCHING_TENANTS_BY_UNIT = "Fetching all tenants for unit with ID: {}";
+        public static final String LOG_UPDATING_TENANT = "Updating tenant with ID: {}";
+        public static final String LOG_FOUND_TENANTS_BY_BUILDING = "Found tenants for building with ID: {}";
+
+        private Tenant() {
+        }
+    }
+
     private WebAppConstants() {
     }
 
