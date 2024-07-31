@@ -41,7 +41,7 @@ public class TenantServiceImpl implements TenantService {
     }
 
     @Override
-    public Tenant createTenant(Tenant tenant, String unitId) throws NotFoundResponseException, InvalidOperationException, UsernameAlreadyExistsException {
+    public Tenant createTenant(Tenant tenant, Unit unit) throws NotFoundResponseException, InvalidOperationException, UsernameAlreadyExistsException {
         // Log the start of the tenant creation process
         logger.debug("Starting tenant creation process for tenant: {}", tenant);
 
@@ -63,17 +63,6 @@ public class TenantServiceImpl implements TenantService {
         Identity savedIdentity = userService.createUser(identity);
         tenant.setIdentity(savedIdentity);
         logger.debug("Identity created and saved: {}", savedIdentity.getUserId());
-
-        // Step 2: Retrieve the unit by building and unit ID
-        String buildingId = tenant.getBuilding().getBuildingId();
-        Unit unit = unitService.getUnitById(buildingId, unitId);
-        if (unit == null) {
-            String errorMsg = "Unit not found for building ID: " + buildingId + " and unit ID: " + unitId;
-            logger.error(errorMsg);
-            throw new NotFoundResponseException(errorMsg);
-        }
-        // Step 3: Add tenant to the unit's list of tenants
-        unit.setBuilding(tenant.getBuilding());
 
         // Save the updated unit
         logger.debug("Saving updated unit with tenants");
