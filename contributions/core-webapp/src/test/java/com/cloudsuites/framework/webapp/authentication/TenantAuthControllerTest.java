@@ -102,8 +102,8 @@ class TenantAuthControllerTest {
         mockMvc.perform(post("/api/v1/buildings/{buildingId}/units/{unitId}/tenants/register", validBuildingId, validUnitId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newTenantDto)))
-                .andExpect(status().isConflict())
-                .andExpect(content().string(containsString("Phone number is required"))); // Example message check
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(containsString("Phone number must be"))); // Example message check
     }
 
     // -------------------- OTP Verification Tests --------------------
