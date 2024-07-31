@@ -2,6 +2,7 @@ package com.cloudsuites.framework.webapp.rest.user;
 
 import com.cloudsuites.framework.services.common.exception.InvalidOperationException;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
+import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
 import com.cloudsuites.framework.services.property.features.entities.Building;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.property.features.service.BuildingService;
@@ -9,18 +10,22 @@ import com.cloudsuites.framework.services.property.features.service.UnitService;
 import com.cloudsuites.framework.services.property.personas.entities.Tenant;
 import com.cloudsuites.framework.services.property.personas.entities.TenantStatus;
 import com.cloudsuites.framework.services.property.personas.service.TenantService;
+import com.cloudsuites.framework.webapp.authentication.util.WebAppConstants;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
 import com.cloudsuites.framework.webapp.rest.user.dto.TenantDto;
 import com.cloudsuites.framework.webapp.rest.user.mapper.TenantMapper;
 import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.tags.Tags;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -48,6 +53,21 @@ public class TenantRestController {
         this.unitService = unitService;
     }
 
+    @Operation(summary = "Create Tenant", description = "Create tenant with details")
+    @ApiResponse(responseCode = "201", description = "Tenant created successfully", content = @Content(mediaType = "application/json"))
+    @PostMapping("/buildings/{buildingId}/units/{unitId}/tenants")
+    @JsonView(Views.TenantView.class)
+    public ResponseEntity<TenantDto> createTenant(@Valid @RequestBody @Parameter(description = "Tenant details") TenantDto tenantDto,
+                                                  @PathVariable String buildingId,
+                                                  @PathVariable String unitId) throws InvalidOperationException, UsernameAlreadyExistsException, NotFoundResponseException {
+        Unit unit = validateBuildingAndUnit(buildingId, unitId);
+        logger.debug(WebAppConstants.Tenant.LOG_REGISTERING_TENANT, tenantDto.getIdentity().getUsername());
+        Tenant tenant = tenantMapper.convertToEntity(tenantDto);
+        tenant = tenantService.createTenant(tenant, unit);
+        logger.info(WebAppConstants.Tenant.LOG_TENANT_REGISTERED_SUCCESS, tenant.getTenantId(), tenantDto.getIdentity().getUsername());
+        return ResponseEntity.status(HttpStatus.CREATED).body(tenantMapper.convertToDTO(tenant));
+    }
+
     @Operation(summary = "List All Tenants by Building ID", description = "Retrieve a list of all tenants for a given Building")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @GetMapping("/buildings/{buildingId}/tenants")
@@ -55,13 +75,14 @@ public class TenantRestController {
     public ResponseEntity<List<TenantDto>> listTenantsByBuildingId(
             @PathVariable String buildingId,
             @RequestParam(value = "status", required = false, defaultValue = "ACTIVE") TenantStatus status) throws NotFoundResponseException {
-        logger.info("Listing all tenants for building ID: {}", buildingId);
+        logger.info(WebAppConstants.Tenant.LOG_FETCHING_TENANTS_BY_BUILDING, buildingId);
         if (buildingService.getBuildingById(buildingId) == null) {
-            throw new NotFoundResponseException("Building not found for ID: " + buildingId);
+            throw new NotFoundResponseException(WebAppConstants.Building.LOG_BUILDING_NOT_FOUND + buildingId);
         }
         List<TenantDto> tenants = tenantService.getAllTenantsByBuilding(buildingId, status).stream()
                 .map(tenantMapper::convertToDTO)
                 .collect(Collectors.toList());
+        logger.debug(WebAppConstants.Tenant.LOG_FOUND_TENANTS_BY_BUILDING, tenants.size());
         return ResponseEntity.ok(tenants);
     }
 
@@ -73,7 +94,7 @@ public class TenantRestController {
             @PathVariable String buildingId,
             @PathVariable String unitId,
             @RequestParam(value = "status", required = false, defaultValue = "ACTIVE") TenantStatus status) throws NotFoundResponseException {
-        logger.info("Listing all tenants for building ID: {} and unit ID: {}", buildingId, unitId);
+        logger.info(WebAppConstants.Tenant.LOG_FETCHING_TENANTS_BY_UNIT, unitId);
         List<TenantDto> tenants = tenantService.getAllTenantsByBuildingAndUnit(buildingId, unitId, status).stream()
                 .map(tenantMapper::convertToDTO)
                 .collect(Collectors.toList());
@@ -89,7 +110,7 @@ public class TenantRestController {
             @PathVariable String buildingId,
             @PathVariable String unitId,
             @PathVariable String tenantId) throws NotFoundResponseException {
-        logger.info("Fetching tenant with ID: {}", tenantId);
+        logger.info(WebAppConstants.Tenant.LOG_FETCHING_TENANTS_BY_UNIT, tenantId);
         Tenant tenant = tenantService.getTenantByBuildingIdAndUnitIdAndTenantId(buildingId, unitId, tenantId);
         TenantDto tenantDto = tenantMapper.convertToDTO(tenant);
         return ResponseEntity.ok(tenantDto);
@@ -105,17 +126,17 @@ public class TenantRestController {
             @PathVariable String unitId,
             @PathVariable String tenantId,
             @RequestBody TenantDto tenantDto) throws NotFoundResponseException {
-        logger.info("Updating tenant with ID: {}", tenantId);
+        logger.info(WebAppConstants.Tenant.LOG_UPDATING_TENANT, tenantId);
         Tenant tenant = tenantMapper.convertToEntity(tenantDto);
         Building building = buildingService.getBuildingById(buildingId);
         Unit unit = unitService.getUnitById(buildingId, unitId);
         if (building == null) {
-            throw new NotFoundResponseException("Building not found for ID: " + buildingId);
+            throw new NotFoundResponseException(WebAppConstants.Building.LOG_BUILDING_NOT_FOUND + buildingId);
         }
         if (unit == null
                 || !unit.getBuilding().getBuildingId().equals(buildingId)
                 || !unit.getUnitId().equals(unitId)) {
-            throw new NotFoundResponseException("Unit not found for ID: " + unitId);
+            throw new NotFoundResponseException(WebAppConstants.Unit.LOG_UNIT_NOT_FOUND + unitId);
         }
         tenant.setBuilding(building);
         tenant.setUnit(unit);
@@ -131,18 +152,7 @@ public class TenantRestController {
             @PathVariable String buildingId,
             @PathVariable String unitId,
             @PathVariable String tenantId) throws NotFoundResponseException {
-        Building building = buildingService.getBuildingById(buildingId);
-        // Check if the unit exists
-        Unit unit = unitService.getUnitById(buildingId, unitId);
-
-        if (building == null) {
-            throw new NotFoundResponseException("Building not found for ID: " + buildingId);
-        }
-        if (unit == null
-                || !unit.getBuilding().getBuildingId().equals(buildingId)
-                || !unit.getUnitId().equals(unitId)) {
-            throw new NotFoundResponseException("Unit not found for ID: " + unitId);
-        }
+        validateBuildingAndUnit(buildingId, unitId);
         Tenant tenant = tenantService.getTenantById(tenantId);
         tenantService.inactivateTenant(tenant);
         return ResponseEntity.ok().body("Tenant successfully deleted");
@@ -157,12 +167,7 @@ public class TenantRestController {
                                                  @PathVariable String tenantId,
                                                  @PathVariable String unitId,
                                                  @PathVariable String newUnitId) throws NotFoundResponseException, InvalidOperationException {
-        Building building = buildingService.getBuildingById(buildingId);
-        if (building == null) throw new NotFoundResponseException("Building not found for ID: " + buildingId);
-
-        Unit newUnit = unitService.getUnitById(buildingId, newUnitId);
-        if (newUnit == null) throw new NotFoundResponseException("Unit not found for ID: " + newUnitId);
-
+        Unit newUnit = validateBuildingAndUnit(buildingId, newUnitId);
         Tenant tenant = tenantService.getTenantById(tenantId);
         if (tenant == null || !unitId.equals(tenant.getUnit().getUnitId()))
             throw new NotFoundResponseException("Tenant not found for ID: " + tenantId + " in unit " + unitId);
@@ -178,7 +183,7 @@ public class TenantRestController {
     @DeleteMapping("/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}/inactivate")
     public ResponseEntity<String> inactivateTenant(@PathVariable String buildingId,
                                                    @PathVariable String tenantId,
-                                                   @PathVariable String unitId) throws NotFoundResponseException, InvalidOperationException {
+                                                   @PathVariable String unitId) throws NotFoundResponseException {
         Building building = buildingService.getBuildingById(buildingId);
         if (building == null) throw new NotFoundResponseException("Building not found for ID: " + buildingId);
 
@@ -189,6 +194,19 @@ public class TenantRestController {
         tenantService.inactivateTenant(tenant);
 
         return ResponseEntity.ok().body("Tenant inactivated");
+    }
+
+    private Unit validateBuildingAndUnit(String buildingId, String unitId) throws NotFoundResponseException {
+        Building building = buildingService.getBuildingById(buildingId);
+        if (building == null) {
+            throw new NotFoundResponseException(WebAppConstants.Building.LOG_BUILDING_NOT_FOUND + buildingId);
+        }
+        Unit unit = unitService.getUnitById(buildingId, unitId);
+        if (unit == null) {
+            throw new NotFoundResponseException(WebAppConstants.Unit.LOG_UNIT_NOT_FOUND + unitId);
+        }
+        unit.setBuilding(building);
+        return unit;
     }
 
 }

@@ -29,18 +29,21 @@ public interface TenantService {
     @Transactional(readOnly = true)
     Tenant getTenantByBuildingIdAndUnitIdAndTenantId(String buildingId, String unitId, String tenantId) throws NotFoundResponseException;
 
-    @Transactional
-    Tenant createTenant(Tenant tenant, String unitId) throws NotFoundResponseException, InvalidOperationException, UsernameAlreadyExistsException;
-
     @Transactional(readOnly = true)
     Tenant findByUserId(String userId) throws NotFoundResponseException;
 
     @Transactional
+    Tenant createTenant(Tenant tenant, Unit unit) throws NotFoundResponseException, InvalidOperationException, UsernameAlreadyExistsException;
+
+    @Transactional
     void deleteByTenantId(String tenantId);
 
+    @Transactional
     void transferTenant(Tenant tenant, Unit newUnit, Unit oldUnit) throws InvalidOperationException;
 
+    @Transactional
     void inactivateTenant(Tenant tenant);
 
+    @Transactional
     void saveTenant(Tenant tenant);
 }
