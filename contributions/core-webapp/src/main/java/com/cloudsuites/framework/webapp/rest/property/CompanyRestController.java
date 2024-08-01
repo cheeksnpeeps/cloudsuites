@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.tags.Tags;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,7 +71,7 @@ public class CompanyRestController {
     @JsonView(Views.CompanyView.class)
     @PostMapping("")
     public ResponseEntity<CompanyDto> saveCompany(
-            @RequestBody @Parameter(description = "Company details to be saved") CompanyDto companyDTO) {
+            @Valid @RequestBody @Parameter(description = "Company details to be saved") CompanyDto companyDTO) {
         logger.debug("Saving company {}", companyDTO.getName());
         Company company = mapper.convertToEntity(companyDTO);
         company = companyService.saveCompany(company);
@@ -84,7 +85,7 @@ public class CompanyRestController {
     @DeleteMapping("/{companyId}")
     @JsonView(Views.CompanyView.class)
     public ResponseEntity<Void> deleteCompanyById(
-            @Parameter(description = "ID of the company to be deleted") @PathVariable String companyId) {
+            @Parameter(description = "ID of the company to be deleted") @PathVariable String companyId) throws NotFoundResponseException {
         logger.debug("Deleting company {}", companyId);
         companyService.deleteCompanyById(companyId);
         logger.debug("Company deleted successfully: {}", companyId);

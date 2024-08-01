@@ -15,6 +15,6 @@ public interface CompanyService {
 
     Company saveCompany(Company company);
 
-    void deleteCompanyById(String companyId);
+    void deleteCompanyById(String companyId) throws NotFoundResponseException;
 }
 
