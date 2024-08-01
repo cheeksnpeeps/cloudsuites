@@ -5,7 +5,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,7 +25,7 @@ public class CompanyDto {
     private String companyId;
 
     @JsonView({Views.StaffView.class, Views.CompanyView.class, Views.BuildingView.class})
-    @NotBlank(message = "Name is required")
+    @NotBlank(message = "Company name is required")
     @Schema(description = "Name of the management company", example = "Skyline Property Management")
     private String name;
 
@@ -33,7 +35,8 @@ public class CompanyDto {
     private String website;
 
     @JsonView({Views.StaffView.class, Views.CompanyView.class})
-    @NotBlank(message = "Address is required")
+    @Valid
+    @NotNull(message = "Address is required")
     @Schema(description = "Address of the management company")
     private AddressDto address;
 }

@@ -30,14 +30,14 @@ public class Address {
     @Column(name = "street_name")
     private String streetName;
 
+    @Column(name = "address_line_2") // New field for additional address details
+    private String addressLine2;
+
     @Column(name = "city")
     private String city;
 
-    @Column(name = "state")
-    private String state;
-
-    @Column(name = "province")
-    private String province;
+    @Column(name = "state_province_region") // Combined field for state, province, or region
+    private String stateProvinceRegion;
 
     @Column(name = "postal_code")
     private String postalCode;
@@ -45,10 +45,15 @@ public class Address {
     @Column(name = "country")
     private String country;
 
+    @Column(name = "latitude") // Optional latitude field
+    private Double latitude;
+
+    @Column(name = "longitude") // Optional longitude field
+    private Double longitude;
+
     @PrePersist
     protected void onCreate() {
         this.addressId = IdGenerator.generateULID("ADR-");
         logger.debug("Generated addressId: {}", this.addressId);
     }
-
 }

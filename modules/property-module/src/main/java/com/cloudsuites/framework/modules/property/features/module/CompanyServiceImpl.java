@@ -54,8 +54,12 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Transactional
     @Override
-    public void deleteCompanyById(String companyId) {
+    public void deleteCompanyById(String companyId) throws NotFoundResponseException {
         logger.debug("Entering deleteCompanyById with companyId: {}", companyId);
+        if (!companyRepository.existsById(companyId)) {
+            logger.error("Management Company not found for ID: {}", companyId);
+            throw new NotFoundResponseException("Management Company not found: " + companyId);
+        }
         companyRepository.deleteById(companyId);
         logger.debug("Management Company deleted: {}", companyId);
     }
