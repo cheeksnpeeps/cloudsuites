@@ -59,8 +59,13 @@ public class FloorServiceImpl implements FloorService {
     @Override
     public void deleteFloorById(String buildingId, String floorId) throws NotFoundResponseException {
         validateBuilding(buildingId);
+        Floor floor = floorRepository.findByBuilding_BuildingIdAndFloorId(buildingId, floorId)
+                .orElseThrow(() -> {
+                    logger.error("Floor not found for buildingId: {} and floorId: {}", buildingId, floorId);
+                    return new NotFoundResponseException("Floor not found: " + floorId);
+                });
         logger.debug("Entering deleteFloorById with buildingId: {} and floorId: {}", buildingId, floorId);
-        floorRepository.deleteById(floorId);
+        floorRepository.delete(floor);
         logger.debug("Floor deleted: {}", floorId);
     }
 
@@ -68,7 +73,7 @@ public class FloorServiceImpl implements FloorService {
     @Override
     public Floor saveFloorAndUnits(String buildingId, Floor floor) throws NotFoundResponseException {
         validateBuilding(buildingId);
-        logger.debug("Entering saveFloorAndUnits with buildingId: {} and floor: {}", buildingId, floor);
+        logger.debug("Entering saveFloorAndUnits with buildingId: {} and floor: {}", buildingId, floor.getFloorNumber());
         Building building = buildingService.getBuildingById(buildingId);
         floor.setBuilding(building);
         // Save the floor first
