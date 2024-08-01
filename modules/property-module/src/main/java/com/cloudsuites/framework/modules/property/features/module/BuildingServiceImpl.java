@@ -70,7 +70,11 @@ public class BuildingServiceImpl implements BuildingService {
 
     @Transactional
     @Override
-    public void deleteBuildingById(String buildingId) {
+    public void deleteBuildingById(String companyId, String buildingId) throws NotFoundResponseException {
+        buildingRepository.findByCompany_CompanyIdAndBuildingId(companyId, buildingId).orElseThrow(() -> {
+            logger.error("Building not found for company ID {} and building ID: {}", companyId, buildingId);
+            return new NotFoundResponseException("Building not found for company ID " + companyId + " and building ID: " + buildingId);
+        });
         logger.debug("Entering deleteBuildingById with buildingId: {}", buildingId);
         buildingRepository.deleteById(buildingId);
         logger.debug("Building with ID {} deleted successfully", buildingId);
