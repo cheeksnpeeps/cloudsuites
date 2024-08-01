@@ -38,7 +38,7 @@ public class Unit {
 	private Building building;
 
 	@Column(name = "unit_number")
-	private String unitNumber;
+	private Integer unitNumber;
 
 	@Column(name = "square_footage")
 	private Double squareFootage;
