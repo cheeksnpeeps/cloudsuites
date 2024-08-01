@@ -3,7 +3,9 @@ package com.cloudsuites.framework.webapp.rest.property.dto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
@@ -22,7 +24,6 @@ public class FloorDto {
     @JsonView({Views.FloorView.class, Views.UnitView.class})
     private String floorId;
 
-    @NotBlank(message = "Floor name must not be empty")
     @Schema(description = "Name of the floor", example = "Ground Floor")
     @JsonView({Views.FloorView.class, Views.UnitView.class})
     private String floorName;
@@ -31,6 +32,8 @@ public class FloorDto {
     @Positive(message = "Floor number must be a positive number")
     @Schema(description = "Number of the floor", example = "1")
     @JsonView({Views.FloorView.class, Views.UnitView.class})
+    @Min(value = 1, message = "Floor number must be at least 1")
+    @Max(value = 999, message = "Floor number must be no more than 3 digits")
     private Integer floorNumber;
 
     @Schema(hidden = true)
@@ -38,6 +41,7 @@ public class FloorDto {
     private BuildingDto building;
 
     @NotNull(message = "Units must not be null")
+    @Valid
     @Schema(description = "Units in the floor")
     @JsonView(Views.FloorView.class)
     private List<UnitDto> units;
