@@ -6,6 +6,7 @@ import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -38,4 +39,11 @@ public class Floor {
         logger.debug("Generated floorId: {}", this.floorId);
     }
 
+    public void addUnit(Unit unit) {
+        if (this.units == null) {
+            logger.debug("Initializing units list for floor: {}", this.floorId);
+            this.units = new ArrayList<>();
+        }
+        this.units.add(unit);
+    }
 }

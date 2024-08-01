@@ -208,7 +208,7 @@ class TenantAuthControllerTest {
     private Unit createUnit(String buildingId) {
         Unit unit = new Unit();
         unit.setBuilding(buildingRepository.findById(buildingId).orElseThrow());
-        unit.setUnitNumber("Unit1");
+        unit.setUnitNumber(101);
         Unit savedUnit = unitRepository.save(unit);
         createdUnits.add(savedUnit);
         return savedUnit;
