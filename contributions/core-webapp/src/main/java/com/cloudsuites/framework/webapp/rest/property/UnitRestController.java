@@ -71,9 +71,9 @@ public class UnitRestController {
     @DeleteMapping("/units/{unitId}")
     public ResponseEntity<Void> deleteUnitById(
             @Parameter(description = "ID of the building") @PathVariable String buildingId,
-            @Parameter(description = "ID of the unit to be deleted") @PathVariable String unitId) {
+            @Parameter(description = "ID of the unit to be deleted") @PathVariable String unitId) throws NotFoundResponseException {
         logger.debug("Deleting unit for building: {} and unit: {}", buildingId, unitId);
-        unitService.deleteUnitById(buildingId, "", unitId);
+        unitService.deleteUnitById(buildingId, unitId);
         logger.debug("Unit deleted successfully for building: {} and unit: {}", buildingId, unitId);
         return ResponseEntity.noContent().build();
     }
