@@ -81,9 +81,14 @@ public class UnitServiceImpl implements UnitService {
 
 
     @Override
-    public void deleteUnitById(String buildingId, String floorId, String unitId) {
-        logger.debug("Entering deleteUnitById with buildingId: {} and unitId: {}", buildingId, unitId);
-        unitRepository.deleteById(unitId);
+    public void deleteUnitById(String buildingId, String unitId) throws NotFoundResponseException {
+        Unit savedUnit = unitRepository.findByBuilding_BuildingIdAndUnitId(buildingId, unitId)
+                .orElseThrow(() -> {
+                    logger.error("Unit not found for buildingId: {}, and unitId: {}", buildingId, unitId);
+                    return new NotFoundResponseException("Unit not found: " + unitId);
+                });
+        logger.debug("Entering deleteUnitById with buildingId: {}, and unitId: {}", buildingId, unitId);
+        unitRepository.delete(savedUnit);
         logger.debug("unit {} deleted successfully",unitId);
     }
 
