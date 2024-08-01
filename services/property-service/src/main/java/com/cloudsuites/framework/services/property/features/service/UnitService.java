@@ -18,9 +18,9 @@ public interface UnitService {
 
     List<Unit> saveAllUnits(List<Unit> units);
 
-    void deleteUnitById(String buildingId, String floorId, String unitId);
-
     List<Unit> getAllUnitsByFloor(String buildingId, String floorId) throws NotFoundResponseException;
+
+    void deleteUnitById(String buildingId, String unitId) throws NotFoundResponseException;
 
     void deleteAllUnitInBatch(List<Unit> units);
 
