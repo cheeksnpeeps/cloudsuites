@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.tags.Tags;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,12 +60,12 @@ public class BuildingRestController {
         return ResponseEntity.ok().body(mapper.convertToDTOList(buildings));
     }
 
-    @Operation(summary = "Save a Building", description = "Create a new building")
+    @Operation(summary = "Create a Building", description = "Create a new building")
     @ApiResponse(responseCode = "201", description = "Building created successfully", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "400", description = "Bad Request")
     @JsonView(Views.BuildingView.class)
     @PostMapping("")
-    public ResponseEntity<BuildingDto> saveBuilding(@RequestBody @Parameter(description = "Building payload") BuildingDto buildingDTO, @PathVariable String companyId) throws NotFoundResponseException {
+    public ResponseEntity<BuildingDto> saveBuilding(@Valid @RequestBody @Parameter(description = "Building payload") BuildingDto buildingDTO, @PathVariable String companyId) throws NotFoundResponseException {
         Building building = mapper.convertToEntity(buildingDTO);
         Company company = companyService.getCompanyById(companyId);
         building.setCompany(company);
@@ -79,9 +80,9 @@ public class BuildingRestController {
     @ApiResponse(responseCode = "404", description = "Building not found")
     @DeleteMapping("/{buildingId}")
     public ResponseEntity<Void> deleteBuildingById(
-            @Parameter(description = "ID of the building to be deleted") @PathVariable String buildingId, @PathVariable String companyId) {
-        logger.debug("Deleting building {}", buildingId);
-        buildingService.deleteBuildingById(buildingId);
+            @Parameter(description = "ID of the building to be deleted") @PathVariable String buildingId, @PathVariable String companyId) throws NotFoundResponseException {
+        logger.debug("Deleting building {} for company {}", buildingId, companyId);
+        buildingService.deleteBuildingById(companyId, buildingId);
         logger.debug("Building deleted successfully: {}", buildingId);
         return ResponseEntity.noContent().build();
     }

@@ -17,6 +17,6 @@ public interface BuildingService {
 
     Building saveBuilding(Building building);
 
-    void deleteBuildingById(String buildingId);
+    void deleteBuildingById(String buildingId, String id) throws NotFoundResponseException;
 
 }

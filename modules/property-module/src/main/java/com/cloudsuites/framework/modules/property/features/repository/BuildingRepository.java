@@ -9,6 +9,8 @@ import java.util.Optional;
 
 @Repository
 public interface BuildingRepository extends JpaRepository<Building, String> {
+
     Optional<List<Building>> findByCompany_CompanyId(String companyId);
 
+    Optional<Building> findByCompany_CompanyIdAndBuildingId(String companyId, String buildingId);
 }
