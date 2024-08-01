@@ -1,4 +1,4 @@
-package com.cloudsuites.framework.services.otp;
+package com.cloudsuites.framework.modules.otp;
 
 import com.twilio.Twilio;
 import jakarta.annotation.PostConstruct;
