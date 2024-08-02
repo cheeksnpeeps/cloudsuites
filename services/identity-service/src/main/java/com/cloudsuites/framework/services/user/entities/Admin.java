@@ -21,9 +21,17 @@ public class Admin {
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Identity identity;
 
+    @Enumerated(EnumType.STRING)
+    private AdminStatus status;
+
+    @Enumerated(EnumType.STRING)
+    private AdminRole role;
+
     @PrePersist
     public void onCreate() {
-        this.adminId = IdGenerator.generateULID("AD-");
+        this.adminId = IdGenerator.generateULID("ADM-");
         logger.debug("Generated adminId: {}", this.adminId);
+        this.status = AdminStatus.ACTIVE;
+        this.role = AdminRole.USER;
     }
 }
