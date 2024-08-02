@@ -1,6 +1,7 @@
 package com.cloudsuites.framework.modules.user;
 
 
+import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
 import com.cloudsuites.framework.services.user.UserService;
 import com.cloudsuites.framework.services.user.entities.Identity;
 import jakarta.transaction.Transactional;
@@ -8,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @Transactional
@@ -41,10 +43,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Identity createUser(Identity identity) {
-        Identity existingIdentity = userRepository.findByUsername(identity.getUsername()).orElse(new Identity());
-        existingIdentity.updateIdentity(identity);
-        return userRepository.save(existingIdentity);
+    public Identity createUser(Identity identity) throws UsernameAlreadyExistsException {
+        Optional<Identity> existingIdentity = userRepository.findByUsername(identity.getUsername());
+        if (existingIdentity.isEmpty()) {
+            return userRepository.save(identity);
+        }
+        throw new UsernameAlreadyExistsException("Username already exists: " + identity.getUsername());
     }
 
     @Override

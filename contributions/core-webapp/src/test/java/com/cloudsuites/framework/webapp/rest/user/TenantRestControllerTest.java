@@ -4,6 +4,7 @@ import com.cloudsuites.framework.modules.property.features.repository.BuildingRe
 import com.cloudsuites.framework.modules.property.features.repository.UnitRepository;
 import com.cloudsuites.framework.modules.property.personas.repository.TenantRepository;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
+import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
 import com.cloudsuites.framework.services.property.features.entities.Building;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.property.personas.entities.Tenant;
@@ -68,7 +69,7 @@ class TenantRestControllerTest {
     private Tenant testTenant;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws UsernameAlreadyExistsException {
         clearDatabase();
         validBuildingId = createBuilding("BuildingA").getBuildingId();
         validUnitId = createUnit(validBuildingId).getUnitId();
@@ -217,7 +218,7 @@ class TenantRestControllerTest {
         buildingRepository.deleteAll();
     }
 
-    private Tenant createTenant(String unitId) {
+    private Tenant createTenant(String unitId) throws UsernameAlreadyExistsException {
         Tenant tenant = new Tenant();
         Identity identity = new Identity();
         identity.setUsername("TenantA");
