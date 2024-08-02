@@ -29,6 +29,6 @@ public class AdminMapper {
     public List<AdminDto> convertToDTOList(List<Admin> admins) {
         return (admins != null && !admins.isEmpty()) ? admins.stream()
                 .map(this::convertToDTO)
-                .toList() : null;
+                .toList() : List.of();
     }
 }

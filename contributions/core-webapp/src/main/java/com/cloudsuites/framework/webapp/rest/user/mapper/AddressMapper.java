@@ -26,9 +26,9 @@ public class AddressMapper {
         return modelMapper.map(addressDTO, Address.class);
     }
 
-    public List<AddressDto> convertToDTOList(List<Address> addresss) {
-        return (addresss != null && !addresss.isEmpty()) ? addresss.stream()
+    public List<AddressDto> convertToDTOList(List<Address> address) {
+        return (address != null && !address.isEmpty()) ? address.stream()
                 .map(this::convertToDTO)
-                .toList() : null;
+                .toList() : List.of();
     }
 }

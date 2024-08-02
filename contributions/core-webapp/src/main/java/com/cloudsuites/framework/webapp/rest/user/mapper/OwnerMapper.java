@@ -29,6 +29,6 @@ public class OwnerMapper {
     public List<OwnerDto> convertToDTOList(List<Owner> owners) {
         return (owners != null && !owners.isEmpty()) ? owners.stream()
                 .map(this::convertToDTO)
-                .toList() : null;
+                .toList() : List.of();
     }
 }
