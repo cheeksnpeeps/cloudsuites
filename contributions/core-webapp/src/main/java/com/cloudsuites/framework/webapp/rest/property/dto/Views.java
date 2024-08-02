@@ -24,4 +24,7 @@ public class Views {
 
     public static class StaffView {
     }
+
+    public class AdminView {
+    }
 }
