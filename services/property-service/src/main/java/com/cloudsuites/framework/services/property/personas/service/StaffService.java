@@ -1,6 +1,8 @@
 package com.cloudsuites.framework.services.property.personas.service;
 
+import com.cloudsuites.framework.services.common.exception.InvalidOperationException;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
+import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
 import com.cloudsuites.framework.services.property.personas.entities.Staff;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,7 +16,7 @@ public interface StaffService {
 
     List<Staff> getAllStaffsByBuilding(String buildingId) throws NotFoundResponseException;
 
-    Staff createStaff(Staff staff) throws NotFoundResponseException;
+    Staff createStaff(Staff staff) throws NotFoundResponseException, UsernameAlreadyExistsException, InvalidOperationException;
 
     Staff findByUserId(String userId) throws NotFoundResponseException;
 
