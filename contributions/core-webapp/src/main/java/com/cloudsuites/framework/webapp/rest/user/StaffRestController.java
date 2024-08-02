@@ -1,12 +1,13 @@
 package com.cloudsuites.framework.webapp.rest.user;
 
+import com.cloudsuites.framework.services.common.exception.InvalidOperationException;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
+import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
 import com.cloudsuites.framework.services.property.features.service.BuildingService;
 import com.cloudsuites.framework.services.property.features.service.CompanyService;
 import com.cloudsuites.framework.services.property.personas.entities.Staff;
 import com.cloudsuites.framework.services.property.personas.service.StaffService;
 import com.cloudsuites.framework.services.user.UserService;
-import com.cloudsuites.framework.services.user.entities.Identity;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
 import com.cloudsuites.framework.webapp.rest.user.dto.StaffDto;
 import com.cloudsuites.framework.webapp.rest.user.mapper.StaffMapper;
@@ -17,6 +18,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.tags.Tags;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,13 +71,11 @@ public class StaffRestController {
     @ApiResponse(responseCode = "400", description = "Bad Request")
     @PostMapping("/companies/{companyId}")
     @JsonView(Views.StaffView.class)
-    public ResponseEntity<StaffDto> createStaff(@RequestBody @Parameter(description = "Staff details to be saved") StaffDto staffDto,
-                                                @PathVariable String companyId) throws NotFoundResponseException {
+    public ResponseEntity<StaffDto> createStaff(@Valid @RequestBody @Parameter(description = "Staff details to be saved") StaffDto staffDto,
+                                                @PathVariable String companyId) throws NotFoundResponseException, UsernameAlreadyExistsException, InvalidOperationException {
         Staff staff = mapper.convertToEntity(staffDto);
         staff.setCompany(companyService.getCompanyById(companyId));
         logger.info("Creating a new staff for Company with ID: {}", companyId);
-        Identity identity = userService.createUser(staff.getIdentity());
-        staff.setIdentity(identity);
         Staff createdStaff = staffService.createStaff(staff);
         logger.info("Staff created with ID: {}", createdStaff.getStaffId());
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.convertToDTO(createdStaff));
@@ -91,7 +91,7 @@ public class StaffRestController {
         try {
             List<Staff> staffs = staffService.getAllStaffsByBuilding(buildingId);
             logger.info("Fetched {} staffs", staffs.size());
-            return ResponseEntity.ok().body(mapper.convertToDTOList(staffs));
+            return ResponseEntity.status(HttpStatus.OK).body(mapper.convertToDTOList(staffs));
         } catch (NotFoundResponseException e) {
             logger.error("Staffs not found: {}", e.getMessage());
             return ResponseEntity.notFound().build();
@@ -103,15 +103,13 @@ public class StaffRestController {
     @ApiResponse(responseCode = "400", description = "Bad Request")
     @PostMapping("/companies/{companyId}/building/{buildingId}")
     @JsonView(Views.StaffView.class)
-    public ResponseEntity<StaffDto> createBuildingStaff(@RequestBody @Parameter(description = "Staff details to be saved") StaffDto staffDto,
+    public ResponseEntity<StaffDto> createBuildingStaff(@Valid @RequestBody @Parameter(description = "Staff details to be saved") StaffDto staffDto,
                                                         @PathVariable String companyId,
-                                                        @PathVariable String buildingId) throws NotFoundResponseException {
+                                                        @PathVariable String buildingId) throws NotFoundResponseException, UsernameAlreadyExistsException, InvalidOperationException {
         Staff staff = mapper.convertToEntity(staffDto);
         staff.setCompany(companyService.getCompanyById(companyId));
         staff.setBuilding(buildingService.getBuildingById(buildingId));
         logger.info("Creating a new staff");
-        Identity identity = userService.createUser(staff.getIdentity());
-        staff.setIdentity(identity);
         Staff createdStaff = staffService.createStaff(staff);
         logger.info("Staff created with ID: {}", createdStaff.getStaffId());
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.convertToDTO(createdStaff));

@@ -1,14 +1,19 @@
 package com.cloudsuites.framework.modules.property.personas.module;
 
 import com.cloudsuites.framework.modules.property.personas.repository.StaffRepository;
+import com.cloudsuites.framework.services.common.exception.InvalidOperationException;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
+import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
 import com.cloudsuites.framework.services.property.personas.entities.Staff;
 import com.cloudsuites.framework.services.property.personas.service.StaffService;
+import com.cloudsuites.framework.services.user.UserService;
+import com.cloudsuites.framework.services.user.entities.Identity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -19,12 +24,40 @@ public class StaffServiceImpl implements StaffService {
     @Autowired
     private StaffRepository staffRepository;
 
+    @Autowired
+    private UserService userService;
+
     @Override
-    public Staff createStaff(Staff staff) {
+    public Staff createStaff(Staff staff) throws UsernameAlreadyExistsException, InvalidOperationException {
         logger.info("Creating new staff: {}", staff);
+        createIdentiy(staff);
         Staff savedStaff = staffRepository.save(staff);
         logger.info("Staff created successfully with ID: {}", savedStaff.getStaffId());
         return savedStaff;
+    }
+
+    private void createIdentiy(Staff staff) throws UsernameAlreadyExistsException, InvalidOperationException {
+        // Log the start of the staff creation process
+        logger.debug("Starting staff creation process for owner: {}", staff);
+        // Step 1: Create and save the identity for the staff
+        Identity identity = staff.getIdentity();
+
+        if (identity == null) {
+            logger.error("Identity not found for staff: {}", staff);
+            throw new InvalidOperationException("Identity not found for staff: " + staff);
+        }
+        logger.debug("Creating identity with username: {}", identity.getUsername());
+        if (!StringUtils.hasText(identity.getUsername())) {
+            logger.error("Username not found for staff: {}", staff);
+            throw new InvalidOperationException("Username is required");
+        }
+        if (userService.existsByUsername(identity.getUsername())) {
+            logger.error("User already exists with username: {}", identity.getUsername());
+            throw new UsernameAlreadyExistsException("User already exists with username: " + identity.getUsername());
+        }
+        Identity savedIdentity = userService.createUser(identity);
+        staff.setIdentity(savedIdentity);
+        logger.debug("Identity created and saved: {}", savedIdentity.getUserId());
     }
 
     @Override
@@ -82,10 +115,12 @@ public class StaffServiceImpl implements StaffService {
     @Override
     public void deleteStaff(String staffId) throws NotFoundResponseException {
         logger.info("Deleting staff with ID: {}", staffId);
-
-        staffRepository.findById(staffId).ifPresent(staff -> {
-            staffRepository.delete(staff);
-            logger.info("Staff deleted successfully with ID: {}", staffId);
-        });
+        Staff staff = staffRepository.findById(staffId)
+                .orElseThrow(() -> {
+                    logger.error("Staff found with ID: {}", staffId);
+                    return new NotFoundResponseException("No staff found with ID: " + staffId);
+                });
+        staffRepository.delete(staff);
+        logger.info("Staff deleted successfully with ID: {}", staffId);
     }
 }
