@@ -29,6 +29,6 @@ public class TenantMapper {
     public List<TenantDto> convertToDTOList(List<Tenant> tenants) {
         return (tenants != null && !tenants.isEmpty()) ? tenants.stream()
                 .map(this::convertToDTO)
-                .toList(): null;
+                .toList() : List.of();
     }
 }

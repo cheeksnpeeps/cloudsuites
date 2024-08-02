@@ -29,6 +29,6 @@ public class IdentityMapper {
     public List<IdentityDto> convertToDTOList(List<Identity> identities) {
         return (identities != null && !identities.isEmpty()) ? identities.stream()
                 .map(this::convertToDTO)
-                .toList(): null;
+                .toList() : List.of();
     }
 }
