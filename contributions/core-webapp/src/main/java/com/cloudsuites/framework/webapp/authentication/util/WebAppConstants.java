@@ -2,6 +2,24 @@ package com.cloudsuites.framework.webapp.authentication.util;
 
 public final class WebAppConstants {
 
+    public static class Admin {
+        public static final String LOG_FETCHING_ADMINS = "Fetching all admins";
+        public static final String LOG_FETCHING_ADMIN_BY_ID = "Fetching admin with ID: {}";
+        public static final String LOG_ADMIN_FETCHED = "Admin fetched with ID: {}";
+        public static final String LOG_ADMIN_NOT_FOUND = "Admin not found with ID: {}";
+        public static final String LOG_UPDATING_ADMIN = "Updating admin with ID: {}";
+        public static final String LOG_ADMIN_UPDATED = "Admin updated successfully with ID: {}";
+        public static final String LOG_DELETING_ADMIN = "Deleting admin with ID: {}";
+        public static final String LOG_ADMIN_DELETED = "Admin deleted successfully with ID: {}";
+        public static final String LOG_UNIT_REMOVED_SUCCESSFULLY = "Unit successfully removed from admin with ID: {}";
+        public static final String LOG_REGISTERING_ADMIN = "Registering admin with username: {}";
+        public static final String LOG_ADMIN_REGISTERED_SUCCESS = "Admin registered successfully with ID: {} and username: {}";
+        public static final String LOG_REMOVING_UNIT_FROM_ADMIN = "Removing unit from admin with ID: {}";
+
+        private Admin() {
+        }
+    }
+
     public static class Building {
         public static final String LOG_FETCHING_BUILDINGS = "Fetching all buildings";
         public static final String LOG_FETCHING_BUILDING_BY_ID = "Fetching building with ID: {}";
