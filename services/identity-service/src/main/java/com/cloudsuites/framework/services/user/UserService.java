@@ -1,5 +1,6 @@
 package com.cloudsuites.framework.services.user;
 
+import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
 import com.cloudsuites.framework.services.user.entities.Identity;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +17,7 @@ public interface UserService {
 
     List<Identity> getAllUsers();
 
-    Identity createUser(Identity identity);
+    Identity createUser(Identity identity) throws UsernameAlreadyExistsException;
 
     Identity updateUser(String userId, Identity identity);
 
