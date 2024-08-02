@@ -27,8 +27,8 @@ public class StaffMapper {
     }
 
     public List<StaffDto> convertToDTOList(List<Staff> staffs) {
-        return (staffs != null && !staffs.isEmpty()) ? staffs.stream()
+        return (staffs != null) ? staffs.stream()
                 .map(this::convertToDTO)
-                .toList() : null;
+                .toList() : List.of();
     }
 }
