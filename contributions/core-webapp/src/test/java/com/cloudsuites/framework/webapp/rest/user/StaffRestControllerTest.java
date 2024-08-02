@@ -1,0 +1,233 @@
+package com.cloudsuites.framework.webapp.rest.user;
+
+import com.cloudsuites.framework.modules.property.features.repository.BuildingRepository;
+import com.cloudsuites.framework.modules.property.features.repository.CompanyRepository;
+import com.cloudsuites.framework.modules.property.personas.repository.StaffRepository;
+import com.cloudsuites.framework.services.property.features.entities.Building;
+import com.cloudsuites.framework.services.property.features.entities.Company;
+import com.cloudsuites.framework.services.property.personas.entities.Staff;
+import com.cloudsuites.framework.services.user.entities.Identity;
+import com.cloudsuites.framework.webapp.rest.user.dto.StaffDto;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+@ActiveProfiles("test")
+@Transactional
+public class StaffRestControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private StaffRepository staffRepository;
+
+    @Autowired
+    private CompanyRepository companyRepository;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Autowired
+    private BuildingRepository buildingRepository;
+
+    private String validCompanyId;
+    private String validBuildingId;
+    private String validStaffId;
+
+    @BeforeEach
+    void setUp() {
+        clearDatabase();
+        // Initialize test data
+        validCompanyId = createCompany("Test Company").getCompanyId();
+        validBuildingId = createBuilding("Test Building").getBuildingId();
+        validStaffId = createStaff("testStaff", validCompanyId).getStaffId();
+    }
+
+    // -------------------- GET Requests --------------------
+
+    @Test
+    void testGetAllStaffsByCompanyId() throws Exception {
+        mockMvc.perform(get("/api/v1/staff/companies/{companyId}", validCompanyId))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(result -> {
+                    String jsonResponse = result.getResponse().getContentAsString();
+                    List<StaffDto> staffDtos = objectMapper.readValue(jsonResponse, objectMapper.getTypeFactory().constructCollectionType(List.class, StaffDto.class));
+                    assertThat(staffDtos).hasSize(1);
+                });
+    }
+
+    @Test
+    void testGetAllStaffsByBuildingId() throws Exception {
+        mockMvc.perform(get("/api/v1/staff/buildings/{buildingId}", validBuildingId))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(result -> {
+                    String jsonResponse = result.getResponse().getContentAsString();
+                    List<StaffDto> staffDtos = objectMapper.readValue(jsonResponse, objectMapper.getTypeFactory().constructCollectionType(List.class, StaffDto.class));
+                    assertThat(staffDtos).isEmpty(); // No staff associated with this building yet
+                });
+    }
+
+    @Test
+    void testGetStaffById_ValidId() throws Exception {
+        mockMvc.perform(get("/api/v1/staff/{id}", validStaffId))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(result -> {
+                    String jsonResponse = result.getResponse().getContentAsString();
+                    StaffDto staffDto = objectMapper.readValue(jsonResponse, StaffDto.class);
+                    assertThat(staffDto.getIdentity().getUsername()).isEqualTo("testStaff");
+                });
+    }
+
+    @Test
+    void testGetStaffById_InvalidId() throws Exception {
+        mockMvc.perform(get("/api/v1/staff/{id}", "invalidStaffId"))
+                .andExpect(status().isNotFound());
+    }
+
+    // -------------------- POST Requests --------------------
+
+    @Test
+    void testCreateStaff_ValidData() throws Exception {
+        String newStaffJson = "{\"identity\":{\"username\":\"newStaff\"}}";
+        String responseContent = mockMvc.perform(post("/api/v1/staff/companies/{companyId}", validCompanyId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(newStaffJson))
+                .andExpect(status().isCreated())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse().getContentAsString();
+
+        StaffDto staffDto = objectMapper.readValue(responseContent, StaffDto.class);
+        assertThat(staffDto.getIdentity().getUsername()).isEqualTo("newStaff");
+    }
+
+    @Test
+    void testCreateStaff_InvalidData() throws Exception {
+        String newStaffJson = "{\"identity\":{\"username\":\"\"}}"; // Invalid username
+        mockMvc.perform(post("/api/v1/staff/companies/{companyId}", validCompanyId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(newStaffJson))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testCreateStaff_ExistingUsername() throws Exception {
+        String newStaffJson = "{\"identity\":{\"username\":\"testStaff\"}}"; // Same as existing
+        mockMvc.perform(post("/api/v1/staff/companies/{companyId}", validCompanyId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(newStaffJson))
+                .andExpect(status().isConflict()); // Assuming you handle conflicts with 409
+    }
+
+    @Test
+    void testCreateStaff_MalformedJson() throws Exception {
+        String malformedJson = "{\"identity\":{}}"; // Missing username
+        mockMvc.perform(post("/api/v1/staff/companies/{companyId}", validCompanyId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(malformedJson))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testCreateBuildingStaff_ValidData() throws Exception {
+        String newBuildingStaffJson = "{\"identity\":{\"username\":\"buildingStaff\"}}";
+        String responseContent = mockMvc.perform(post("/api/v1/staff/companies/{companyId}/building/{buildingId}", validCompanyId, validBuildingId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(newBuildingStaffJson))
+                .andExpect(status().isCreated())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse().getContentAsString();
+
+        StaffDto staffDto = objectMapper.readValue(responseContent, StaffDto.class);
+        assertThat(staffDto.getIdentity().getUsername()).isEqualTo("buildingStaff");
+    }
+
+    // -------------------- PUT Requests --------------------
+
+    @Test
+    void testUpdateStaff_ValidData() throws Exception {
+        String updatedStaffJson = "{\"identity\":{\"username\":\"updatedStaff\"}}";
+        String responseContent = mockMvc.perform(put("/api/v1/staff/{id}", validStaffId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updatedStaffJson))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse().getContentAsString();
+
+        StaffDto staffDto = objectMapper.readValue(responseContent, StaffDto.class);
+        assertThat(staffDto.getIdentity().getUsername()).isEqualTo("updatedStaff");
+    }
+
+    @Test
+    void testUpdateStaff_InvalidId() throws Exception {
+        String updatedStaffJson = "{\"identity\":{\"username\":\"updatedStaff\"}}";
+        mockMvc.perform(put("/api/v1/staff/{id}", "invalidStaffId")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updatedStaffJson))
+                .andExpect(status().isNotFound());
+    }
+
+    // -------------------- DELETE Requests --------------------
+
+    @Test
+    void testDeleteStaff_ValidId() throws Exception {
+        mockMvc.perform(delete("/api/v1/staff/{staffId}", validStaffId))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/api/v1/staff/{staffId}", validStaffId))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testDeleteStaff_InvalidId() throws Exception {
+        mockMvc.perform(delete("/api/v1/staff/{staffId}", "invalidStaffId"))
+                .andExpect(status().isNotFound());
+    }
+
+    // -------------------- Helper Methods --------------------
+
+    private void clearDatabase() {
+        staffRepository.deleteAll();
+        companyRepository.deleteAll();
+    }
+
+    private Company createCompany(String name) {
+        Company company = new Company();
+        company.setName(name);
+        return companyRepository.save(company);
+    }
+
+    private Staff createStaff(String username, String companyId) {
+        Staff staff = new Staff();
+        Identity identity = new Identity();
+        identity.setUsername(username);
+        staff.setIdentity(identity);
+        staff.setCompany(companyRepository.findById(companyId).orElseThrow());
+        return staffRepository.save(staff);
+    }
+
+    private Building createBuilding(String name) {
+        Building building = new Building();
+        building.setName(name);
+        return buildingRepository.save(building);
+    }
+}
