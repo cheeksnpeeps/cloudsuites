@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -26,6 +27,7 @@ public class IdentityDto {
 
     @JsonView({Views.StaffView.class, Views.OwnerView.class, Views.TenantView.class, Views.UnitView.class})
     @Schema(description = "Username of the user", example = "johndoe")
+    @NotNull(message = "Username is required")
     @Size(min = 3, max = 20, message = "Username must be between 3 and 20 characters long")
     private String username;
 
