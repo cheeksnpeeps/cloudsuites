@@ -1,5 +1,6 @@
 package com.cloudsuites.framework.webapp.authentication;
 
+import com.cloudsuites.framework.modules.jwt.JwtTokenProvider;
 import com.cloudsuites.framework.services.common.exception.InvalidOperationException;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
@@ -7,11 +8,11 @@ import com.cloudsuites.framework.services.otp.OtpService;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.property.features.service.UnitService;
 import com.cloudsuites.framework.services.property.personas.entities.Owner;
+import com.cloudsuites.framework.services.property.personas.entities.UserType;
 import com.cloudsuites.framework.services.property.personas.service.OwnerService;
 import com.cloudsuites.framework.services.user.UserService;
 import com.cloudsuites.framework.services.user.entities.Identity;
 import com.cloudsuites.framework.webapp.authentication.util.JwtTokenHelper;
-import com.cloudsuites.framework.webapp.authentication.util.JwtTokenProvider;
 import com.cloudsuites.framework.webapp.authentication.util.WebAppConstants;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
 import com.cloudsuites.framework.webapp.rest.user.dto.OwnerDto;
@@ -32,7 +33,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/v1/buildings/{buildingId}/units/{unitId}")
+@RequestMapping("/api/v1/auth/buildings/{buildingId}/units/{unitId}")
 @Tags(value = {@Tag(name = "Owner Authentication", description = "Operations related to owner authentication")})
 public class OwnerAuthController {
 
@@ -107,8 +108,8 @@ public class OwnerAuthController {
 
         Identity identity = owner.getIdentity();
         if (otpService.verifyOtp(identity.getPhoneNumber(), otp)) {
-            String token = jwtTokenHelper.generateToken(ownerId, buildingId, unitId, identity.getUserId());
-            String refreshToken = jwtTokenHelper.generateRefreshToken(ownerId, buildingId, unitId, identity.getUserId());
+            String token = jwtTokenHelper.generateToken(ownerId, UserType.OWNER, buildingId, unitId, identity.getUserId());
+            String refreshToken = jwtTokenHelper.generateRefreshToken(ownerId, UserType.OWNER, buildingId, unitId, identity.getUserId());
             otpService.verifyOtp(identity.getPhoneNumber(), otp);
             logger.debug(WebAppConstants.Otp.OTP_VERIFIED_LOG, identity.getPhoneNumber(), ownerId);
             return ResponseEntity.ok(Map.of("token", token, "refreshToken", refreshToken));
@@ -139,7 +140,7 @@ public class OwnerAuthController {
 
         Identity identity = userService.getUserById(claims.get(WebAppConstants.Claim.USER_ID, String.class));
         if (owner.getIdentity().getUserId().equals(identity.getUserId())) {
-            String token = jwtTokenHelper.generateToken(ownerId, buildingId, unitId, identity.getUserId());
+            String token = jwtTokenHelper.generateToken(ownerId, UserType.OWNER, buildingId, unitId, identity.getUserId());
             logger.debug(WebAppConstants.Token.TOKEN_REFRESHED_SUCCESS_LOG, ownerId);
             return ResponseEntity.ok(Map.of("token", token, "refreshToken", refreshToken));
         } else {
