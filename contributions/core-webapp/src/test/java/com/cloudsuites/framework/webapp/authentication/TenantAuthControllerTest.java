@@ -82,7 +82,7 @@ class TenantAuthControllerTest {
         String phoneNumber = "+14166024668";
         TenantDto newTenant = createTenantDto(phoneNumber);
 
-        mockMvc.perform(post("/api/v1/buildings/{buildingId}/units/{unitId}/tenants/register", validBuildingId, validUnitId)
+        mockMvc.perform(post("/api/v1/auth/buildings/{buildingId}/units/{unitId}/tenants/register", validBuildingId, validUnitId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newTenant)))
                 .andExpect(status().isOk())
@@ -99,7 +99,7 @@ class TenantAuthControllerTest {
     void testRegisterTenant_InvalidData_EmptyPhoneNumber(String invalidPhoneNumber) throws Exception {
         TenantDto newTenantDto = createTenantDto(invalidPhoneNumber);
 
-        mockMvc.perform(post("/api/v1/buildings/{buildingId}/units/{unitId}/tenants/register", validBuildingId, validUnitId)
+        mockMvc.perform(post("/api/v1/auth/buildings/{buildingId}/units/{unitId}/tenants/register", validBuildingId, validUnitId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newTenantDto)))
                 .andExpect(status().isBadRequest())
@@ -143,7 +143,7 @@ class TenantAuthControllerTest {
                 .andReturn().getResponse().getContentAsString()
                 .split("\"refreshToken\":\"")[1].split("\"")[0]; // Extract the refresh token
 
-        mockMvc.perform(post("/api/v1/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}/refresh-token", validBuildingId, validUnitId, testTenant.getTenantId())
+        mockMvc.perform(post("/api/v1/auth/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}/refresh-token", validBuildingId, validUnitId, testTenant.getTenantId())
                         .param("refreshToken", refreshToken))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -158,7 +158,7 @@ class TenantAuthControllerTest {
     void testRefreshToken_InvalidToken() throws Exception {
         testTenant = createAndRegisterTenant("+14166024668");
 
-        mockMvc.perform(post("/api/v1/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}/refresh-token", validBuildingId, validUnitId, testTenant.getTenantId())
+        mockMvc.perform(post("/api/v1/auth/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}/refresh-token", validBuildingId, validUnitId, testTenant.getTenantId())
                         .param("refreshToken", "invalidRefreshToken"))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(containsString("Invalid token")));
@@ -169,7 +169,7 @@ class TenantAuthControllerTest {
     void testRegisterTenant_InvalidBuildingId() throws Exception {
         TenantDto newTenant = createTenantDto("+14166024668");
 
-        mockMvc.perform(post("/api/v1/buildings/{buildingId}/units/{unitId}/tenants/register", "invalidBuildingId", validUnitId)
+        mockMvc.perform(post("/api/v1/auth/buildings/{buildingId}/units/{unitId}/tenants/register", "invalidBuildingId", validUnitId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newTenant)))
                 .andExpect(status().isNotFound())
@@ -180,7 +180,7 @@ class TenantAuthControllerTest {
     void testVerifyOtp_InvalidTenantId() throws Exception {
         String otp = "123456"; // Assume this OTP is valid
 
-        mockMvc.perform(post("/api/v1/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}/verify-otp", validBuildingId, validUnitId, "invalidTenantId")
+        mockMvc.perform(post("/api/v1/auth/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}/verify-otp", validBuildingId, validUnitId, "invalidTenantId")
                         .param("otp", otp))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(containsString("Tenant not found")));
@@ -227,7 +227,7 @@ class TenantAuthControllerTest {
     private Tenant createAndRegisterTenant(String phoneNumber) throws Exception {
         TenantDto tenantDto = createTenantDto(phoneNumber);
 
-        mockMvc.perform(post("/api/v1/buildings/{buildingId}/units/{unitId}/tenants/register", validBuildingId, validUnitId)
+        mockMvc.perform(post("/api/v1/auth/buildings/{buildingId}/units/{unitId}/tenants/register", validBuildingId, validUnitId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(tenantDto)))
                 .andExpect(status().isOk())
@@ -242,12 +242,12 @@ class TenantAuthControllerTest {
     }
 
     private ResultActions requestOtp(String phoneNumber) throws Exception {
-        return mockMvc.perform(post("/api/v1/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}/request-otp", validBuildingId, validUnitId, testTenant.getTenantId())
+        return mockMvc.perform(post("/api/v1/auth/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}/request-otp", validBuildingId, validUnitId, testTenant.getTenantId())
                 .param("phoneNumber", phoneNumber));
     }
 
     private ResultActions verifyOtp(String otp) throws Exception {
-        return mockMvc.perform(post("/api/v1/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}/verify-otp", validBuildingId, validUnitId, testTenant.getTenantId())
+        return mockMvc.perform(post("/api/v1/auth/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}/verify-otp", validBuildingId, validUnitId, testTenant.getTenantId())
                 .param("otp", otp));
     }
 }
