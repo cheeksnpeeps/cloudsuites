@@ -86,7 +86,7 @@ class OwnerAuthControllerTest {
         identity.setPhoneNumber("+14166024668");
         newTestOwner.setIdentity(identity);
 
-        mockMvc.perform(post("/api/v1/buildings/{buildingId}/units/{unitId}/owner/register", validBuildingId, validUnitId)
+        mockMvc.perform(post("/api/v1/auth/buildings/{buildingId}/units/{unitId}/owner/register", validBuildingId, validUnitId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newTestOwner)))
                 .andExpect(status().isOk())
@@ -110,7 +110,7 @@ class OwnerAuthControllerTest {
         identity.setUsername(invalidUsername); // Invalid username
         newOwnerDto.setIdentity(identity);
 
-        mockMvc.perform(post("/api/v1/buildings/{buildingId}/units/{unitId}/owner/register", validBuildingId, validUnitId)
+        mockMvc.perform(post("/api/v1/auth/buildings/{buildingId}/units/{unitId}/owner/register", validBuildingId, validUnitId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newOwnerDto)))
                 .andExpect(status().isBadRequest())
@@ -129,7 +129,7 @@ class OwnerAuthControllerTest {
         newOwnerDto.setIdentity(identity);
 
         // Try to register again with the same username
-        mockMvc.perform(post("/api/v1/buildings/{buildingId}/units/{unitId}/owner/register", validBuildingId, validUnitId)
+        mockMvc.perform(post("/api/v1/auth/buildings/{buildingId}/units/{unitId}/owner/register", validBuildingId, validUnitId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newOwnerDto)))
                 .andExpect(status().isConflict())
@@ -147,7 +147,7 @@ class OwnerAuthControllerTest {
         String otp = "123456"; // Assume this OTP is valid
 
         // Assuming the OTP verification is part of your controller logic
-        mockMvc.perform(post("/api/v1/buildings/{buildingId}/units/{unitId}/owners/{ownerId}/verify-otp", validBuildingId, validUnitId, validOwnerId)
+        mockMvc.perform(post("/api/v1/auth/buildings/{buildingId}/units/{unitId}/owners/{ownerId}/verify-otp", validBuildingId, validUnitId, validOwnerId)
                         .param("otp", otp))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -167,7 +167,7 @@ class OwnerAuthControllerTest {
     void testVerifyOtp_InvalidOtp() throws Exception {
         String otp = "invalidOtp"; // Invalid OTP
 
-        mockMvc.perform(post("/api/v1/buildings/{buildingId}/units/{unitId}/owners/{ownerId}/verify-otp", validBuildingId, validUnitId, validOwnerId)
+        mockMvc.perform(post("/api/v1/auth/buildings/{buildingId}/units/{unitId}/owners/{ownerId}/verify-otp", validBuildingId, validUnitId, validOwnerId)
                         .param("otp", otp))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(containsString("Invalid OTP provided")));
@@ -183,7 +183,7 @@ class OwnerAuthControllerTest {
     void testRefreshToken_ValidData() throws Exception {
         String otp = "123456"; // Assume this OTP is valid
         // Assuming the OTP verification is part of your controller logic
-        mockMvc.perform(post("/api/v1/buildings/{buildingId}/units/{unitId}/owners/{ownerId}/verify-otp", validBuildingId, validUnitId, validOwnerId)
+        mockMvc.perform(post("/api/v1/auth/buildings/{buildingId}/units/{unitId}/owners/{ownerId}/verify-otp", validBuildingId, validUnitId, validOwnerId)
                         .param("otp", otp))
                 // Extract the refresh token from the response
                 .andExpect(result -> {
@@ -192,7 +192,7 @@ class OwnerAuthControllerTest {
                     String refreshToken = objectMapper.readTree(jsonResponse).get("refreshToken").asText();
 
                     // Use the refresh token to refresh the token
-                    mockMvc.perform(post("/api/v1/buildings/{buildingId}/units/{unitId}/owners/{ownerId}/refresh-token",
+                    mockMvc.perform(post("/api/v1/auth/buildings/{buildingId}/units/{unitId}/owners/{ownerId}/refresh-token",
                                     validBuildingId, validUnitId, validOwnerId)
                                     .param("refreshToken", refreshToken))
                             .andExpect(status().isOk())
@@ -212,7 +212,7 @@ class OwnerAuthControllerTest {
     @Test
     void testRefreshToken_InvalidToken() throws Exception {
         String refreshToken = "invalidRefreshToken"; // Invalid refresh token
-        mockMvc.perform(post("/api/v1/buildings/{buildingId}/units/{unitId}/owners/{ownerId}/refresh-token", validBuildingId, validUnitId, validOwnerId)
+        mockMvc.perform(post("/api/v1/auth/buildings/{buildingId}/units/{unitId}/owners/{ownerId}/refresh-token", validBuildingId, validUnitId, validOwnerId)
                         .param("refreshToken", refreshToken))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(containsString("Invalid token")));
@@ -232,7 +232,7 @@ class OwnerAuthControllerTest {
         identity.setPhoneNumber("+14166024668");
         newTestOwner.setIdentity(identity);
 
-        mockMvc.perform(post("/api/v1/buildings/{buildingId}/units/{unitId}/owner/register", "invalidBuildingId", validUnitId)
+        mockMvc.perform(post("/api/v1/auth/buildings/{buildingId}/units/{unitId}/owner/register", "invalidBuildingId", validUnitId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newTestOwner)))
                 .andExpect(status().isNotFound())
@@ -247,7 +247,7 @@ class OwnerAuthControllerTest {
     void testVerifyOtp_InvalidOwnerId() throws Exception {
         String otp = "123456"; // Assume this OTP is valid
 
-        mockMvc.perform(post("/api/v1/buildings/{buildingId}/units/{unitId}/owners/{ownerId}/verify-otp", validBuildingId, validUnitId, "invalidOwnerId")
+        mockMvc.perform(post("/api/v1/auth/buildings/{buildingId}/units/{unitId}/owners/{ownerId}/verify-otp", validBuildingId, validUnitId, "invalidOwnerId")
                         .param("otp", otp))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(containsString("Owner not found"))); // Example message check
