@@ -1,4 +1,4 @@
-package com.cloudsuites.framework.webapp.authentication.util;
+package com.cloudsuites.framework.modules.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
