@@ -40,7 +40,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     private Identity findUser(String username) throws NotFoundResponseException {
-        Identity identity = userService.findByEmail(username);
+        Identity identity = userService.getUserById(username);
         if (identity == null) {
             identity = userService.findByPhoneNumber(username);
         }
