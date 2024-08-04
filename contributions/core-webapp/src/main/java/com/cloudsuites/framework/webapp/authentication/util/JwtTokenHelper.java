@@ -1,5 +1,7 @@
 package com.cloudsuites.framework.webapp.authentication.util;
 
+import com.cloudsuites.framework.modules.jwt.JwtTokenProvider;
+import com.cloudsuites.framework.services.property.personas.entities.UserType;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
@@ -14,13 +16,13 @@ public class JwtTokenHelper {
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
-    public String generateToken(String personaId, String buildingId, String unitId, String userId) {
-        JwtBuilder claims = createClaims(personaId, buildingId, unitId, userId);
+    public String generateToken(String personaId, UserType personaType, String buildingId, String unitId, String userId) {
+        JwtBuilder claims = createClaims(personaId, buildingId, unitId, userId, personaType);
         return jwtTokenProvider.generateToken(claims);
     }
 
-    public String generateRefreshToken(String personaId, String buildingId, String unitId, String userId) {
-        JwtBuilder claims = createClaims(personaId, buildingId, unitId, userId);
+    public String generateRefreshToken(String personaId, UserType personaType, String buildingId, String unitId, String userId) {
+        JwtBuilder claims = createClaims(personaId, buildingId, unitId, userId, personaType);
         return jwtTokenProvider.generateRefreshToken(claims);
     }
 
@@ -31,7 +33,7 @@ public class JwtTokenHelper {
         return ownerIdClaim.equals(personaId) && buildingIdClaim.equals(buildingId) && unitIdClaim.equals(unitId);
     }
 
-    private JwtBuilder createClaims(String personaId, String buildingId, String unitId, String userId) {
+    private JwtBuilder createClaims(String personaId, String buildingId, String unitId, String userId, UserType personaType) {
         return Jwts.builder()
                 .subject(personaId)
                 .claim(WebAppConstants.Claim.PERSONA_ID, personaId)
