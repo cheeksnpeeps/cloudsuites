@@ -1,5 +1,6 @@
 package com.cloudsuites.framework.webapp.authentication;
 
+import com.cloudsuites.framework.modules.jwt.JwtTokenProvider;
 import com.cloudsuites.framework.services.common.exception.InvalidOperationException;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
@@ -15,15 +16,13 @@ import com.cloudsuites.framework.services.property.personas.service.OwnerService
 import com.cloudsuites.framework.services.property.personas.service.TenantService;
 import com.cloudsuites.framework.services.user.UserService;
 import com.cloudsuites.framework.services.user.entities.Identity;
-import com.cloudsuites.framework.webapp.authentication.util.JwtTokenProvider;
+import com.cloudsuites.framework.webapp.authentication.util.JwtTokenHelper;
 import com.cloudsuites.framework.webapp.authentication.util.WebAppConstants;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
 import com.cloudsuites.framework.webapp.rest.user.dto.TenantDto;
 import com.cloudsuites.framework.webapp.rest.user.mapper.TenantMapper;
 import com.fasterxml.jackson.annotation.JsonView;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtBuilder;
-import io.jsonwebtoken.Jwts;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -39,7 +38,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/v1/buildings/{buildingId}/units/{unitId}")
+@RequestMapping("/api/v1/auth/buildings/{buildingId}/units/{unitId}")
 @Tags(value = {@Tag(name = "Tenant Authentication", description = "Operations related to tenant authentication")})
 public class TenantAuthController {
 
@@ -52,12 +51,13 @@ public class TenantAuthController {
     private final BuildingService buildingService;
     private final UnitService unitService;
     private final OwnerService ownerService;
+    private final JwtTokenHelper jwtTokenHelper;
 
     @Autowired
     public TenantAuthController(JwtTokenProvider jwtTokenProvider, OtpService otpService,
                                 TenantService tenantService, UserService userService,
                                 TenantMapper tenantMapper, BuildingService buildingService,
-                                UnitService unitService, OwnerService ownerService) {
+                                UnitService unitService, OwnerService ownerService, JwtTokenHelper jwtTokenHelper) {
         this.jwtTokenProvider = jwtTokenProvider;
         this.otpService = otpService;
         this.tenantService = tenantService;
@@ -66,6 +66,7 @@ public class TenantAuthController {
         this.buildingService = buildingService;
         this.unitService = unitService;
         this.ownerService = ownerService;
+        this.jwtTokenHelper = jwtTokenHelper;
     }
 
     // Request a new OTP for tenant registration
@@ -168,8 +169,8 @@ public class TenantAuthController {
         Identity identity = tenant.getIdentity();
 
         if (otpService.verifyOtp(identity.getPhoneNumber(), otp)) {
-            String token = generateToken(tenantId, buildingId, unitId, identity.getUserId());
-            String refreshToken = generateRefreshToken(tenantId, buildingId, unitId, identity.getUserId());
+            String token = jwtTokenHelper.generateToken(tenantId, UserType.TENANT, buildingId, unitId, identity.getUserId());
+            String refreshToken = jwtTokenHelper.generateRefreshToken(tenantId, UserType.TENANT, buildingId, unitId, identity.getUserId());
             logger.debug("OTP verified successfully for tenant: {}", tenantId);
             return ResponseEntity.ok(Map.of("token", token, "refreshToken", refreshToken));
         } else {
@@ -202,7 +203,7 @@ public class TenantAuthController {
 
         Identity identity = userService.getUserById(claims.get("userId", String.class));
         if (tenant.getIdentity().getUserId().equals(identity.getUserId())) {
-            String token = generateToken(tenantId, buildingId, unitId, identity.getUserId());
+            String token = jwtTokenHelper.generateToken(tenantId, UserType.TENANT, buildingId, unitId, identity.getUserId());
 
             logger.debug("Token refreshed successfully for tenant: {}", tenantId);
             return ResponseEntity.ok(Map.of("token", token, "refreshToken", refreshToken));
@@ -222,32 +223,6 @@ public class TenantAuthController {
         String otp = otpService.sendOtp(phoneNumber);
         logger.debug(WebAppConstants.Otp.OTP_GENERATED_LOG, phoneNumber, otp);
         logger.debug(WebAppConstants.Otp.OTP_SENT_LOG, phoneNumber);
-    }
-
-    private String generateToken(String tenantId, String buildingId, String unitId, String userId) {
-        JwtBuilder claims = Jwts.builder()
-                .subject(tenantId)
-                .audience()
-                .add(UserType.TENANT.name())
-                .and()
-                .claim("personaId", tenantId)
-                .claim("buildingId", buildingId)
-                .claim("unitId", unitId)
-                .claim("userId", userId);
-        return jwtTokenProvider.generateToken(claims);
-    }
-
-    private String generateRefreshToken(String tenantId, String buildingId, String unitId, String userId) {
-        JwtBuilder claims = Jwts.builder()
-                .subject(tenantId)
-                .audience()
-                .add(UserType.TENANT.name())
-                .and()
-                .claim("personaId", tenantId)
-                .claim("buildingId", buildingId)
-                .claim("unitId", unitId)
-                .claim("userId", userId);
-        return jwtTokenProvider.generateRefreshToken(claims);
     }
 
     private boolean validateTokenClaims(Claims claims, String buildingId, String unitId, String tenantId) {
