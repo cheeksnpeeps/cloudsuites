@@ -3,12 +3,17 @@ package com.cloudsuites.framework.services.property.personas.entities;
 import com.cloudsuites.framework.modules.common.utils.IdGenerator;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.user.entities.Identity;
+import com.cloudsuites.framework.services.user.entities.UserRole;
+import com.cloudsuites.framework.services.user.entities.UserType;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Data
@@ -38,6 +43,19 @@ public class Owner {
     public Owner() {
         this.isPrimaryTenant = false;
         this.status = OwnerStatus.INACTIVE;// Default value
+    }
+
+    public List<GrantedAuthority> getAuthorities() {
+        return Collections.singletonList(new SimpleGrantedAuthority(UserType.OWNER.name()));
+    }
+
+    public UserRole getUserRole() {
+        UserRole userRole = new UserRole();
+        userRole.setIdentity(this.identity);
+        userRole.setPersonaId(this.ownerId);
+        userRole.setUserType(UserType.OWNER);
+        userRole.setRole(UserType.OWNER.name());
+        return userRole;
     }
 
     @PrePersist

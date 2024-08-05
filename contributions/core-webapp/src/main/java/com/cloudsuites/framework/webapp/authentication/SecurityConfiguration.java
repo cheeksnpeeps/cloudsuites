@@ -2,8 +2,9 @@ package com.cloudsuites.framework.webapp.authentication;
 
 import com.cloudsuites.framework.modules.jwt.JwtTokenProvider;
 import com.cloudsuites.framework.services.property.personas.entities.StaffRole;
-import com.cloudsuites.framework.services.property.personas.entities.UserType;
+import com.cloudsuites.framework.services.user.UserRoleRepository;
 import com.cloudsuites.framework.services.user.entities.AdminRole;
+import com.cloudsuites.framework.services.user.entities.UserType;
 import com.cloudsuites.framework.webapp.authentication.filter.JwtAuthenticationFilter;
 import com.cloudsuites.framework.webapp.authentication.providers.CustomAuthenticationProvider;
 import com.cloudsuites.framework.webapp.authentication.service.CustomUserDetailsService;
@@ -81,7 +82,7 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, UserRoleRepository userRoleRepository) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
@@ -97,8 +98,8 @@ public class SecurityConfiguration {
 
 
         // Add JWT filter before UsernamePasswordAuthenticationFilter
-        http.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, userDetailsService),
-                UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, userDetailsService,
+                userRoleRepository), UsernamePasswordAuthenticationFilter.class);
 
         // Register CustomAuthenticationProvider
         http.authenticationProvider(customAuthenticationProvider);

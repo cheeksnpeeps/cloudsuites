@@ -4,10 +4,12 @@ import com.cloudsuites.framework.services.common.exception.InvalidOperationExcep
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
 import com.cloudsuites.framework.services.user.AdminService;
+import com.cloudsuites.framework.services.user.UserRoleRepository;
 import com.cloudsuites.framework.services.user.UserService;
 import com.cloudsuites.framework.services.user.entities.Admin;
 import com.cloudsuites.framework.services.user.entities.Identity;
 import com.cloudsuites.framework.services.user.entities.IdentityConstants;
+import com.cloudsuites.framework.services.user.entities.UserRole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -20,12 +22,14 @@ public class AdminServiceImpl implements AdminService {
 
     private static final Logger logger = LoggerFactory.getLogger(AdminServiceImpl.class);
     private final AdminRepository adminRepository;
+    private final UserRoleRepository userRoleRepository;
 
     UserService userService;
 
-    public AdminServiceImpl(AdminRepository adminRepository, UserService userService) {
+    public AdminServiceImpl(AdminRepository adminRepository, UserService userService, UserRoleRepository userRoleRepository) {
         this.adminRepository = adminRepository;
         this.userService = userService;
+        this.userRoleRepository = userRoleRepository;
     }
 
     @Override
@@ -43,6 +47,10 @@ public class AdminServiceImpl implements AdminService {
         Admin savedIdentity = createIdentiy(admin);
         Admin savedAdmin = adminRepository.save(savedIdentity);
         logger.info(IdentityConstants.Admin.LOG_ADMIN_CREATED, savedAdmin.getAdminId());
+
+        UserRole userRole = userRoleRepository.save(savedAdmin.getUserRole());
+        logger.debug("User role created: {} - {}", userRole.getPersonaId(), userRole.getRole());
+
         return savedAdmin;
     }
 

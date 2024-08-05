@@ -5,6 +5,10 @@ import jakarta.persistence.*;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
+import java.util.List;
 
 @Data
 @Entity
@@ -26,6 +30,21 @@ public class Admin {
 
     @Enumerated(EnumType.STRING)
     private AdminRole role;
+
+    public List<GrantedAuthority> getAuthorities() {
+        SimpleGrantedAuthority staffAuthority = new SimpleGrantedAuthority(UserType.STAFF.name());
+        SimpleGrantedAuthority roleAuthority = new SimpleGrantedAuthority(role.name());
+        return List.of(staffAuthority, roleAuthority);
+    }
+
+    public UserRole getUserRole() {
+        UserRole userRole = new UserRole();
+        userRole.setIdentity(this.identity);
+        userRole.setPersonaId(this.adminId);
+        userRole.setUserType(UserType.ADMIN);
+        userRole.setRole(role.name());
+        return userRole;
+    }
 
     @PrePersist
     public void onCreate() {

@@ -9,14 +9,14 @@ import java.util.Map;
 
 public class UserPrincipal implements UserDetails {
 
-    private final String userId;
+    private final Identity identity;
     private final Map<String, Long> personaIds;
     private final String username;
     private final Collection<? extends GrantedAuthority> authorities;
 
-    public UserPrincipal(String userId, Map<String, Long> personaIds, String username,
+    public UserPrincipal(Identity identity, Map<String, Long> personaIds, String username,
                          Collection<? extends GrantedAuthority> authorities) {
-        this.userId = userId;
+        this.identity = identity;
         this.personaIds = personaIds;
         this.username = username;
         this.authorities = authorities;
@@ -24,15 +24,11 @@ public class UserPrincipal implements UserDetails {
 
     public static UserPrincipal create(Identity identity, Map<String, Long> personaIds, Collection<? extends GrantedAuthority> authorities) {
         return new UserPrincipal(
-                identity.getUserId(),
+                identity,
                 personaIds,
                 identity.getPhoneNumber(),
                 authorities
         );
-    }
-
-    public String userId() {
-        return userId;
     }
 
     public Map<String, Long> personaIds() {
