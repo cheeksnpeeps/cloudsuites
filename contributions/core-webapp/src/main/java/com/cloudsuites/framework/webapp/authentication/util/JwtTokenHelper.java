@@ -1,7 +1,7 @@
 package com.cloudsuites.framework.webapp.authentication.util;
 
 import com.cloudsuites.framework.modules.jwt.JwtTokenProvider;
-import com.cloudsuites.framework.services.property.personas.entities.UserType;
+import com.cloudsuites.framework.services.user.entities.UserType;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
@@ -36,7 +36,9 @@ public class JwtTokenHelper {
     private JwtBuilder createClaims(String personaId, String buildingId, String unitId, String userId, UserType personaType) {
         return Jwts.builder()
                 .subject(personaId)
-                .claim(WebAppConstants.Claim.PERSONA_ID, personaId)
+                .audience().add(WebAppConstants.Claim.AUDIENCE)
+                .and()
+                .claim(WebAppConstants.Claim.TYPE, personaType)
                 .claim(WebAppConstants.Claim.BUILDING_ID, buildingId)
                 .claim(WebAppConstants.Claim.UNIT_ID, unitId)
                 .claim(WebAppConstants.Claim.USER_ID, userId);
