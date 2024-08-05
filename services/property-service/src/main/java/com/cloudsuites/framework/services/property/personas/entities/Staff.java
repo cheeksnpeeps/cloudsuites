@@ -4,6 +4,8 @@ import com.cloudsuites.framework.modules.common.utils.IdGenerator;
 import com.cloudsuites.framework.services.property.features.entities.Building;
 import com.cloudsuites.framework.services.property.features.entities.Company;
 import com.cloudsuites.framework.services.user.entities.Identity;
+import com.cloudsuites.framework.services.user.entities.UserRole;
+import com.cloudsuites.framework.services.user.entities.UserType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-import java.util.Collections;
 import java.util.List;
 
 @Getter
@@ -39,11 +40,22 @@ public class Staff {
     @JoinColumn(name = "building_id")
     private Building building;
 
-    @Column(name = "staff_role")
-    private StaffRole staffRole;
+    @Column(name = "role")
+    private StaffRole role;
 
     public List<GrantedAuthority> getAuthorities() {
-        return Collections.singletonList(new SimpleGrantedAuthority(UserType.STAFF.name()));
+        SimpleGrantedAuthority staffAuthority = new SimpleGrantedAuthority(UserType.STAFF.name());
+        SimpleGrantedAuthority roleAuthority = new SimpleGrantedAuthority(role.name());
+        return List.of(staffAuthority, roleAuthority);
+    }
+
+    public UserRole getUserRole() {
+        UserRole userRole = new UserRole();
+        userRole.setIdentity(this.identity);
+        userRole.setPersonaId(this.staffId);
+        userRole.setUserType(UserType.STAFF);
+        userRole.setRole(role.name());
+        return userRole;
     }
 
     @PrePersist

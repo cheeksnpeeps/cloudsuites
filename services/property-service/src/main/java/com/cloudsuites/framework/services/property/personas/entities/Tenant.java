@@ -4,6 +4,8 @@ import com.cloudsuites.framework.modules.common.utils.IdGenerator;
 import com.cloudsuites.framework.services.property.features.entities.Building;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.user.entities.Identity;
+import com.cloudsuites.framework.services.user.entities.UserRole;
+import com.cloudsuites.framework.services.user.entities.UserType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -50,6 +52,15 @@ public class Tenant {
 
     public List<GrantedAuthority> getAuthorities() {
         return Collections.singletonList(new SimpleGrantedAuthority(UserType.TENANT.name()));
+    }
+
+    public UserRole getUserRole() {
+        UserRole userRole = new UserRole();
+        userRole.setIdentity(this.identity);
+        userRole.setPersonaId(this.tenantId);
+        userRole.setUserType(UserType.TENANT);
+        userRole.setRole(UserType.TENANT.name());
+        return userRole;
     }
 
     public Tenant() {
