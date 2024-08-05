@@ -11,11 +11,11 @@ import com.cloudsuites.framework.services.property.features.service.BuildingServ
 import com.cloudsuites.framework.services.property.features.service.UnitService;
 import com.cloudsuites.framework.services.property.personas.entities.Tenant;
 import com.cloudsuites.framework.services.property.personas.entities.TenantStatus;
-import com.cloudsuites.framework.services.property.personas.entities.UserType;
 import com.cloudsuites.framework.services.property.personas.service.OwnerService;
 import com.cloudsuites.framework.services.property.personas.service.TenantService;
 import com.cloudsuites.framework.services.user.UserService;
 import com.cloudsuites.framework.services.user.entities.Identity;
+import com.cloudsuites.framework.services.user.entities.UserType;
 import com.cloudsuites.framework.webapp.authentication.util.JwtTokenHelper;
 import com.cloudsuites.framework.webapp.authentication.util.WebAppConstants;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
