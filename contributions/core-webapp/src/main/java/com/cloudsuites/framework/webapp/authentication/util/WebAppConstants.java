@@ -124,6 +124,9 @@ public final class WebAppConstants {
         public static final String BUILDING_ID = "buildingId";
         public static final String UNIT_ID = "unitId";
         public static final String USER_ID = "userId";
+        public static final String AUDIENCE = "CloudSuites";
+        public static final String TYPE = "type";
+
         private Claim() {
         }
     }
