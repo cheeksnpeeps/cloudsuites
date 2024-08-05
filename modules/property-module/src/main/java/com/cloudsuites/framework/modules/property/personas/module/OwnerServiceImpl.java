@@ -13,8 +13,10 @@ import com.cloudsuites.framework.services.property.personas.entities.OwnerStatus
 import com.cloudsuites.framework.services.property.personas.entities.Tenant;
 import com.cloudsuites.framework.services.property.personas.entities.TenantStatus;
 import com.cloudsuites.framework.services.property.personas.service.OwnerService;
+import com.cloudsuites.framework.services.user.UserRoleRepository;
 import com.cloudsuites.framework.services.user.UserService;
 import com.cloudsuites.framework.services.user.entities.Identity;
+import com.cloudsuites.framework.services.user.entities.UserRole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -31,12 +33,14 @@ public class OwnerServiceImpl implements OwnerService {
     private final UnitService unitService;
     private final UserService userService;
     private final TenantRepository tenantRepository;
+    private final UserRoleRepository userRoleRepository;
 
-    public OwnerServiceImpl(OwnerRepository ownerRepository, UnitService unitService, UserService userService, TenantRepository tenantRepository) {
+    public OwnerServiceImpl(OwnerRepository ownerRepository, UnitService unitService, UserService userService, TenantRepository tenantRepository, UserRoleRepository userRoleRepository) {
         this.ownerRepository = ownerRepository;
         this.unitService = unitService;
         this.userService = userService;
         this.tenantRepository = tenantRepository;
+        this.userRoleRepository = userRoleRepository;
     }
 
     @Override
@@ -53,6 +57,8 @@ public class OwnerServiceImpl implements OwnerService {
         Owner owner = createIdentiy(newOwner);
         owner = ownerRepository.save(owner);
         logger.info("Owner created successfully with ID: {}", owner.getOwnerId());
+        UserRole userRole = userRoleRepository.save(owner.getUserRole());
+        logger.debug("User role saved for owner: {} - {}", owner.getOwnerId(), userRole);
         return owner;
     }
 

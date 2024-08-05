@@ -11,8 +11,10 @@ import com.cloudsuites.framework.services.property.personas.entities.Tenant;
 import com.cloudsuites.framework.services.property.personas.entities.TenantStatus;
 import com.cloudsuites.framework.services.property.personas.service.OwnerService;
 import com.cloudsuites.framework.services.property.personas.service.TenantService;
+import com.cloudsuites.framework.services.user.UserRoleRepository;
 import com.cloudsuites.framework.services.user.UserService;
 import com.cloudsuites.framework.services.user.entities.Identity;
+import com.cloudsuites.framework.services.user.entities.UserRole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -31,13 +33,15 @@ public class TenantServiceImpl implements TenantService {
     private static final Logger logger = LoggerFactory.getLogger(TenantServiceImpl.class);
     private final OwnerService ownerService;
     private final UnitRepository unitRepository;
+    private final UserRoleRepository userRoleRepository;
 
-    public TenantServiceImpl(TenantRepository tenantRepository, UserService userService, UnitService unitService, OwnerService ownerService, UnitRepository unitRepository) {
+    public TenantServiceImpl(TenantRepository tenantRepository, UserService userService, UnitService unitService, OwnerService ownerService, UnitRepository unitRepository, UserRoleRepository userRoleRepository) {
         this.tenantRepository = tenantRepository;
         this.userService = userService;
         this.unitService = unitService;
         this.ownerService = ownerService;
         this.unitRepository = unitRepository;
+        this.userRoleRepository = userRoleRepository;
     }
 
     @Override
@@ -75,6 +79,10 @@ public class TenantServiceImpl implements TenantService {
         // Step 4: Save the tenant
         logger.debug("Saving tenant to repository");
         Tenant savedTenant = tenantRepository.save(tenant);
+
+        UserRole userRole = userRoleRepository.save(savedTenant.getUserRole());
+        logger.debug("User role created: {} - {}", userRole.getPersonaId(), userRole.getRole());
+
         unit.addTenant(savedTenant);
         unitRepository.save(unit);
         // Log success and return the saved tenant
@@ -133,6 +141,7 @@ public class TenantServiceImpl implements TenantService {
     @Override
     public void saveTenant(Tenant tenant) {
         tenantRepository.save(tenant);
+        userRoleRepository.save(tenant.getUserRole());
     }
 
     @Override

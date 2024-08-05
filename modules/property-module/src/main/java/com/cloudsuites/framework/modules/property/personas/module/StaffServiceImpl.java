@@ -6,8 +6,10 @@ import com.cloudsuites.framework.services.common.exception.NotFoundResponseExcep
 import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
 import com.cloudsuites.framework.services.property.personas.entities.Staff;
 import com.cloudsuites.framework.services.property.personas.service.StaffService;
+import com.cloudsuites.framework.services.user.UserRoleRepository;
 import com.cloudsuites.framework.services.user.UserService;
 import com.cloudsuites.framework.services.user.entities.Identity;
+import com.cloudsuites.framework.services.user.entities.UserRole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,12 +29,19 @@ public class StaffServiceImpl implements StaffService {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private UserRoleRepository userRoleRepository;
+
     @Override
     public Staff createStaff(Staff staff) throws UsernameAlreadyExistsException, InvalidOperationException {
         logger.info("Creating new staff: {}", staff);
         createIdentiy(staff);
         Staff savedStaff = staffRepository.save(staff);
         logger.info("Staff created successfully with ID: {}", savedStaff.getStaffId());
+
+        UserRole userRole = userRoleRepository.save(staff.getUserRole());
+        logger.debug("User role created: {} - {}", userRole.getPersonaId(), userRole.getRole());
+
         return savedStaff;
     }
 
