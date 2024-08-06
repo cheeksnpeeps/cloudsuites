@@ -1,18 +1,19 @@
 package com.cloudsuites.framework.modules.property.personas.module;
 
+import com.cloudsuites.framework.modules.property.features.repository.BuildingRepository;
+import com.cloudsuites.framework.modules.property.features.repository.CompanyRepository;
 import com.cloudsuites.framework.modules.property.personas.repository.StaffRepository;
+import com.cloudsuites.framework.modules.user.UserRoleRepository;
 import com.cloudsuites.framework.services.common.exception.InvalidOperationException;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
 import com.cloudsuites.framework.services.property.personas.entities.Staff;
 import com.cloudsuites.framework.services.property.personas.service.StaffService;
-import com.cloudsuites.framework.services.user.UserRoleRepository;
 import com.cloudsuites.framework.services.user.UserService;
 import com.cloudsuites.framework.services.user.entities.Identity;
 import com.cloudsuites.framework.services.user.entities.UserRole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -23,19 +24,43 @@ import java.util.List;
 public class StaffServiceImpl implements StaffService {
 
     private static final Logger logger = LoggerFactory.getLogger(StaffServiceImpl.class);
-    @Autowired
-    private StaffRepository staffRepository;
 
-    @Autowired
-    private UserService userService;
+    private final StaffRepository staffRepository;
+    private final UserService userService;
+    private final UserRoleRepository userRoleRepository;
+    private final CompanyRepository companyRepository;
+    private final BuildingRepository buildingRepository;
 
-    @Autowired
-    private UserRoleRepository userRoleRepository;
+
+    public StaffServiceImpl(StaffRepository staffRepository, UserService userService, UserRoleRepository userRoleRepository, CompanyRepository companyRepository, BuildingRepository buildingRepository) {
+        this.staffRepository = staffRepository;
+        this.userService = userService;
+        this.userRoleRepository = userRoleRepository;
+        this.companyRepository = companyRepository;
+        this.buildingRepository = buildingRepository;
+    }
 
     @Override
-    public Staff createStaff(Staff staff) throws UsernameAlreadyExistsException, InvalidOperationException {
+    public Staff createStaff(Staff staff, String companyId, String buildingId) throws UsernameAlreadyExistsException, InvalidOperationException, NotFoundResponseException {
+        staff.setCompany(companyRepository.findById(companyId)
+                .orElseThrow(() -> {
+                    logger.error("Company not found with ID: {}", companyId);
+                    return new NotFoundResponseException("Company not found with ID: " + companyId);
+                }));
+
+        if (buildingId != null) {
+            staff.setBuilding(buildingRepository.findById(buildingId)
+                    .orElseThrow(() -> {
+                        logger.error("Building not found with ID: {}", buildingId);
+                        return new NotFoundResponseException("Building not found with ID: " + buildingId);
+                    }));
+        }
         logger.info("Creating new staff: {}", staff);
-        createIdentiy(staff);
+        validateIdentity(staff.getStaffId(), staff.getIdentity());
+        Identity savedIdentity = userService.createUser(staff.getIdentity());
+        staff.setIdentity(savedIdentity);
+        logger.debug("Identity created and saved: {}", savedIdentity.getUserId());
+
         Staff savedStaff = staffRepository.save(staff);
         logger.info("Staff created successfully with ID: {}", savedStaff.getStaffId());
 
@@ -45,28 +70,20 @@ public class StaffServiceImpl implements StaffService {
         return savedStaff;
     }
 
-    private void createIdentiy(Staff staff) throws UsernameAlreadyExistsException, InvalidOperationException {
-        // Log the start of the staff creation process
-        logger.debug("Starting staff creation process for owner: {}", staff);
-        // Step 1: Create and save the identity for the staff
-        Identity identity = staff.getIdentity();
-
+    private void validateIdentity(String staffId, Identity identity) throws UsernameAlreadyExistsException, InvalidOperationException {
         if (identity == null) {
-            logger.error("Identity not found for staff: {}", staff);
-            throw new InvalidOperationException("Identity not found for staff: " + staff);
+            logger.error("Identity not found for staff: {}", staffId);
+            throw new InvalidOperationException("Identity not found for staff: " + staffId);
         }
         logger.debug("Creating identity with username: {}", identity.getUsername());
         if (!StringUtils.hasText(identity.getUsername())) {
-            logger.error("Username not found for staff: {}", staff);
+            logger.error("Username not found for staff: {}", staffId);
             throw new InvalidOperationException("Username is required");
         }
         if (userService.existsByUsername(identity.getUsername())) {
             logger.error("User already exists with username: {}", identity.getUsername());
             throw new UsernameAlreadyExistsException("User already exists with username: " + identity.getUsername());
         }
-        Identity savedIdentity = userService.createUser(identity);
-        staff.setIdentity(savedIdentity);
-        logger.debug("Identity created and saved: {}", savedIdentity.getUserId());
     }
 
     @Override
@@ -131,5 +148,22 @@ public class StaffServiceImpl implements StaffService {
                 });
         staffRepository.delete(staff);
         logger.info("Staff deleted successfully with ID: {}", staffId);
+    }
+
+    @Override
+    public boolean hasAccessToBuilding(String staffId, String buildingID) throws NotFoundResponseException {
+        // Check if the staff has access to the building
+        logger.info("Checking if staff with ID: {} has access to building with ID: {}", staffId, buildingID);
+        Staff staff = staffRepository.findById(staffId)
+                .orElseThrow(() -> {
+                    logger.error("Staff not found with ID: {}", staffId);
+                    return new NotFoundResponseException("Staff not found with ID: " + staffId);
+                });
+        if (staff.getBuilding() != null && staff.getBuilding().getBuildingId().equals(buildingID)) {
+            logger.info("Staff has access to building with ID: {}", buildingID);
+            return true;
+        }
+        logger.info("Staff does not have access to building with ID: {}", buildingID);
+        return false;
     }
 }
