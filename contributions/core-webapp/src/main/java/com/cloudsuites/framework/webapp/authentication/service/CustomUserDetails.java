@@ -1,7 +1,8 @@
 package com.cloudsuites.framework.webapp.authentication.service;
 
+import com.cloudsuites.framework.services.user.entities.Identity;
 import com.cloudsuites.framework.services.user.entities.UserRole;
-import lombok.Setter;
+import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -10,10 +11,17 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Setter
+@Data
 public class CustomUserDetails implements UserDetails {
 
     private List<GrantedAuthority> authorities;
+
+    private Identity identity;
+
+    public CustomUserDetails(Identity identity, List<UserRole> roles) {
+        this.identity = identity;
+        setAuthorities(roles);
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -55,6 +63,4 @@ public class CustomUserDetails implements UserDetails {
     public boolean isEnabled() {
         return false;
     }
-
-    // Other methods...
 }

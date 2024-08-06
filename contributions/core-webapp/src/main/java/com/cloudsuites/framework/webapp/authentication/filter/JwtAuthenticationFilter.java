@@ -1,9 +1,7 @@
 package com.cloudsuites.framework.webapp.authentication.filter;
 
 import com.cloudsuites.framework.modules.jwt.JwtTokenProvider;
-import com.cloudsuites.framework.services.user.UserRoleRepository;
-import com.cloudsuites.framework.services.user.entities.UserRole;
-import com.cloudsuites.framework.services.user.entities.UserType;
+import com.cloudsuites.framework.modules.user.UserRoleRepository;
 import com.cloudsuites.framework.webapp.authentication.service.CustomUserDetails;
 import com.cloudsuites.framework.webapp.authentication.service.CustomUserDetailsService;
 import com.cloudsuites.framework.webapp.authentication.util.WebAppConstants;
@@ -20,7 +18,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.List;
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -40,19 +37,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String jwt = getJwtFromRequest(request);
 
         if (StringUtils.hasText(jwt) && jwtTokenProvider.validateToken(jwt)) {
+            String personaId = jwtTokenProvider.extractSubject(jwt);
             Claims claims = jwtTokenProvider.extractAllClaims(jwt);
             String userId = claims.get(WebAppConstants.Claim.USER_ID, String.class);
-            String personaId = claims.get(WebAppConstants.Claim.PERSONA_ID, String.class);
-            UserType userType = claims.get(WebAppConstants.Claim.TYPE, UserType.class);
+            String userType = claims.get(WebAppConstants.Claim.TYPE, String.class);
 
             // Validate claims
             if (userId == null || personaId == null || userType == null) {
-                logger.error("Missing claims in JWT");
+                logger.error("Missing claims in JWT " + claims);
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
                 return;
             }
-
-            CustomUserDetails userDetails;
+            CustomUserDetails userDetails = null;
             try {
                 userDetails = (CustomUserDetails) userDetailsService.loadUserByUsername(userId);
             } catch (UsernameNotFoundException e) {
@@ -62,15 +58,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             if (userDetails != null) {
-                List<UserRole> roles = userRoleRepository.findUserRoleByIdentity_UserIdAndAndPersonaIdAndUserType(
-                        userId, personaId, userType
-                );
-                if (roles.isEmpty()) {
-                    logger.warn("User does not have any roles assigned");
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
-                    return; // Return early to avoid setting authentication
-                }
-                userDetails.setAuthorities(roles); // Only set authorities if roles are found
                 logger.debug("User roles loaded");
                 var authentication = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());

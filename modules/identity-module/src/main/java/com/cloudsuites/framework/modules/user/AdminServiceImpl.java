@@ -4,7 +4,6 @@ import com.cloudsuites.framework.services.common.exception.InvalidOperationExcep
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
 import com.cloudsuites.framework.services.user.AdminService;
-import com.cloudsuites.framework.services.user.UserRoleRepository;
 import com.cloudsuites.framework.services.user.UserService;
 import com.cloudsuites.framework.services.user.entities.Admin;
 import com.cloudsuites.framework.services.user.entities.Identity;
@@ -23,8 +22,7 @@ public class AdminServiceImpl implements AdminService {
     private static final Logger logger = LoggerFactory.getLogger(AdminServiceImpl.class);
     private final AdminRepository adminRepository;
     private final UserRoleRepository userRoleRepository;
-
-    UserService userService;
+    private final UserService userService;
 
     public AdminServiceImpl(AdminRepository adminRepository, UserService userService, UserRoleRepository userRoleRepository) {
         this.adminRepository = adminRepository;
@@ -46,11 +44,9 @@ public class AdminServiceImpl implements AdminService {
         logger.info(IdentityConstants.Admin.LOG_CREATING_ADMIN, admin);
         Admin savedIdentity = createIdentiy(admin);
         Admin savedAdmin = adminRepository.save(savedIdentity);
-        logger.info(IdentityConstants.Admin.LOG_ADMIN_CREATED, savedAdmin.getAdminId());
-
+        logger.info(IdentityConstants.Admin.LOG_ADMIN_CREATED, savedAdmin);
         UserRole userRole = userRoleRepository.save(savedAdmin.getUserRole());
         logger.debug("User role created: {} - {}", userRole.getPersonaId(), userRole.getRole());
-
         return savedAdmin;
     }
 
