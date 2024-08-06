@@ -2,6 +2,7 @@ package com.cloudsuites.framework.modules.property.personas.module;
 
 import com.cloudsuites.framework.modules.property.personas.repository.OwnerRepository;
 import com.cloudsuites.framework.modules.property.personas.repository.TenantRepository;
+import com.cloudsuites.framework.modules.user.UserRoleRepository;
 import com.cloudsuites.framework.services.common.exception.InvalidOperationException;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
@@ -13,7 +14,6 @@ import com.cloudsuites.framework.services.property.personas.entities.OwnerStatus
 import com.cloudsuites.framework.services.property.personas.entities.Tenant;
 import com.cloudsuites.framework.services.property.personas.entities.TenantStatus;
 import com.cloudsuites.framework.services.property.personas.service.OwnerService;
-import com.cloudsuites.framework.services.user.UserRoleRepository;
 import com.cloudsuites.framework.services.user.UserService;
 import com.cloudsuites.framework.services.user.entities.Identity;
 import com.cloudsuites.framework.services.user.entities.UserRole;
@@ -108,6 +108,8 @@ public class OwnerServiceImpl implements OwnerService {
         unitService.saveUnit(unit);
         // Log success and return the saved owner
         logger.info("Owner created successfully with ID: {}", savedOwner.getOwnerId());
+        UserRole userRole = userRoleRepository.save(owner.getUserRole());
+        logger.debug("User role saved for owner: {} - {}", owner.getOwnerId(), userRole);
         return savedOwner;
     }
 
