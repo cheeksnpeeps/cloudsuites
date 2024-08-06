@@ -31,9 +31,11 @@ public class AdminDto {
 
     @JsonView(Views.AdminView.class)
     @Schema(description = "Admin status", example = "ACTIVE")
+    @NotNull(message = "Status is required")
     private AdminStatus status;
 
     @JsonView(Views.AdminView.class)
     @Schema(description = "Role of the admin", example = "SUPER_ADMIN")
-    private AdminRole adminRole;
+    @NotNull(message = "Role is required")
+    private AdminRole role;
 }
