@@ -39,7 +39,7 @@ public class Admin {
 
     public UserRole getUserRole() {
         UserRole userRole = new UserRole();
-        userRole.setIdentity(this.identity);
+        userRole.setIdentityId(this.getIdentity().getUserId());
         userRole.setPersonaId(this.adminId);
         userRole.setUserType(UserType.ADMIN);
         userRole.setRole(role.name());
@@ -50,7 +50,5 @@ public class Admin {
     public void onCreate() {
         this.adminId = IdGenerator.generateULID("ADM-");
         logger.debug("Generated adminId: {}", this.adminId);
-        this.status = AdminStatus.ACTIVE;
-        this.role = AdminRole.USER;
     }
 }
