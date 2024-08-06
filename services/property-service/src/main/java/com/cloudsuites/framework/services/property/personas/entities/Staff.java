@@ -51,7 +51,7 @@ public class Staff {
 
     public UserRole getUserRole() {
         UserRole userRole = new UserRole();
-        userRole.setIdentity(this.identity);
+        userRole.setIdentityId(this.identity.getUserId());
         userRole.setPersonaId(this.staffId);
         userRole.setUserType(UserType.STAFF);
         userRole.setRole(role.name());
