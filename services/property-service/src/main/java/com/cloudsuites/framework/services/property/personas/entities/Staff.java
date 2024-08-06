@@ -36,7 +36,7 @@ public class Staff {
     @JoinColumn(name = "company_id")
     private Company company;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "building_id")
     private Building building;
 
@@ -51,7 +51,7 @@ public class Staff {
 
     public UserRole getUserRole() {
         UserRole userRole = new UserRole();
-        userRole.setIdentityId(this.identity.getUserId());
+        userRole.setIdentityId(this.getIdentity().getUserId());
         userRole.setPersonaId(this.staffId);
         userRole.setUserType(UserType.STAFF);
         userRole.setRole(role.name());
