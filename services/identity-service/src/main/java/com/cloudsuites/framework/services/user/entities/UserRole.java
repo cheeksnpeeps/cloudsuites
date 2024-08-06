@@ -17,9 +17,8 @@ public class UserRole {
     @Column(name = "user_role_id")
     private Long userRoleId; // Surrogate key for uniqueness
 
-    @ManyToOne
-    @JoinColumn(name = "identity_id", referencedColumnName = "user_id", insertable = false, updatable = false)
-    private Identity identity; // Reference to the Identity table
+    @Column(name = "identity_id", nullable = false)
+    private String identityId; // Reference to the Identity table
 
     @Column(name = "persona_id", nullable = false)
     private String personaId; // The ID of the persona

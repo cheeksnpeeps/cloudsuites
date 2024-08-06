@@ -39,7 +39,7 @@ public class Admin {
 
     public UserRole getUserRole() {
         UserRole userRole = new UserRole();
-        userRole.setIdentity(this.identity);
+        userRole.setIdentityId(this.identity.getUserId());
         userRole.setPersonaId(this.adminId);
         userRole.setUserType(UserType.ADMIN);
         userRole.setRole(role.name());
