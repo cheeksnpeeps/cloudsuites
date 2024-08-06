@@ -50,7 +50,7 @@ public class StaffRestController {
         this.buildingService = buildingService;
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('BUILDING_SUPERVISOR')")
     @Operation(summary = "Get All Staffs by Company ID", description = "Retrieve all staffs")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Staffs not found")
@@ -68,7 +68,7 @@ public class StaffRestController {
         }
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('BUILDINGS_ADMIN')")
     @Operation(summary = "Create a new Staff for Company", description = "Create a new staff for Company")
     @ApiResponse(responseCode = "201", description = "Staff created successfully", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "400", description = "Bad Request")
@@ -79,12 +79,12 @@ public class StaffRestController {
         Staff staff = mapper.convertToEntity(staffDto);
         staff.setCompany(companyService.getCompanyById(companyId));
         logger.info("Creating a new staff for Company with ID: {}", companyId);
-        Staff createdStaff = staffService.createStaff(staff);
+        Staff createdStaff = staffService.createStaff(staff, companyId, null);
         logger.info("Staff created with ID: {}", createdStaff.getStaffId());
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.convertToDTO(createdStaff));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('BUILDING_SECURITY')")
     @Operation(summary = "Get All Staffs by Building ID", description = "Retrieve all staffs")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Staffs not found")
@@ -102,7 +102,7 @@ public class StaffRestController {
         }
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('BUILDING_SUPERVISOR')")
     @Operation(summary = "Create a new Building Staff", description = "Create a new Building staff")
     @ApiResponse(responseCode = "201", description = "Staff created successfully", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "400", description = "Bad Request")
@@ -112,15 +112,13 @@ public class StaffRestController {
                                                         @PathVariable String companyId,
                                                         @PathVariable String buildingId) throws NotFoundResponseException, UsernameAlreadyExistsException, InvalidOperationException {
         Staff staff = mapper.convertToEntity(staffDto);
-        staff.setCompany(companyService.getCompanyById(companyId));
-        staff.setBuilding(buildingService.getBuildingById(buildingId));
         logger.info("Creating a new staff");
-        Staff createdStaff = staffService.createStaff(staff);
+        Staff createdStaff = staffService.createStaff(staff, companyId, buildingId);
         logger.info("Staff created with ID: {}", createdStaff.getStaffId());
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.convertToDTO(createdStaff));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('BUILDING_SECURITY')")
     @Operation(summary = "Get Staff by ID", description = "Retrieve staff details by ID")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Staff not found")
@@ -138,7 +136,7 @@ public class StaffRestController {
         }
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('BUILDING_SUPERVISOR')")
     @Operation(summary = "Update Staff by ID", description = "Update staff details by ID")
     @ApiResponse(responseCode = "200", description = "Staff updated successfully", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Staff not found")
@@ -158,7 +156,7 @@ public class StaffRestController {
         }
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('BUILDING_SUPERVISOR')")
     @Operation(summary = "Delete Staff by ID", description = "Delete an staff by ID")
     @ApiResponse(responseCode = "204", description = "Staff deleted successfully")
     @ApiResponse(responseCode = "404", description = "Staff not found")
