@@ -1,8 +1,8 @@
 package com.cloudsuites.framework.webapp.authentication;
 
 import com.cloudsuites.framework.modules.jwt.JwtTokenProvider;
+import com.cloudsuites.framework.modules.user.UserRoleRepository;
 import com.cloudsuites.framework.services.property.personas.entities.StaffRole;
-import com.cloudsuites.framework.services.user.UserRoleRepository;
 import com.cloudsuites.framework.services.user.entities.AdminRole;
 import com.cloudsuites.framework.services.user.entities.UserType;
 import com.cloudsuites.framework.webapp.authentication.filter.JwtAuthenticationFilter;
@@ -49,6 +49,8 @@ public class SecurityConfiguration {
         );
         roleRelationships.put(AdminRole.BUILDINGS_ADMIN.name(), new String[]{
                 AdminRole.THIRD_PARTY_ADMIN.name(),
+        });
+        roleRelationships.put(AdminRole.THIRD_PARTY_ADMIN.name(), new String[]{
                 StaffRole.PROPERTY_MANAGER.name()
         });
         roleRelationships.put(StaffRole.PROPERTY_MANAGER.name(), new String[]{
@@ -86,7 +88,7 @@ public class SecurityConfiguration {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/v1/auth/**").authenticated()
+                        .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/api/v1/companies/**").authenticated()
                         .requestMatchers("/api/v1/**").authenticated()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**").permitAll()
