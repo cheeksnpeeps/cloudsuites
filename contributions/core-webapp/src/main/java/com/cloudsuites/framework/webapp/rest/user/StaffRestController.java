@@ -3,11 +3,9 @@ package com.cloudsuites.framework.webapp.rest.user;
 import com.cloudsuites.framework.services.common.exception.InvalidOperationException;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
-import com.cloudsuites.framework.services.property.features.service.BuildingService;
 import com.cloudsuites.framework.services.property.features.service.CompanyService;
 import com.cloudsuites.framework.services.property.personas.entities.Staff;
 import com.cloudsuites.framework.services.property.personas.service.StaffService;
-import com.cloudsuites.framework.services.user.UserService;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
 import com.cloudsuites.framework.webapp.rest.user.dto.StaffDto;
 import com.cloudsuites.framework.webapp.rest.user.mapper.StaffMapper;
@@ -39,17 +37,13 @@ public class StaffRestController {
     private static final Logger logger = LoggerFactory.getLogger(StaffRestController.class);
     private final StaffService staffService;
     private final StaffMapper mapper;
-    private final UserService userService;
     private final CompanyService companyService;
-    private final BuildingService buildingService;
 
     @Autowired
-    public StaffRestController(StaffService staffService, StaffMapper mapper, UserService userService, CompanyService companyService, BuildingService buildingService) {
+    public StaffRestController(StaffService staffService, StaffMapper mapper, CompanyService companyService) {
         this.staffService = staffService;
         this.mapper = mapper;
-        this.userService = userService;
         this.companyService = companyService;
-        this.buildingService = buildingService;
     }
 
     @PreAuthorize("hasAuthority('ALL_ADMIN')")
