@@ -97,6 +97,8 @@ public final class WebAppConstants {
         public static final String OWNER_NOT_UNIT_OWNER_ERROR = "Owner is not the owner of the unit"; // Keep as ERROR for API response
         public static final String REGISTERING_ADMIN_LOG = "Registering admin with phone number: {}";
         public static final String ADMIN_REGISTERED_SUCCESS_LOG = "Admin registered successfully with ID: {} and phone number: {}";
+        public static final String REGISTERING_STAFF_LOG = "Registering staff with phone number: {}";
+        public static final String STAFF_REGISTERED_SUCCESS_LOG = "Staff registered successfully with ID: {} and phone number: {}";
 
         private Auth() {
         }
