@@ -34,4 +34,6 @@ public interface StaffService {
     @Transactional(readOnly = true)
     boolean hasAccessToBuilding(String username, String buildingID) throws NotFoundResponseException;
 
+    @Transactional
+    Staff createStaff(Staff staff) throws UsernameAlreadyExistsException, InvalidOperationException, NotFoundResponseException;
 }
