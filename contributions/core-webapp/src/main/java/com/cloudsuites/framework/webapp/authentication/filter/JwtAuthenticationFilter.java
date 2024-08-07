@@ -41,6 +41,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             Claims claims = jwtTokenProvider.extractAllClaims(jwt);
             String userId = claims.get(WebAppConstants.Claim.USER_ID, String.class);
             String userType = claims.get(WebAppConstants.Claim.TYPE, String.class);
+            String unitId = claims.get(WebAppConstants.Claim.UNIT_ID, String.class);
+            String buildingId = claims.get(WebAppConstants.Claim.BUILDING_ID, String.class);
 
             // Validate claims
             if (userId == null || personaId == null || userType == null) {
@@ -48,22 +50,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
                 return;
             }
-            CustomUserDetails userDetails = null;
             try {
-                userDetails = (CustomUserDetails) userDetailsService.loadUserByUsername(userId);
+                CustomUserDetails userDetails = (CustomUserDetails) userDetailsService.loadUserByUsername(userId);
+                userDetails.setPersonaId(personaId);
+                userDetails.setUserType(userType);
+                userDetails.setUnitId(unitId);
+                userDetails.setBuildingId(buildingId);
+                var authentication = new UsernamePasswordAuthenticationToken(
+                        userDetails, null, userDetails.getAuthorities());
+                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+
             } catch (UsernameNotFoundException e) {
                 logger.error("User not found: {}", e); // Corrected logging statement
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
                 return;
-            }
-
-            if (userDetails != null) {
-                logger.debug("User roles loaded");
-                var authentication = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         }
         filterChain.doFilter(request, response);
