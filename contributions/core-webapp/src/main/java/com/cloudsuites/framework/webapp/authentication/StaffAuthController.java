@@ -56,13 +56,15 @@ public class StaffAuthController {
     }
 
     @Operation(summary = "Register a Staff Member", description = "Register a new staff member with identity details")
-    @PostMapping("/register")
+    @PostMapping("/companies/{companyId}/buildings/{buildingId}/register")
     @JsonView(Views.StaffView.class)
-    public ResponseEntity<StaffDto> registerStaff(@Valid @RequestBody @Parameter(description = "Staff registration details") StaffDto staffDto)
+    public ResponseEntity<StaffDto> registerStaff(@Valid @RequestBody @Parameter(description = "Staff registration details") StaffDto staffDto,
+                                                  @PathVariable String buildingId,
+                                                  @PathVariable String companyId)
             throws UsernameAlreadyExistsException, InvalidOperationException, NotFoundResponseException {
         logger.debug(WebAppConstants.Auth.REGISTERING_STAFF_LOG, staffDto.getIdentity().getPhoneNumber());
         Staff staff = staffMapper.convertToEntity(staffDto);
-        staff = staffService.createStaff(staff);
+        staff = staffService.createStaff(staff, companyId, buildingId);
         sendOtpToStaff(staff);
         logger.info(WebAppConstants.Auth.STAFF_REGISTERED_SUCCESS_LOG, staff.getStaffId(), staff.getIdentity().getPhoneNumber());
         return ResponseEntity.ok(staffMapper.convertToDTO(staff));

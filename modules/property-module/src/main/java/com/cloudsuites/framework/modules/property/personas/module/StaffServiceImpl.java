@@ -70,11 +70,6 @@ public class StaffServiceImpl implements StaffService {
         return savedStaff;
     }
 
-    @Override
-    public Staff createStaff(Staff staff) throws UsernameAlreadyExistsException, InvalidOperationException, NotFoundResponseException {
-        return createStaff(staff, null, null);
-    }
-
     private void validateIdentity(String staffId, Identity identity) throws UsernameAlreadyExistsException, InvalidOperationException {
         if (identity == null) {
             logger.error("Identity not found for staff: {}", staffId);
