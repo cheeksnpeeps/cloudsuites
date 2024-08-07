@@ -7,6 +7,8 @@ import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.property.features.service.UnitService;
 import com.cloudsuites.framework.services.property.personas.entities.Owner;
 import com.cloudsuites.framework.services.property.personas.service.OwnerService;
+import com.cloudsuites.framework.services.user.entities.UserType;
+import com.cloudsuites.framework.webapp.authentication.service.CustomUserDetails;
 import com.cloudsuites.framework.webapp.authentication.util.WebAppConstants;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
 import com.cloudsuites.framework.webapp.rest.user.dto.OwnerDto;
@@ -24,6 +26,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -38,14 +44,25 @@ public class OwnerRestController {
     private final OwnerService ownerService;
     private final OwnerMapper mapper;
     private final UnitService unitService;
+    private final RoleHierarchy roleHierarchy;
 
     @Autowired
-    public OwnerRestController(OwnerService ownerService, OwnerMapper mapper, UnitService unitService) {
+    public OwnerRestController(OwnerService ownerService, OwnerMapper mapper, UnitService unitService, RoleHierarchy roleHierarchy) {
         this.ownerService = ownerService;
         this.mapper = mapper;
         this.unitService = unitService;
+        this.roleHierarchy = roleHierarchy;
     }
 
+    private static void validateOwner(String ownerId) throws InvalidOperationException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getDetails();
+        if (UserType.OWNER.name().equals(customUserDetails.getUserType()) && !customUserDetails.getPersonaId().equals(ownerId)) {
+            throw new InvalidOperationException(WebAppConstants.Owner.INVALID_OWNER);
+        }
+    }
+
+    @PreAuthorize("hasAuthority('ALL_ADMIN')")
     @Operation(summary = "Get All Owners", description = "Retrieve all owners")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Owners not found")
@@ -58,6 +75,7 @@ public class OwnerRestController {
         return ResponseEntity.ok(mapper.convertToDTOList(owners));
     }
 
+    @PreAuthorize("hasAuthority('ALL_STAFF') or hasAuthority('OWNER')")
     @Operation(summary = "Get Owner by ID", description = "Retrieve owner details by ID")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Owner not found")
@@ -75,6 +93,7 @@ public class OwnerRestController {
         }
     }
 
+    @PreAuthorize("hasAuthority('ALL_STAFF') or hasAuthority('OWNER')")
     @Operation(summary = "Create Owner", description = "Create owner with details")
     @ApiResponse(responseCode = "201", description = "Owner created successfully", content = @Content(mediaType = "application/json"))
     @PostMapping("")
@@ -87,6 +106,7 @@ public class OwnerRestController {
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.convertToDTO(owner));
     }
 
+    @PreAuthorize("hasAuthority('ALL_STAFF') or hasAuthority('OWNER')")
     @Operation(summary = "Update Owner by ID", description = "Update owner details by ID")
     @ApiResponse(responseCode = "200", description = "Owner updated successfully", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Owner not found")
@@ -102,17 +122,20 @@ public class OwnerRestController {
             return ResponseEntity.ok(mapper.convertToDTO(owner));
     }
 
+    @PreAuthorize("hasAuthority('ALL_STAFF') or hasAuthority('OWNER')")
     @Operation(summary = "Delete Owner by ID", description = "Delete an owner by ID")
     @ApiResponse(responseCode = "204", description = "Owner deleted successfully")
     @ApiResponse(responseCode = "404", description = "Owner not found")
     @DeleteMapping("/{ownerId}")
     public ResponseEntity<Void> deleteOwner(@Parameter(description = "ID of the owner to be deleted") @PathVariable String ownerId) throws InvalidOperationException, NotFoundResponseException {
+        validateOwner(ownerId);
         logger.info(WebAppConstants.Owner.LOG_DELETING_OWNER, ownerId);
             ownerService.deleteOwner(ownerId);
             logger.info(WebAppConstants.Owner.LOG_OWNER_DELETED, ownerId);
             return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("hasAuthority('ALL_STAFF')")
     @Operation(summary = "Add Unit to Owner", description = "Add an existing unit to an owner by owner ID, building ID, and unit ID. This operation transfers ownership of the unit to the specified owner.")
     @ApiResponse(responseCode = "200", description = "Unit added to owner successfully", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Owner or Unit not found")
@@ -122,6 +145,7 @@ public class OwnerRestController {
             @Parameter(description = "ID of the owner") @PathVariable String ownerId,
             @Parameter(description = "ID of the building to be added") @PathVariable String buildingId,
             @Parameter(description = "ID of the unit to be added") @PathVariable String unitId) throws NotFoundResponseException {
+
         logger.info(WebAppConstants.Owner.LOG_ADDING_UNIT_TO_OWNER, ownerId, buildingId, unitId);
             Owner owner = ownerService.getOwnerById(ownerId);
             Unit unit = unitService.getUnitById(buildingId, unitId);
@@ -142,6 +166,7 @@ public class OwnerRestController {
             return ResponseEntity.ok(mapper.convertToDTO(owner));
     }
 
+    @PreAuthorize("hasAuthority('ALL_STAFF') or hasAuthority('OWNER')")
     @Operation(summary = "Remove Unit from Owner", description = "Remove a unit from an owner by ID")
     @ApiResponse(responseCode = "200", description = "Unit removed successfully", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Owner or Unit not found")
@@ -149,7 +174,8 @@ public class OwnerRestController {
     @JsonView(Views.OwnerView.class)
     public ResponseEntity<OwnerDto> removeUnitFromOwner(
             @Parameter(description = "ID of the owner") @PathVariable String ownerId,
-            @Parameter(description = "ID of the unit to be removed") @PathVariable String unitId) throws NotFoundResponseException {
+            @Parameter(description = "ID of the unit to be removed") @PathVariable String unitId) throws NotFoundResponseException, InvalidOperationException {
+        validateOwner(ownerId);
         logger.info(WebAppConstants.Owner.LOG_REMOVING_UNIT_FROM_OWNER, ownerId, unitId);
             Owner owner = ownerService.getOwnerById(ownerId);
             owner.getUnits().removeIf(unit -> unit.getUnitId().equals(unitId));
