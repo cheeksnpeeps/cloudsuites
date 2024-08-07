@@ -153,6 +153,7 @@ public final class WebAppConstants {
         public static final String LOG_OWNER_REGISTERED_SUCCESS = "Owner registered successfully with ID: {} and username: {}";
         public static final String LOG_UNIT_ADDED_SUCCESSFULLY = "Unit added successfully to owner with ID: {}";
         public static final String LOG_REMOVING_UNIT_FROM_OWNER = "Removing unit from owner with ID: {}";
+        public static final String INVALID_OWNER = "Invalid owner authentication token";
 
         private Owner() {
         }
