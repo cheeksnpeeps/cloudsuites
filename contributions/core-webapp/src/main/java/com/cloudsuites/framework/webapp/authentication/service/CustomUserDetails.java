@@ -18,6 +18,14 @@ public class CustomUserDetails implements UserDetails {
 
     private Identity identity;
 
+    private String personaId;
+
+    private String userType;
+
+    private String unitId;
+
+    private String buildingId;
+
     public CustomUserDetails(Identity identity, List<UserRole> roles) {
         this.identity = identity;
         setAuthorities(roles);
