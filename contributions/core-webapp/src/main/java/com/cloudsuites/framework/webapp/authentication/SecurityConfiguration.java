@@ -51,6 +51,9 @@ public class SecurityConfiguration {
                 AdminRole.THIRD_PARTY_ADMIN.name(),
         });
         roleRelationships.put(AdminRole.THIRD_PARTY_ADMIN.name(), new String[]{
+                AdminRole.ALL_ADMIN.name()
+        });
+        roleRelationships.put(AdminRole.ALL_ADMIN.name(), new String[]{
                 StaffRole.PROPERTY_MANAGER.name()
         });
         roleRelationships.put(StaffRole.PROPERTY_MANAGER.name(), new String[]{
@@ -67,6 +70,9 @@ public class SecurityConfiguration {
                 StaffRole.CUSTOMER_SERVICE_REPRESENTATIVE.name(),
                 StaffRole.MAINTENANCE_TECHNICIAN.name(),
                 StaffRole.OTHER.name()
+        });
+        roleRelationships.put(StaffRole.OTHER.name(), new String[]{
+                StaffRole.ALL_STAFF.name()
         });
 
 
