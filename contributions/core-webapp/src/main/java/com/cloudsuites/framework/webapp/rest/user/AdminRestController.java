@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -42,18 +43,21 @@ public class AdminRestController {
         this.mapper = mapper;
     }
 
+    @PreAuthorize("hasAnyAuthority('ALL_ADMIN')")
     @Operation(summary = "Get All Admins", description = "Retrieve all admins")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Admins not found")
     @GetMapping("")
     @JsonView(Views.AdminView.class)
     public ResponseEntity<List<AdminDto>> getAllAdmins() throws NotFoundResponseException {
+
         logger.info(WebAppConstants.Admin.LOG_FETCHING_ADMINS);
         List<Admin> admins = adminService.getAllAdmins();
         logger.info("Fetched {} admins", admins.size());
         return ResponseEntity.ok(mapper.convertToDTOList(admins));
     }
 
+    @PreAuthorize("hasAuthority('ALL_ADMIN')")
     @Operation(summary = "Get Admin by ID", description = "Retrieve admin details by ID")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Admin not found")
@@ -83,6 +87,7 @@ public class AdminRestController {
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.convertToDTO(admin));
     }
 
+    @PreAuthorize("hasAuthority('ALL_ADMIN')")
     @Operation(summary = "Update Admin by ID", description = "Update admin details by ID")
     @ApiResponse(responseCode = "200", description = "Admin updated successfully", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Admin not found")
@@ -98,6 +103,7 @@ public class AdminRestController {
         return ResponseEntity.ok(mapper.convertToDTO(admin));
     }
 
+    @PreAuthorize("hasAuthority('ALL_ADMIN')")
     @Operation(summary = "Delete Admin by ID", description = "Delete an admin by ID")
     @ApiResponse(responseCode = "204", description = "Admin deleted successfully")
     @ApiResponse(responseCode = "404", description = "Admin not found")

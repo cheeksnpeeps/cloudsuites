@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -38,6 +39,7 @@ public class FloorRestController {
         this.mapper = mapper;
     }
 
+    @PreAuthorize("hasAuthority('ALL_STAFF')")
     @Operation(summary = "Get All Floors", description = "Retrieve all floors for a building based on its ID")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Building not found")
@@ -51,6 +53,7 @@ public class FloorRestController {
         return ResponseEntity.ok().body(floors);
     }
 
+    @PreAuthorize("hasAuthority('ALL_STAFF')")
     @Operation(summary = "Get a Floor by ID", description = "Retrieve floor details based on building ID and floor ID")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Building or floor not found")
@@ -65,6 +68,7 @@ public class FloorRestController {
         return ResponseEntity.ok().body(floor);
     }
 
+    @PreAuthorize("hasAuthority('ALL_STAFF')")
     @Operation(summary = "Save a Floor", description = "Create a new floor for a building based on its ID")
     @ApiResponse(responseCode = "201", description = "Floor created successfully", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "400", description = "Bad Request")
@@ -81,6 +85,7 @@ public class FloorRestController {
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.convertToDTO(floor));
     }
 
+    @PreAuthorize("hasAuthority('ALL_STAFF')")
     @Operation(summary = "Delete a Floor by ID", description = "Delete a floor based on building ID and floor ID")
     @ApiResponse(responseCode = "204", description = "Floor deleted successfully")
     @ApiResponse(responseCode = "404", description = "Building or floor not found")
