@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -42,6 +43,7 @@ public class BuildingRestController {
         this.companyService = companyService;
     }
 
+    @PreAuthorize("hasAuthority('ALL_ADMIN')")
     @Operation(summary = "Get Buildings", description = "Get a list of buildings based on optional management company ID - Use -1 to get all buildings")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Not Found")
@@ -60,6 +62,7 @@ public class BuildingRestController {
         return ResponseEntity.ok().body(mapper.convertToDTOList(buildings));
     }
 
+    @PreAuthorize("hasAuthority('ALL_ADMIN')")
     @Operation(summary = "Create a Building", description = "Create a new building")
     @ApiResponse(responseCode = "201", description = "Building created successfully", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "400", description = "Bad Request")
@@ -75,6 +78,7 @@ public class BuildingRestController {
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.convertToDTO(building));
     }
 
+    @PreAuthorize("hasAuthority('ALL_ADMIN')")
     @Operation(summary = "Delete a Building by ID", description = "Delete a building based on its ID")
     @ApiResponse(responseCode = "204", description = "Building deleted successfully")
     @ApiResponse(responseCode = "404", description = "Building not found")
@@ -87,6 +91,7 @@ public class BuildingRestController {
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("hasAuthority('ALL_STAFF')")
     @Operation(summary = "Get a Building by ID", description = "Retrieve building details based on its ID")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Building not found")

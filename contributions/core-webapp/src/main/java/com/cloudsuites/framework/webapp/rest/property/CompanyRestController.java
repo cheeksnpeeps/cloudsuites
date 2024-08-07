@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -39,6 +40,7 @@ public class CompanyRestController {
         this.mapper = mapper;
     }
 
+    @PreAuthorize("hasAuthority('ALL_ADMIN')")
     @JsonView(Views.CompanyView.class)
     @Operation(summary = "Get All Companies", description = "Retrieve a list of all companies")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
@@ -51,6 +53,7 @@ public class CompanyRestController {
         return ResponseEntity.ok().body(mapper.convertToDTOList(companies));
     }
 
+    @PreAuthorize("hasAuthority('ALL_ADMIN')")
     @Operation(summary = "Get a Company by ID", description = "Retrieve company details based on its ID")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Company not found")
@@ -65,6 +68,7 @@ public class CompanyRestController {
         return ResponseEntity.ok().body(mapper.convertToDTO(company));
     }
 
+    @PreAuthorize("hasAuthority('ALL_ADMIN')")
     @Operation(summary = "Save a Company", description = "Create a new company")
     @ApiResponse(responseCode = "201", description = "Company created successfully", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "400", description = "Bad Request")
@@ -79,6 +83,7 @@ public class CompanyRestController {
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.convertToDTO(company));
     }
 
+    @PreAuthorize("hasAuthority('ALL_ADMIN')")
     @Operation(summary = "Delete a Company by ID", description = "Delete a company based on its ID")
     @ApiResponse(responseCode = "204", description = "Company deleted successfully")
     @ApiResponse(responseCode = "404", description = "Company not found")
@@ -91,5 +96,4 @@ public class CompanyRestController {
         logger.debug("Company deleted successfully: {}", companyId);
         return ResponseEntity.noContent().build();
     }
-
 }

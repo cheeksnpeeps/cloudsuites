@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -53,6 +54,7 @@ public class TenantRestController {
         this.unitService = unitService;
     }
 
+    @PreAuthorize("hasAuthority('ALL_STAFF') or hasAuthority('OWNER') or hasAuthority('TENANT')")
     @Operation(summary = "Create Tenant", description = "Create tenant with details")
     @ApiResponse(responseCode = "201", description = "Tenant created successfully", content = @Content(mediaType = "application/json"))
     @PostMapping("/buildings/{buildingId}/units/{unitId}/tenants")
@@ -68,6 +70,7 @@ public class TenantRestController {
         return ResponseEntity.status(HttpStatus.CREATED).body(tenantMapper.convertToDTO(tenant));
     }
 
+    @PreAuthorize("hasAuthority('ALL_STAFF')")
     @Operation(summary = "List All Tenants by Building ID", description = "Retrieve a list of all tenants for a given Building")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @GetMapping("/buildings/{buildingId}/tenants")
@@ -86,6 +89,7 @@ public class TenantRestController {
         return ResponseEntity.ok(tenants);
     }
 
+    @PreAuthorize("hasAuthority('ALL_STAFF') or hasAuthority('TENANT') or hasAuthority('OWNER')")
     @Operation(summary = "List All Tenants for a given unit", description = "Retrieve a list of all tenants for a given unit")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @GetMapping("/buildings/{buildingId}/units/{unitId}/tenants")
@@ -101,6 +105,7 @@ public class TenantRestController {
         return ResponseEntity.ok(tenants);
     }
 
+    @PreAuthorize("hasAuthority('ALL_STAFF') or hasAuthority('TENANT') or hasAuthority('OWNER')")
     @Operation(summary = "Get Tenant by ID", description = "Retrieve a tenant by its ID")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Tenant not found")
@@ -116,6 +121,7 @@ public class TenantRestController {
         return ResponseEntity.ok(tenantDto);
     }
 
+    @PreAuthorize("hasAuthority('ALL_STAFF') or hasAuthority('TENANT') or hasAuthority('OWNER')")
     @Operation(summary = "Update Tenant", description = "Update an existing tenant by its ID")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Tenant not found")
@@ -145,6 +151,7 @@ public class TenantRestController {
         return ResponseEntity.ok(updatedTenantDto);
     }
 
+    @PreAuthorize("hasAuthority('ALL_STAFF') or hasAuthority('TENANT') or hasAuthority('OWNER')")
     @Operation(summary = "Delete Tenant", description = "Delete a tenant by its ID")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @DeleteMapping("/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}")
@@ -159,6 +166,7 @@ public class TenantRestController {
     }
 
 
+    @PreAuthorize("hasAuthority('ALL_STAFF')")
     @Operation(summary = "Update Tenant", description = "Transfer Tenant to a Different Unit")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Tenant not found")
@@ -180,6 +188,7 @@ public class TenantRestController {
     }
 
 
+    @PreAuthorize("hasAuthority('ALL_STAFF') or hasAuthority('TENANT') or hasAuthority('OWNER')")
     @DeleteMapping("/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}/inactivate")
     public ResponseEntity<String> inactivateTenant(@PathVariable String buildingId,
                                                    @PathVariable String tenantId,

@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -36,6 +37,7 @@ public class UnitRestController {
         this.unitMapper = unitMapper;
     }
 
+    @PreAuthorize("hasAuthority('ALL_STAFF')")
     @Operation(summary = "Get All Units for a Building", description = "Retrieve all units for a specific building")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Building not found")
@@ -49,6 +51,7 @@ public class UnitRestController {
         return ResponseEntity.ok().body(unitMapper.convertToDTOList(units));
     }
 
+    @PreAuthorize("hasAuthority('ALL_STAFF') or hasAuthority('TENANT') or hasAuthority('OWNER')")
     @Operation(summary = "Get a Unit by ID", description = "Retrieve unit details based on building ID and unit ID")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Building or unit not found")
@@ -65,6 +68,7 @@ public class UnitRestController {
         return ResponseEntity.ok().body(unitMapper.convertToDTO(unit));
     }
 
+    @PreAuthorize("hasAuthority('ALL_STAFF')")
     @Operation(summary = "Delete a Unit by ID", description = "Delete a unit based on building ID and unit ID")
     @ApiResponse(responseCode = "204", description = "Unit deleted successfully")
     @ApiResponse(responseCode = "404", description = "Building or unit not found")
