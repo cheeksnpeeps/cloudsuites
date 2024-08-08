@@ -6,7 +6,10 @@ import com.cloudsuites.framework.modules.property.personas.repository.StaffRepos
 import com.cloudsuites.framework.services.property.features.entities.Building;
 import com.cloudsuites.framework.services.property.features.entities.Company;
 import com.cloudsuites.framework.services.property.personas.entities.Staff;
+import com.cloudsuites.framework.services.property.personas.entities.StaffRole;
 import com.cloudsuites.framework.services.user.entities.Identity;
+import com.cloudsuites.framework.webapp.authentication.utils.AdminTestHelper;
+import com.cloudsuites.framework.webapp.rest.user.dto.IdentityDto;
 import com.cloudsuites.framework.webapp.rest.user.dto.StaffDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,6 +20,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -51,20 +55,29 @@ public class StaffRestControllerTest {
     private String validBuildingId;
     private String validStaffId;
 
+    private AdminTestHelper adminTestHelper;
+    private String accessToken;
+
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         clearDatabase();
         // Initialize test data
         validCompanyId = createCompany("Test Company").getCompanyId();
         validBuildingId = createBuilding("Test Building").getBuildingId();
-        validStaffId = createStaff("testStaff", validCompanyId).getStaffId();
+        validStaffId = createStaff(validCompanyId).getStaffId();
+        adminTestHelper = new AdminTestHelper(mockMvc, objectMapper, null, null);
+        accessToken = adminTestHelper.registerAdminAndGetToken("testRegisterAdmin", "+14166024668");
+    }
+
+    private MockHttpServletRequestBuilder withAuth(MockHttpServletRequestBuilder requestBuilder) {
+        return requestBuilder.header("Authorization", "Bearer " + accessToken);
     }
 
     // -------------------- GET Requests --------------------
 
     @Test
     void testGetAllStaffsByCompanyId() throws Exception {
-        mockMvc.perform(get("/api/v1/staff/companies/{companyId}", validCompanyId))
+        mockMvc.perform(withAuth(get("/api/v1/staff/companies/{companyId}", validCompanyId)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(result -> {
@@ -76,7 +89,7 @@ public class StaffRestControllerTest {
 
     @Test
     void testGetAllStaffsByBuildingId() throws Exception {
-        mockMvc.perform(get("/api/v1/staff/buildings/{buildingId}", validBuildingId))
+        mockMvc.perform(withAuth(get("/api/v1/staff/buildings/{buildingId}", validBuildingId)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(result -> {
@@ -88,7 +101,7 @@ public class StaffRestControllerTest {
 
     @Test
     void testGetStaffById_ValidId() throws Exception {
-        mockMvc.perform(get("/api/v1/staff/{id}", validStaffId))
+        mockMvc.perform(withAuth(get("/api/v1/staff/{id}", validStaffId)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(result -> {
@@ -100,7 +113,7 @@ public class StaffRestControllerTest {
 
     @Test
     void testGetStaffById_InvalidId() throws Exception {
-        mockMvc.perform(get("/api/v1/staff/{id}", "invalidStaffId"))
+        mockMvc.perform(withAuth(get("/api/v1/staff/{id}", "invalidStaffId")))
                 .andExpect(status().isNotFound());
     }
 
@@ -108,10 +121,15 @@ public class StaffRestControllerTest {
 
     @Test
     void testCreateStaff_ValidData() throws Exception {
-        String newStaffJson = "{\"identity\":{\"username\":\"newStaff\"}}";
-        String responseContent = mockMvc.perform(post("/api/v1/staff/companies/{companyId}", validCompanyId)
+        StaffDto staff = new StaffDto();
+        staff.setStaffRole(StaffRole.BUILDING_SUPERVISOR);
+        IdentityDto identity = new IdentityDto();
+        identity.setUsername("newStaff");
+        staff.setIdentity(identity);
+
+        String responseContent = mockMvc.perform(withAuth(post("/api/v1/staff/companies/{companyId}", validCompanyId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(newStaffJson))
+                        .content(objectMapper.writeValueAsString(staff))))
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse().getContentAsString();
@@ -123,7 +141,7 @@ public class StaffRestControllerTest {
     @Test
     void testCreateStaff_InvalidData() throws Exception {
         String newStaffJson = "{\"identity\":{\"username\":\"\"}}"; // Invalid username
-        mockMvc.perform(post("/api/v1/staff/companies/{companyId}", validCompanyId)
+        mockMvc.perform(withAuth(post("/api/v1/staff/companies/{companyId}", validCompanyId))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(newStaffJson))
                 .andExpect(status().isBadRequest());
@@ -131,17 +149,21 @@ public class StaffRestControllerTest {
 
     @Test
     void testCreateStaff_ExistingUsername() throws Exception {
-        String newStaffJson = "{\"identity\":{\"username\":\"testStaff\"}}"; // Same as existing
-        mockMvc.perform(post("/api/v1/staff/companies/{companyId}", validCompanyId)
+        StaffDto staff = new StaffDto();
+        staff.setStaffRole(StaffRole.BUILDING_SUPERVISOR);
+        IdentityDto identity = new IdentityDto();
+        identity.setUsername("testStaff");
+        staff.setIdentity(identity);
+        mockMvc.perform(withAuth(post("/api/v1/staff/companies/{companyId}", validCompanyId))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(newStaffJson))
+                        .content(objectMapper.writeValueAsString(staff)))
                 .andExpect(status().isConflict()); // Assuming you handle conflicts with 409
     }
 
     @Test
     void testCreateStaff_MalformedJson() throws Exception {
         String malformedJson = "{\"identity\":{}}"; // Missing username
-        mockMvc.perform(post("/api/v1/staff/companies/{companyId}", validCompanyId)
+        mockMvc.perform(withAuth(post("/api/v1/staff/companies/{companyId}", validCompanyId))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(malformedJson))
                 .andExpect(status().isBadRequest());
@@ -149,10 +171,14 @@ public class StaffRestControllerTest {
 
     @Test
     void testCreateBuildingStaff_ValidData() throws Exception {
-        String newBuildingStaffJson = "{\"identity\":{\"username\":\"buildingStaff\"}}";
-        String responseContent = mockMvc.perform(post("/api/v1/staff/companies/{companyId}/building/{buildingId}", validCompanyId, validBuildingId)
+        StaffDto staff = new StaffDto();
+        staff.setStaffRole(StaffRole.BUILDING_SUPERVISOR);
+        IdentityDto identity = new IdentityDto();
+        identity.setUsername("buildingStaff");
+        staff.setIdentity(identity);
+        String responseContent = mockMvc.perform(withAuth(post("/api/v1/staff/companies/{companyId}/building/{buildingId}", validCompanyId, validBuildingId))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(newBuildingStaffJson))
+                        .content(objectMapper.writeValueAsString(staff)))
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse().getContentAsString();
@@ -166,7 +192,7 @@ public class StaffRestControllerTest {
     @Test
     void testUpdateStaff_ValidData() throws Exception {
         String updatedStaffJson = "{\"identity\":{\"username\":\"updatedStaff\"}}";
-        String responseContent = mockMvc.perform(put("/api/v1/staff/{id}", validStaffId)
+        String responseContent = mockMvc.perform(withAuth(put("/api/v1/staff/{id}", validStaffId))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(updatedStaffJson))
                 .andExpect(status().isOk())
@@ -180,7 +206,7 @@ public class StaffRestControllerTest {
     @Test
     void testUpdateStaff_InvalidId() throws Exception {
         String updatedStaffJson = "{\"identity\":{\"username\":\"updatedStaff\"}}";
-        mockMvc.perform(put("/api/v1/staff/{id}", "invalidStaffId")
+        mockMvc.perform(withAuth(put("/api/v1/staff/{id}", "invalidStaffId"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(updatedStaffJson))
                 .andExpect(status().isNotFound());
@@ -190,16 +216,16 @@ public class StaffRestControllerTest {
 
     @Test
     void testDeleteStaff_ValidId() throws Exception {
-        mockMvc.perform(delete("/api/v1/staff/{staffId}", validStaffId))
+        mockMvc.perform(withAuth(delete("/api/v1/staff/{staffId}", validStaffId)))
                 .andExpect(status().isNoContent());
 
-        mockMvc.perform(get("/api/v1/staff/{staffId}", validStaffId))
+        mockMvc.perform(withAuth(get("/api/v1/staff/{staffId}", validStaffId)))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void testDeleteStaff_InvalidId() throws Exception {
-        mockMvc.perform(delete("/api/v1/staff/{staffId}", "invalidStaffId"))
+        mockMvc.perform(withAuth(delete("/api/v1/staff/{staffId}", "invalidStaffId")))
                 .andExpect(status().isNotFound());
     }
 
@@ -216,10 +242,11 @@ public class StaffRestControllerTest {
         return companyRepository.save(company);
     }
 
-    private Staff createStaff(String username, String companyId) {
+    private Staff createStaff(String companyId) {
         Staff staff = new Staff();
+        staff.setRole(StaffRole.BUILDING_SUPERVISOR);
         Identity identity = new Identity();
-        identity.setUsername(username);
+        identity.setUsername("testStaff");
         staff.setIdentity(identity);
         staff.setCompany(companyRepository.findById(companyId).orElseThrow());
         return staffRepository.save(staff);
