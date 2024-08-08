@@ -12,6 +12,7 @@ import com.cloudsuites.framework.services.property.personas.entities.TenantStatu
 import com.cloudsuites.framework.services.property.personas.service.TenantService;
 import com.cloudsuites.framework.services.user.UserService;
 import com.cloudsuites.framework.services.user.entities.Identity;
+import com.cloudsuites.framework.webapp.authentication.utils.AdminTestHelper;
 import com.cloudsuites.framework.webapp.rest.user.dto.TenantDto;
 import com.cloudsuites.framework.webapp.rest.user.mapper.TenantMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,6 +24,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -68,22 +70,31 @@ class TenantRestControllerTest {
     private String validUnitId;
     private Tenant testTenant;
 
+    private AdminTestHelper adminTestHelper;
+    private String accessToken;
+
     @BeforeEach
-    void setUp() throws UsernameAlreadyExistsException {
+    void setUp() throws Exception {
         clearDatabase();
         validBuildingId = createBuilding("BuildingA").getBuildingId();
         validUnitId = createUnit(validBuildingId).getUnitId();
         testTenant = createTenant(validUnitId);
         validTenantId = testTenant.getTenantId();
+
+        adminTestHelper = new AdminTestHelper(mockMvc, objectMapper, validBuildingId, validUnitId);
+        accessToken = adminTestHelper.registerAdminAndGetToken("testRegisterAdmin", "+14166024668");
     }
 
+    private MockHttpServletRequestBuilder withAuth(MockHttpServletRequestBuilder requestBuilder) {
+        return requestBuilder.header("Authorization", "Bearer " + accessToken);
+    }
     // -------------------- GET Requests --------------------
 
     @Test
     void listTenantsByBuildingId_shouldReturnTenants() throws Exception {
-        mockMvc.perform(get("/api/v1/buildings/{buildingId}/tenants", validBuildingId)
+        mockMvc.perform(withAuth(get("/api/v1/buildings/{buildingId}/tenants", validBuildingId)
                         .param("status", "ACTIVE")
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(result -> {
@@ -96,8 +107,8 @@ class TenantRestControllerTest {
 
     @Test
     void getTenantById_shouldReturnTenant() throws Exception {
-        mockMvc.perform(get("/api/v1/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}", validBuildingId, validUnitId, validTenantId)
-                        .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(withAuth(get("/api/v1/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}", validBuildingId, validUnitId, validTenantId)
+                        .contentType(MediaType.APPLICATION_JSON)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(result -> {
@@ -110,8 +121,8 @@ class TenantRestControllerTest {
 
     @Test
     void getTenantById_invalidId_shouldReturnNotFound() throws Exception {
-        mockMvc.perform(get("/api/v1/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}", validBuildingId, validUnitId, "invalidTenantId")
-                        .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(withAuth(get("/api/v1/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}", validBuildingId, validUnitId, "invalidTenantId")
+                        .contentType(MediaType.APPLICATION_JSON)))
                 .andExpect(status().isNotFound());
     }
 
@@ -121,8 +132,8 @@ class TenantRestControllerTest {
     void createTenant_shouldReturnCreatedTenant() throws Exception {
         String newTenantJson = "{\"identity\":{\"username\":\"newTenant\"}}"; // New tenant data
 
-        mockMvc.perform(post("/api/v1/buildings/{buildingId}/units/{unitId}/tenants", validBuildingId, validUnitId)
-                        .contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(withAuth(post("/api/v1/buildings/{buildingId}/units/{unitId}/tenants", validBuildingId, validUnitId)
+                        .contentType(MediaType.APPLICATION_JSON))
                         .content(newTenantJson))
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -137,8 +148,8 @@ class TenantRestControllerTest {
     void createTenant_withDuplicateUsername_shouldReturnConflict() throws Exception {
         String newTenantJson = "{\"identity\":{\"username\":\"TenantA\"}}"; // Username already exists
 
-        mockMvc.perform(post("/api/v1/buildings/{buildingId}/units/{unitId}/tenants", validBuildingId, validUnitId)
-                        .contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(withAuth(post("/api/v1/buildings/{buildingId}/units/{unitId}/tenants", validBuildingId, validUnitId)
+                        .contentType(MediaType.APPLICATION_JSON))
                         .content(newTenantJson))
                 .andExpect(status().isConflict())
                 .andExpect(content().string(containsString("User already exists"))); // Example error message
@@ -148,8 +159,8 @@ class TenantRestControllerTest {
     void createTenant_withEmptyUsername_shouldReturnBadRequest() throws Exception {
         String newTenantJson = "{\"identity\":{\"username\":\"\"}}"; // Invalid username
 
-        mockMvc.perform(post("/api/v1/buildings/{buildingId}/units/{unitId}/tenants", validBuildingId, validUnitId)
-                        .contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(withAuth(post("/api/v1/buildings/{buildingId}/units/{unitId}/tenants", validBuildingId, validUnitId)
+                        .contentType(MediaType.APPLICATION_JSON))
                         .content(newTenantJson))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(containsString("Username must be between"))); // Example error message
@@ -163,9 +174,9 @@ class TenantRestControllerTest {
         updatedTenantDto.setTenantId(validTenantId);
         updatedTenantDto.setStatus(TenantStatus.INACTIVE); // Update the status or other fields as needed
 
-        mockMvc.perform(put("/api/v1/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}", validBuildingId, validUnitId, validTenantId)
+        mockMvc.perform(withAuth(put("/api/v1/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}", validBuildingId, validUnitId, validTenantId)
                         .content(objectMapper.writeValueAsString(updatedTenantDto))
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(result -> {
@@ -181,9 +192,9 @@ class TenantRestControllerTest {
         updatedTenantDto.setTenantId("invalidTenantId");
         updatedTenantDto.setStatus(TenantStatus.INACTIVE);
 
-        mockMvc.perform(put("/api/v1/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}", validBuildingId, validUnitId, "invalidTenantId")
+        mockMvc.perform(withAuth(put("/api/v1/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}", validBuildingId, validUnitId, "invalidTenantId")
                         .content(objectMapper.writeValueAsString(updatedTenantDto))
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)))
                 .andExpect(status().isNotFound());
     }
 
@@ -191,11 +202,11 @@ class TenantRestControllerTest {
 
     @Test
     void deleteTenant_shouldReturnSuccessMessage() throws Exception {
-        mockMvc.perform(delete("/api/v1/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}", validBuildingId, validUnitId, validTenantId))
+        mockMvc.perform(withAuth(delete("/api/v1/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}", validBuildingId, validUnitId, validTenantId)))
                 .andExpect(status().isOk());
 
         // Verify that the tenant status is INACTIVE after deletion
-        mockMvc.perform(get("/api/v1/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}", validBuildingId, validUnitId, validTenantId))
+        mockMvc.perform(withAuth(get("/api/v1/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}", validBuildingId, validUnitId, validTenantId)))
                 .andExpect(status().isOk())
                 .andExpect(result -> {
                     String jsonResponse = result.getResponse().getContentAsString();
@@ -206,7 +217,7 @@ class TenantRestControllerTest {
 
     @Test
     void deleteTenant_invalidId_shouldReturnNotFound() throws Exception {
-        mockMvc.perform(delete("/api/v1/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}", validBuildingId, validUnitId, "invalidTenantId"))
+        mockMvc.perform(withAuth(delete("/api/v1/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}", validBuildingId, validUnitId, "invalidTenantId")))
                 .andExpect(status().isNotFound());
     }
 
