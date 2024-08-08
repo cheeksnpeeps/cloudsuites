@@ -1,6 +1,7 @@
 package com.cloudsuites.framework.webapp.rest.user.dto;
 
 import com.cloudsuites.framework.services.property.personas.entities.StaffRole;
+import com.cloudsuites.framework.services.property.personas.entities.StaffStatus;
 import com.cloudsuites.framework.webapp.rest.property.dto.BuildingDto;
 import com.cloudsuites.framework.webapp.rest.property.dto.CompanyDto;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
@@ -28,6 +29,10 @@ public class StaffDto {
     @Valid // Ensure that the Identity object is validated
     @NotNull(message = "Identity is required")
     private IdentityDto identity;
+
+    @Valid // Ensure that the Identity object is validated
+    @NotNull(message = "Staff status is required")
+    private StaffStatus status;
 
     @JsonView(Views.StaffView.class)
     @Schema(description = "Role of the staff", example = "BUILDING_SECURITY")
