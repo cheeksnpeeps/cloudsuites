@@ -1,4 +1,4 @@
-package com.cloudsuites.framework.webapp.authentication;
+package com.cloudsuites.framework.webapp.authentication.utils;
 
 import com.cloudsuites.framework.services.otp.OtpService;
 import org.springframework.context.annotation.Bean;
