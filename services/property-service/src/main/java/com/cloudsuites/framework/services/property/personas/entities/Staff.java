@@ -40,6 +40,9 @@ public class Staff {
     @JoinColumn(name = "building_id")
     private Building building;
 
+    @Enumerated(EnumType.STRING)
+    private StaffStatus status;
+
     @Column(name = "role")
     private StaffRole role;
 
