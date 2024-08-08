@@ -226,10 +226,11 @@ public class TenantAuthController {
     }
 
     private boolean validateTokenClaims(Claims claims, String buildingId, String unitId, String tenantId) {
-        String tenantIdClaim = claims.get("personaId", String.class);
+        String tenantIdClaim = claims.getSubject();
         String buildingIdClaim = claims.get("buildingId", String.class);
         String unitIdClaim = claims.get("unitId", String.class);
-
+        logger.debug("Token claims: tenantId: {}, buildingId: {}, unitId: {}", tenantIdClaim, buildingIdClaim, unitIdClaim);
+        logger.debug("Request parameters: tenantId: {}, buildingId: {}, unitId: {}", tenantId, buildingId, unitId);
         if (!(tenantIdClaim.equals(tenantId) && buildingIdClaim.equals(buildingId) && unitIdClaim.equals(unitId))) {
             logger.error("Token claims do not match with the request parameters");
             return false;
