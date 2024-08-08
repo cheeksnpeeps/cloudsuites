@@ -5,12 +5,16 @@ import com.cloudsuites.framework.services.user.entities.UserType;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
 public class JwtTokenHelper {
 
     private final JwtTokenProvider jwtTokenProvider;
+
+    Logger logger = LoggerFactory.getLogger(JwtTokenHelper.class);
 
     public JwtTokenHelper(JwtTokenProvider jwtTokenProvider) {
         this.jwtTokenProvider = jwtTokenProvider;
@@ -27,25 +31,33 @@ public class JwtTokenHelper {
     }
 
     public boolean validateTokenClaims(Claims claims, String buildingId, String unitId, String personaId) {
-        String ownerIdClaim = claims.get(WebAppConstants.Claim.PERSONA_ID, String.class);
+        logger.debug("Validating token claims. {}", claims);
+        logger.debug("Validating against buildingId: {}, unitId: {}, personaId: {}", buildingId, unitId, personaId);
+        String ownerIdClaim = claims.getSubject();
         if (!personaId.equals(ownerIdClaim)) {
+            logger.debug("Persona ID does not match.");
             return false;
         }
-        if (claims.get(WebAppConstants.Claim.TYPE, UserType.class) == UserType.ADMIN) {
+        if (UserType.ADMIN.name().equals(claims.get(WebAppConstants.Claim.TYPE, String.class))) {
+            logger.debug("Admin token. No building or unit validation required.");
             return true;
-        } else if (claims.get(WebAppConstants.Claim.TYPE, UserType.class) == UserType.TENANT
-                || claims.get(WebAppConstants.Claim.TYPE, UserType.class) == UserType.OWNER) {
+        } else if (UserType.TENANT.name().equals(claims.get(WebAppConstants.Claim.TYPE, String.class))
+                || UserType.OWNER.name().equals(claims.get(WebAppConstants.Claim.TYPE, String.class))) {
             String buildingIdClaim = claims.get(WebAppConstants.Claim.BUILDING_ID, String.class);
             String unitIdClaim = claims.get(WebAppConstants.Claim.UNIT_ID, String.class);
+            logger.debug("Tenant or Owner token. Building ID: {}, Unit ID: {}", buildingIdClaim, unitIdClaim);
             return buildingIdClaim.equals(buildingId) && unitIdClaim.equals(unitId);
-        } else if (claims.get(WebAppConstants.Claim.TYPE, UserType.class) == UserType.STAFF) {
+        } else if (UserType.STAFF.name().equals(claims.get(WebAppConstants.Claim.TYPE, String.class))) {
             if (buildingId != null) {
                 String buildingIdClaim = claims.get(WebAppConstants.Claim.BUILDING_ID, String.class);
+                logger.debug("Staff token. Building ID: {}", buildingIdClaim);
                 return buildingIdClaim.equals(buildingId);
             } else {
+                logger.debug("Staff token. No building validation required.");
                 return true;
             }
         }
+        logger.debug("Invalid token type.");
         return false;
     }
 
