@@ -8,6 +8,7 @@ import com.cloudsuites.framework.services.user.entities.Admin;
 import com.cloudsuites.framework.services.user.entities.AdminRole;
 import com.cloudsuites.framework.services.user.entities.AdminStatus;
 import com.cloudsuites.framework.services.user.entities.Identity;
+import com.cloudsuites.framework.webapp.authentication.utils.AdminTestHelper;
 import com.cloudsuites.framework.webapp.rest.user.dto.AdminDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,6 +19,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import java.util.List;
 
@@ -44,29 +46,38 @@ public class AdminRestControllerTest {
     @Autowired
     private AdminRepository adminRepository;
 
+    private AdminTestHelper adminTestHelper;
+    private String accessToken;
+    
     @BeforeEach
-    void setUp() throws UsernameAlreadyExistsException, InvalidOperationException {
+    void setUp() throws Exception {
         clearDatabase();
         testAdmin = createAdmin("testAdmin", "test@company.com");
+        adminTestHelper = new AdminTestHelper(mockMvc, objectMapper, null, null);
+        accessToken = adminTestHelper.registerAdminAndGetToken("testRegisterAdmin", "+14166024668");
+    }
+
+    private MockHttpServletRequestBuilder withAuth(MockHttpServletRequestBuilder requestBuilder) {
+        return requestBuilder.header("Authorization", "Bearer " + accessToken);
     }
 
     // -------------------- GET Requests --------------------
 
     @Test
     void testGetAllAdmins() throws Exception {
-        mockMvc.perform(get("/api/v1/admins"))
+        mockMvc.perform(withAuth(get("/api/v1/admins")))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(result -> {
                     String jsonResponse = result.getResponse().getContentAsString();
                     List<AdminDto> adminDtos = objectMapper.readValue(jsonResponse, objectMapper.getTypeFactory().constructCollectionType(List.class, AdminDto.class));
-                    assertThat(adminDtos).hasSize(1);
+                    assertThat(adminDtos).hasSize(2);
                 });
     }
 
     @Test
     void testGetAdminById_ValidId() throws Exception {
-        mockMvc.perform(get("/api/v1/admins/{adminId}", testAdmin.getAdminId()))
+        mockMvc.perform(withAuth(get("/api/v1/admins/{adminId}", testAdmin.getAdminId())))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(result -> {
@@ -78,7 +89,7 @@ public class AdminRestControllerTest {
 
     @Test
     void testGetAdminById_InvalidId() throws Exception {
-        mockMvc.perform(get("/api/v1/admins/{adminId}", "invalidAdminId"))
+        mockMvc.perform(withAuth(get("/api/v1/admins/{adminId}", "invalidAdminId")))
                 .andExpect(status().isNotFound());
     }
 
@@ -86,8 +97,8 @@ public class AdminRestControllerTest {
 
     @Test
     void testCreateAdmin_ValidData() throws Exception {
-        String newAdminJson = "{\"identity\":{\"username\":\"newAdmin\", \"email\":\"new@company.com\"}}";
-        String responseContent = mockMvc.perform(post("/api/v1/admins")
+        String newAdminJson = "{\"status\": \"ACTIVE\", \"role\": \"SUPER_ADMIN\",\"identity\":{\"username\":\"newAdmin\", \"email\":\"new@company.com\"}}";
+        String responseContent = mockMvc.perform(withAuth(post("/api/v1/admins"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(newAdminJson))
                 .andExpect(status().isCreated())
@@ -100,8 +111,8 @@ public class AdminRestControllerTest {
 
     @Test
     void testCreateAdmin_ExistingUsername() throws Exception {
-        String existingAdminJson = "{\"identity\":{\"username\":\"testAdmin\", \"email\":\"test@company.com\"}}"; // Same as existing
-        mockMvc.perform(post("/api/v1/admins")
+        String existingAdminJson = "{\"status\": \"ACTIVE\", \"role\": \"SUPER_ADMIN\",\"identity\":{\"username\":\"testAdmin\", \"email\":\"test@company.com\"}}"; // Same as existing
+        mockMvc.perform(withAuth(post("/api/v1/admins"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(existingAdminJson))
                 .andExpect(status().isConflict()); // Assuming conflict for existing username
@@ -109,8 +120,8 @@ public class AdminRestControllerTest {
 
     @Test
     void testCreateAdmin_InvalidData() throws Exception {
-        String invalidAdminJson = "{\"identity\":{\"username\":\"\", \"email\":\"\"}}"; // Invalid data
-        mockMvc.perform(post("/api/v1/admins")
+        String invalidAdminJson = "{\"status\": \"ACTIVE\", \"role\": \"SUPER_ADMIN\",\"identity\":{\"username\":\"\", \"email\":\"\"}}"; // Invalid data
+        mockMvc.perform(withAuth(post("/api/v1/admins"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(invalidAdminJson))
                 .andExpect(status().isBadRequest());
@@ -120,8 +131,8 @@ public class AdminRestControllerTest {
 
     @Test
     void testUpdateAdmin_ValidData() throws Exception {
-        String updatedAdminJson = "{\"identity\":{\"username\":\"updatedAdmin\", \"email\":\"updated@company.com\"}}";
-        String responseContent = mockMvc.perform(put("/api/v1/admins/{adminId}", testAdmin.getAdminId())
+        String updatedAdminJson = "{\"status\": \"ACTIVE\", \"role\": \"SUPER_ADMIN\",\"identity\":{\"username\":\"updatedAdmin\", \"email\":\"updated@company.com\"}}";
+        String responseContent = mockMvc.perform(withAuth(put("/api/v1/admins/{adminId}", testAdmin.getAdminId()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(updatedAdminJson))
                 .andExpect(status().isOk())
@@ -134,8 +145,8 @@ public class AdminRestControllerTest {
 
     @Test
     void testUpdateAdmin_InvalidId() throws Exception {
-        String updatedAdminJson = "{\"identity\":{\"username\":\"updatedAdmin\"}}";
-        mockMvc.perform(put("/api/v1/admins/{adminId}", "invalidAdminId")
+        String updatedAdminJson = "{\"status\": \"ACTIVE\", \"role\": \"SUPER_ADMIN\",\"identity\":{\"username\":\"updatedAdmin\"}}";
+        mockMvc.perform(withAuth(put("/api/v1/admins/{adminId}", "invalidAdminId"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(updatedAdminJson))
                 .andExpect(status().isNotFound());
@@ -145,16 +156,16 @@ public class AdminRestControllerTest {
 
     @Test
     void testDeleteAdmin_ValidId() throws Exception {
-        mockMvc.perform(delete("/api/v1/admins/{adminId}", testAdmin.getAdminId()))
+        mockMvc.perform(withAuth(delete("/api/v1/admins/{adminId}", testAdmin.getAdminId())))
                 .andExpect(status().isNoContent());
 
-        mockMvc.perform(get("/api/v1/admins/{adminId}", testAdmin.getAdminId()))
+        mockMvc.perform(withAuth(get("/api/v1/admins/{adminId}", testAdmin.getAdminId())))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void testDeleteAdmin_InvalidId() throws Exception {
-        mockMvc.perform(delete("/api/v1/admins/{adminId}", "invalidAdminId"))
+        mockMvc.perform(withAuth(delete("/api/v1/admins/{adminId}", "invalidAdminId")))
                 .andExpect(status().isNotFound());
     }
 
