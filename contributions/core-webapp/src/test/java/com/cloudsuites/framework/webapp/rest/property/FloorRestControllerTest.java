@@ -3,11 +3,13 @@ package com.cloudsuites.framework.webapp.rest.property;
 import com.cloudsuites.framework.modules.property.features.repository.BuildingRepository;
 import com.cloudsuites.framework.modules.property.features.repository.FloorRepository;
 import com.cloudsuites.framework.modules.property.features.repository.UnitRepository;
+import com.cloudsuites.framework.modules.user.AdminRepository;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import com.cloudsuites.framework.services.property.features.entities.Building;
 import com.cloudsuites.framework.services.property.features.entities.Floor;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.property.features.service.FloorService;
+import com.cloudsuites.framework.webapp.authentication.utils.AdminTestHelper;
 import com.cloudsuites.framework.webapp.rest.property.dto.FloorDto;
 import com.cloudsuites.framework.webapp.rest.property.dto.UnitDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,6 +21,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import java.util.List;
 
@@ -57,15 +60,26 @@ class FloorRestControllerTest {
     @Autowired
     private UnitRepository unitRepository;
 
+    private AdminTestHelper adminTestHelper;
+    private String accessToken;
+    @Autowired
+    private AdminRepository adminRepository;
+
     /**
      * Set up test data before each test.
      * This method initializes test data for a building and a floor.
      */
     @BeforeEach
-    void setUp() throws NotFoundResponseException {
+    void setUp() throws Exception {
         clearDatabase();
         validBuildingId = createBuilding("Test Building").getBuildingId();
         validFloorId = createFloor(validBuildingId, "Test Floor").getFloorId();
+        adminTestHelper = new AdminTestHelper(mockMvc, objectMapper, null, null);
+        accessToken = adminTestHelper.registerAdminAndGetToken("testRegisterAdmin", "+14166024668");
+    }
+
+    private MockHttpServletRequestBuilder withAuth(MockHttpServletRequestBuilder requestBuilder) {
+        return requestBuilder.header("Authorization", "Bearer " + accessToken);
     }
 
     // -------------------- GET Requests --------------------
@@ -76,7 +90,7 @@ class FloorRestControllerTest {
      */
     @Test
     void testGetAllFloorsByBuildingId() throws Exception {
-        mockMvc.perform(get("/api/v1/buildings/{buildingId}/floors", validBuildingId))
+        mockMvc.perform(withAuth(get("/api/v1/buildings/{buildingId}/floors", validBuildingId)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(result -> {
@@ -93,7 +107,7 @@ class FloorRestControllerTest {
      */
     @Test
     void testGetFloorById_ValidId() throws Exception {
-        mockMvc.perform(get("/api/v1/buildings/{buildingId}/floors/{floorId}", validBuildingId, validFloorId))
+        mockMvc.perform(withAuth(get("/api/v1/buildings/{buildingId}/floors/{floorId}", validBuildingId, validFloorId)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(result -> {
@@ -109,7 +123,7 @@ class FloorRestControllerTest {
      */
     @Test
     void testGetFloorById_InvalidId() throws Exception {
-        mockMvc.perform(get("/api/v1/buildings/{buildingId}/floors/{floorId}", validBuildingId, "invalidFloorId"))
+        mockMvc.perform(withAuth(get("/api/v1/buildings/{buildingId}/floors/{floorId}", validBuildingId, "invalidFloorId")))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(containsString("Floor not found")));
     }
@@ -129,7 +143,7 @@ class FloorRestControllerTest {
         unit.setUnitNumber(201);
         newFloorDto.setUnits(List.of(unit));
 
-        mockMvc.perform(post("/api/v1/buildings/{buildingId}/floors", validBuildingId)
+        mockMvc.perform(withAuth(post("/api/v1/buildings/{buildingId}/floors", validBuildingId))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newFloorDto)))
                 .andExpect(status().isCreated())
@@ -150,7 +164,7 @@ class FloorRestControllerTest {
         FloorDto newFloorDto = new FloorDto();
         newFloorDto.setFloorName(""); // Invalid name
 
-        mockMvc.perform(post("/api/v1/buildings/{buildingId}/floors", validBuildingId)
+        mockMvc.perform(withAuth(post("/api/v1/buildings/{buildingId}/floors", validBuildingId))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newFloorDto)))
                 .andExpect(status().isBadRequest())
@@ -165,10 +179,10 @@ class FloorRestControllerTest {
      */
     @Test
     void testDeleteFloor_ValidId() throws Exception {
-        mockMvc.perform(delete("/api/v1/buildings/{buildingId}/floors/{floorId}", validBuildingId, validFloorId))
+        mockMvc.perform(withAuth(delete("/api/v1/buildings/{buildingId}/floors/{floorId}", validBuildingId, validFloorId)))
                 .andExpect(status().isNoContent());
 
-        mockMvc.perform(get("/api/v1/buildings/{buildingId}/floors/{floorId}", validBuildingId, validFloorId))
+        mockMvc.perform(withAuth(get("/api/v1/buildings/{buildingId}/floors/{floorId}", validBuildingId, validFloorId)))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(containsString("Floor not found")));
     }
@@ -179,7 +193,7 @@ class FloorRestControllerTest {
      */
     @Test
     void testDeleteFloor_InvalidId() throws Exception {
-        mockMvc.perform(delete("/api/v1/buildings/{buildingId}/floors/{floorId}", validBuildingId, "invalidFloorId"))
+        mockMvc.perform(withAuth(delete("/api/v1/buildings/{buildingId}/floors/{floorId}", validBuildingId, "invalidFloorId")))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(containsString("Floor not found")));
     }
@@ -192,6 +206,7 @@ class FloorRestControllerTest {
      */
     private void clearDatabase() {
         floorRepository.deleteAll();
+        adminRepository.deleteAll();
     }
 
     /**
