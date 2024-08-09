@@ -9,6 +9,7 @@ import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.property.personas.entities.Owner;
 import com.cloudsuites.framework.services.user.entities.Address;
 import com.cloudsuites.framework.services.user.entities.Identity;
+import com.cloudsuites.framework.webapp.authentication.utils.AdminTestHelper;
 import com.cloudsuites.framework.webapp.rest.user.dto.OwnerDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,6 +20,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -58,8 +60,11 @@ class OwnerRestControllerTest {
     private String validUnitId1;
     private String validBuildingId1;
 
+    private AdminTestHelper adminTestHelper;
+    private String accessToken;
+    
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         clearDatabase();
 
         // Initialize test data
@@ -67,6 +72,12 @@ class OwnerRestControllerTest {
         validOwnerId2 = createOwner("test2").getOwnerId();
         validBuildingId1 = createBuilding("building1", "city1").getBuildingId();
         validUnitId1 = createUnit(validBuildingId1).getUnitId();
+        adminTestHelper = new AdminTestHelper(mockMvc, objectMapper, null, null);
+        accessToken = adminTestHelper.registerAdminAndGetToken("testRegisterAdmin", "+14166024668");
+    }
+
+    private MockHttpServletRequestBuilder withAuth(MockHttpServletRequestBuilder requestBuilder) {
+        return requestBuilder.header("Authorization", "Bearer " + accessToken);
     }
 
     // -------------------- GET Requests --------------------
@@ -77,7 +88,7 @@ class OwnerRestControllerTest {
      */
     @Test
     void testGetAllOwners() throws Exception {
-        mockMvc.perform(get("/api/v1/owners"))
+        mockMvc.perform(withAuth(get("/api/v1/owners")))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(result -> {
@@ -93,7 +104,7 @@ class OwnerRestControllerTest {
      */
     @Test
     void testGetOwnerById_ValidId() throws Exception {
-        mockMvc.perform(get("/api/v1/owners/{ownerId}", validOwnerId1))
+        mockMvc.perform(withAuth(get("/api/v1/owners/{ownerId}", validOwnerId1)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(result -> {
@@ -109,7 +120,7 @@ class OwnerRestControllerTest {
      */
     @Test
     void testGetOwnerById_InvalidId() throws Exception {
-        mockMvc.perform(get("/api/v1/owners/{ownerId}", "invalidOwnerId"))
+        mockMvc.perform(withAuth(get("/api/v1/owners/{ownerId}", "invalidOwnerId")))
                 .andExpect(status().isNotFound());
     }
 
@@ -122,7 +133,7 @@ class OwnerRestControllerTest {
     @Test
     void testCreateOwner_ValidData() throws Exception {
         String newOwnerJson = "{\"identity\":{\"username\":\"newOwner\"}}";
-        mockMvc.perform(post("/api/v1/owners")
+        mockMvc.perform(withAuth(post("/api/v1/owners"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(newOwnerJson))
                 .andExpect(status().isCreated())
@@ -136,7 +147,7 @@ class OwnerRestControllerTest {
     @Test
     void testCreateOwner_InvalidData_EmptyUsername() throws Exception {
         String newOwnerJson = "{\"identity\":{\"username\":\"\"}}"; // Invalid username
-        mockMvc.perform(post("/api/v1/owners")
+        mockMvc.perform(withAuth(post("/api/v1/owners"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(newOwnerJson))
                 .andExpect(status().isBadRequest())
@@ -150,10 +161,10 @@ class OwnerRestControllerTest {
     @Test
     void testCreateOwner_InvalidData_NullUsername() throws Exception {
         String newOwnerJson = "{\"identity\":{\"username\":null}}"; // Null username
-        mockMvc.perform(post("/api/v1/owners")
+        mockMvc.perform(withAuth(post("/api/v1/owners"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(newOwnerJson))
-                .andExpect(status().isConflict())
+                .andExpect(status().isBadRequest())
                 .andExpect(content().string(containsString("Username is required"))); // Example message check
     }
 
@@ -164,7 +175,7 @@ class OwnerRestControllerTest {
     @Test
     void testCreateOwner_DuplicateUsername() throws Exception {
         String newOwnerJson = "{\"identity\":{\"username\":\"test1\"}}"; // Username already exists
-        mockMvc.perform(post("/api/v1/owners")
+        mockMvc.perform(withAuth(post("/api/v1/owners"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(newOwnerJson))
                 .andExpect(status().isConflict())
@@ -180,7 +191,7 @@ class OwnerRestControllerTest {
     @Test
     void testUpdateOwner_ValidData() throws Exception {
         String updatedOwnerJson = "{\"identity\":{\"username\":\"updatedOwner\"}}";
-        mockMvc.perform(put("/api/v1/owners/{ownerId}", validOwnerId1)
+        mockMvc.perform(withAuth(put("/api/v1/owners/{ownerId}", validOwnerId1))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(updatedOwnerJson))
                 .andExpect(status().isOk())
@@ -199,7 +210,7 @@ class OwnerRestControllerTest {
     @Test
     void testUpdateOwner_InvalidId() throws Exception {
         String updatedOwnerJson = "{\"identity\":{\"username\":\"updatedOwner\"}}";
-        mockMvc.perform(put("/api/v1/owners/{ownerId}", "invalidOwnerId")
+        mockMvc.perform(withAuth(put("/api/v1/owners/{ownerId}", "invalidOwnerId"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(updatedOwnerJson))
                 .andExpect(status().isNotFound());
@@ -212,7 +223,7 @@ class OwnerRestControllerTest {
     @Test
     void testUpdateOwner_InvalidData_EmptyUsername() throws Exception {
         String updatedOwnerJson = "{\"identity\":{\"username\":\"\"}}"; // Invalid username
-        mockMvc.perform(put("/api/v1/owners/{ownerId}", validOwnerId1)
+        mockMvc.perform(withAuth(put("/api/v1/owners/{ownerId}", validOwnerId1))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(updatedOwnerJson))
                 .andExpect(status().isBadRequest())
@@ -227,10 +238,10 @@ class OwnerRestControllerTest {
      */
     @Test
     void testDeleteOwner_ValidId() throws Exception {
-        mockMvc.perform(delete("/api/v1/owners/{ownerId}", validOwnerId1))
+        mockMvc.perform(withAuth(delete("/api/v1/owners/{ownerId}", validOwnerId1)))
                 .andExpect(status().isNoContent());
 
-        mockMvc.perform(get("/api/v1/owners/{ownerId}", validOwnerId1))
+        mockMvc.perform(withAuth(get("/api/v1/owners/{ownerId}", validOwnerId1)))
                 .andExpect(status().isNotFound());
     }
 
@@ -252,7 +263,7 @@ class OwnerRestControllerTest {
     void testDeleteOwner_WithAssociatedUnits() throws Exception {
         // First, add a unit to validOwnerId1
         String newUnitId = createUnit(validBuildingId1).getUnitId();
-        mockMvc.perform(post("/api/v1/owners/{ownerId}/buildings/{buildingId}/units/{unitId}/transfer", validOwnerId1, validBuildingId1, newUnitId));
+        mockMvc.perform(withAuth(post("/api/v1/owners/{ownerId}/buildings/{buildingId}/units/{unitId}/transfer", validOwnerId1, validBuildingId1, newUnitId)));
 
         // Attempt to delete the owner while they still have associated units
         mockMvc.perform(delete("/api/v1/owners/{ownerId}", validOwnerId1))
@@ -268,7 +279,7 @@ class OwnerRestControllerTest {
      */
     @Test
     void testAddUnitToOwner_ValidData() throws Exception {
-        mockMvc.perform(post("/api/v1/owners/{ownerId}/buildings/{buildingId}/units/{unitId}/transfer", validOwnerId2, validBuildingId1, validUnitId1))
+        mockMvc.perform(withAuth(post("/api/v1/owners/{ownerId}/buildings/{buildingId}/units/{unitId}/transfer", validOwnerId2, validBuildingId1, validUnitId1)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(result -> {
@@ -284,7 +295,7 @@ class OwnerRestControllerTest {
      */
     @Test
     void testAddUnitToOwner_InvalidOwner() throws Exception {
-        mockMvc.perform(post("/api/v1/owners/{ownerId}/buildings/{buildingId}/units/{unitId}/transfer", "invalidOwnerId", validBuildingId1, validUnitId1))
+        mockMvc.perform(withAuth(post("/api/v1/owners/{ownerId}/buildings/{buildingId}/units/{unitId}/transfer", "invalidOwnerId", validBuildingId1, validUnitId1)))
                 .andExpect(status().isNotFound());
     }
 
@@ -294,7 +305,7 @@ class OwnerRestControllerTest {
      */
     @Test
     void testAddUnitToOwner_InvalidUnit() throws Exception {
-        mockMvc.perform(post("/api/v1/owners/{ownerId}/buildings/{buildingId}/units/{unitId}/transfer", validOwnerId2, validBuildingId1, "invalidUnitId"))
+        mockMvc.perform(withAuth(post("/api/v1/owners/{ownerId}/buildings/{buildingId}/units/{unitId}/transfer", validOwnerId2, validBuildingId1, "invalidUnitId")))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(containsString("Unit not found"))); // Example message check
     }
@@ -307,14 +318,14 @@ class OwnerRestControllerTest {
     @Test
     void testRemoveUnitFromOwner_ValidData() throws Exception {
         // First, add the unit to the owner
-        mockMvc.perform(post("/api/v1/owners/{ownerId}/buildings/{buildingId}/units/{unitId}/transfer", validOwnerId2, validBuildingId1, validUnitId1));
+        mockMvc.perform(withAuth(post("/api/v1/owners/{ownerId}/buildings/{buildingId}/units/{unitId}/transfer", validOwnerId2, validBuildingId1, validUnitId1)));
 
         // Now attempt to remove the unit
-        mockMvc.perform(delete("/api/v1/owners/{ownerId}/units/{unitId}", validOwnerId2, validUnitId1))
+        mockMvc.perform(withAuth(delete("/api/v1/owners/{ownerId}/units/{unitId}", validOwnerId2, validUnitId1)))
                 .andExpect(status().isOk());
 
         // Verify that the unit is no longer associated with the owner
-        mockMvc.perform(get("/api/v1/owners/{ownerId}", validOwnerId2))
+        mockMvc.perform(withAuth(get("/api/v1/owners/{ownerId}", validOwnerId2)))
                 .andExpect(status().isOk())
                 .andExpect(result -> {
                     String jsonResponse = result.getResponse().getContentAsString();
