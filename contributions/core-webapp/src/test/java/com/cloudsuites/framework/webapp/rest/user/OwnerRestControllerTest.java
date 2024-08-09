@@ -3,6 +3,7 @@ import com.cloudsuites.framework.modules.property.features.repository.BuildingRe
 import com.cloudsuites.framework.modules.property.features.repository.FloorRepository;
 import com.cloudsuites.framework.modules.property.features.repository.UnitRepository;
 import com.cloudsuites.framework.modules.property.personas.repository.OwnerRepository;
+import com.cloudsuites.framework.modules.user.AdminRepository;
 import com.cloudsuites.framework.services.property.features.entities.Building;
 import com.cloudsuites.framework.services.property.features.entities.Floor;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
@@ -62,7 +63,9 @@ class OwnerRestControllerTest {
 
     private AdminTestHelper adminTestHelper;
     private String accessToken;
-    
+    @Autowired
+    private AdminRepository adminRepository;
+
     @BeforeEach
     void setUp() throws Exception {
         clearDatabase();
@@ -340,6 +343,7 @@ class OwnerRestControllerTest {
         ownerRepository.deleteAll();
         buildingRepository.deleteAll();
         unitRepository.deleteAll();
+        adminRepository.deleteAll();
     }
 
     private Owner createOwner(String username) {
