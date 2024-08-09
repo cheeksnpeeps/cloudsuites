@@ -1,10 +1,14 @@
 package com.cloudsuites.framework.webapp.rest.property;
 
+import com.cloudsuites.framework.modules.property.features.repository.BuildingRepository;
+import com.cloudsuites.framework.modules.property.features.repository.UnitRepository;
+import com.cloudsuites.framework.modules.user.AdminRepository;
 import com.cloudsuites.framework.services.property.features.entities.Building;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.property.features.service.BuildingService;
 import com.cloudsuites.framework.services.property.features.service.UnitService;
 import com.cloudsuites.framework.services.user.entities.Address;
+import com.cloudsuites.framework.webapp.authentication.utils.AdminTestHelper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -37,15 +42,37 @@ public class UnitRestControllerTest {
     @Autowired
     private UnitService unitService;
 
+    @Autowired
+    private BuildingRepository buildingRepository;
+
+    @Autowired
+    private UnitRepository unitRepository;
+
+    @Autowired
+    private AdminRepository adminRepository;
+
     private Building building;
 
+    private AdminTestHelper adminTestHelper;
+    private String accessToken;
+
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
+        adminRepository.deleteAll();
+        buildingRepository.deleteAll();
+        unitRepository.deleteAll();
+
         // Create a Building entity for testing
         building = new Building();
         building.setName("Test Building");
         building.setAddress(createMockAddressEntity());
         building = buildingService.saveBuilding(building);
+        adminTestHelper = new AdminTestHelper(mockMvc, objectMapper, null, null);
+        accessToken = adminTestHelper.registerAdminAndGetToken("testRegisterAdmin", "+14166024668");
+    }
+
+    private MockHttpServletRequestBuilder withAuth(MockHttpServletRequestBuilder requestBuilder) {
+        return requestBuilder.header("Authorization", "Bearer " + accessToken);
     }
 
     @Test
@@ -61,7 +88,7 @@ public class UnitRestControllerTest {
         unit2.setBuilding(building);
         unitService.saveUnit(unit2);
 
-        mockMvc.perform(get("/api/v1/buildings/{buildingId}/units", building.getBuildingId())
+        mockMvc.perform(withAuth(get("/api/v1/buildings/{buildingId}/units", building.getBuildingId()))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].unitNumber").value(101))
@@ -76,7 +103,7 @@ public class UnitRestControllerTest {
         unit.setBuilding(building);
         unit = unitService.saveUnit(unit); // Save and retrieve the unit
 
-        mockMvc.perform(get("/api/v1/buildings/{buildingId}/units/{unitId}", building.getBuildingId(), unit.getUnitId())
+        mockMvc.perform(withAuth(get("/api/v1/buildings/{buildingId}/units/{unitId}", building.getBuildingId(), unit.getUnitId()))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.unitNumber").value(102));
@@ -86,7 +113,7 @@ public class UnitRestControllerTest {
     void testGetUnitById_NotFound() throws Exception {
         String unitId = "non-existing-unit";
 
-        mockMvc.perform(get("/api/v1/buildings/{buildingId}/units/{unitId}", building.getBuildingId(), unitId)
+        mockMvc.perform(withAuth(get("/api/v1/buildings/{buildingId}/units/{unitId}", building.getBuildingId(), unitId))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }
@@ -99,7 +126,7 @@ public class UnitRestControllerTest {
         unit.setBuilding(building);
         unit = unitService.saveUnit(unit); // Save the unit
 
-        mockMvc.perform(delete("/api/v1/buildings/{buildingId}/units/{unitId}", building.getBuildingId(), unit.getUnitId())
+        mockMvc.perform(withAuth(delete("/api/v1/buildings/{buildingId}/units/{unitId}", building.getBuildingId(), unit.getUnitId()))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
     }
@@ -108,7 +135,7 @@ public class UnitRestControllerTest {
     void testDeleteUnitById_NotFound() throws Exception {
         String unitId = "non-existing-unit";
 
-        mockMvc.perform(delete("/api/v1/buildings/{buildingId}/units/{unitId}", building.getBuildingId(), unitId)
+        mockMvc.perform(withAuth(delete("/api/v1/buildings/{buildingId}/units/{unitId}", building.getBuildingId(), unitId))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }
