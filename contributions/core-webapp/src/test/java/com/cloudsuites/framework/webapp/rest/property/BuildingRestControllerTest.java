@@ -4,6 +4,7 @@ import com.cloudsuites.framework.modules.property.features.repository.BuildingRe
 import com.cloudsuites.framework.modules.property.features.repository.CompanyRepository;
 import com.cloudsuites.framework.services.property.features.entities.Building;
 import com.cloudsuites.framework.services.property.features.entities.Company;
+import com.cloudsuites.framework.webapp.authentication.utils.AdminTestHelper;
 import com.cloudsuites.framework.webapp.rest.property.dto.BuildingDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,6 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -52,18 +54,27 @@ class BuildingRestControllerTest {
     private String validBuildingId1;
     private String validBuildingId2;
 
+    private AdminTestHelper adminTestHelper;
+    private String accessToken;
+    
     /**
      * Set up test data before each test.
      * This method clears the database and initializes test data for a company and its buildings.
      */
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         clearDatabase();
 
         // Initialize test data
         validCompanyId = createCompany("Test Company").getCompanyId();
         validBuildingId1 = createBuilding("Building 1", validCompanyId).getBuildingId();
         validBuildingId2 = createBuilding("Building 2", validCompanyId).getBuildingId();
+        adminTestHelper = new AdminTestHelper(mockMvc, objectMapper, null, null);
+        accessToken = adminTestHelper.registerAdminAndGetToken("testRegisterAdmin", "+14166024668");
+    }
+
+    private MockHttpServletRequestBuilder withAuth(MockHttpServletRequestBuilder requestBuilder) {
+        return requestBuilder.header("Authorization", "Bearer " + accessToken);
     }
 
     // -------------------- GET Requests --------------------
@@ -74,7 +85,7 @@ class BuildingRestControllerTest {
      */
     @Test
     void testGetAllBuildings() throws Exception {
-        mockMvc.perform(get("/api/v1/companies/{companyId}/buildings", validCompanyId))
+        mockMvc.perform(withAuth(get("/api/v1/companies/{companyId}/buildings", validCompanyId)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(result -> {
@@ -90,7 +101,7 @@ class BuildingRestControllerTest {
      */
     @Test
     void testGetBuildingById_ValidId() throws Exception {
-        mockMvc.perform(get("/api/v1/companies/{companyId}/buildings/{buildingId}", validCompanyId, validBuildingId1))
+        mockMvc.perform(withAuth(get("/api/v1/companies/{companyId}/buildings/{buildingId}", validCompanyId, validBuildingId1)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(result -> {
@@ -106,7 +117,7 @@ class BuildingRestControllerTest {
      */
     @Test
     void testGetBuildingById_InvalidId() throws Exception {
-        mockMvc.perform(get("/api/v1/companies/{companyId}/buildings/{buildingId}", validCompanyId, "invalidBuildingId"))
+        mockMvc.perform(withAuth(get("/api/v1/companies/{companyId}/buildings/{buildingId}", validCompanyId, "invalidBuildingId")))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(containsString("Building not found"))); // Example message check
     }
@@ -120,7 +131,7 @@ class BuildingRestControllerTest {
     @Test
     void testSaveBuilding_ValidData() throws Exception {
         String newBuildingJson = createBuildingJson("New Building");
-        mockMvc.perform(post("/api/v1/companies/{companyId}/buildings", validCompanyId)
+        mockMvc.perform(withAuth(post("/api/v1/companies/{companyId}/buildings", validCompanyId))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(newBuildingJson))
                 .andExpect(status().isCreated())
@@ -142,7 +153,7 @@ class BuildingRestControllerTest {
     @ValueSource(strings = {"", "a", "VeryVeryVeryLongBuildingNameThatExceedsTheExpectedLength"})
     void testSaveBuilding_InvalidData_BuildingNameLength(String buildingName) throws Exception {
         String newBuildingJson = createBuildingJson(buildingName);
-        mockMvc.perform(post("/api/v1/companies/{companyId}/buildings", validCompanyId)
+        mockMvc.perform(withAuth(post("/api/v1/companies/{companyId}/buildings", validCompanyId))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(newBuildingJson))
                 .andExpect(status().isBadRequest())
@@ -157,7 +168,7 @@ class BuildingRestControllerTest {
     void testSaveBuilding_InvalidData_CompanyNotFound() throws Exception {
         String newBuildingJson = createBuildingJson("Valid Building");
         String invalidCompanyId = "nonExistentCompanyId"; // Invalid company ID
-        mockMvc.perform(post("/api/v1/companies/{companyId}/buildings", invalidCompanyId)
+        mockMvc.perform(withAuth(post("/api/v1/companies/{companyId}/buildings", invalidCompanyId))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(newBuildingJson))
                 .andExpect(status().isNotFound())
@@ -171,7 +182,7 @@ class BuildingRestControllerTest {
     @Test
     void testSaveBuilding_InvalidData_NullCompanyId() throws Exception {
         String newBuildingJson = createBuildingJson("Building Without Company");
-        mockMvc.perform(post("/api/v1/companies/{companyId}/buildings", (Object) null)
+        mockMvc.perform(withAuth(post("/api/v1/companies/{companyId}/buildings", (Object) null))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(newBuildingJson))
                 .andExpect(status().isBadRequest());
@@ -185,10 +196,10 @@ class BuildingRestControllerTest {
      */
     @Test
     void testDeleteBuilding_ValidId() throws Exception {
-        mockMvc.perform(delete("/api/v1/companies/{companyId}/buildings/{buildingId}", validCompanyId, validBuildingId1))
+        mockMvc.perform(withAuth(delete("/api/v1/companies/{companyId}/buildings/{buildingId}", validCompanyId, validBuildingId1)))
                 .andExpect(status().isNoContent());
 
-        mockMvc.perform(get("/api/v1/companies/{companyId}/buildings/{buildingId}", validCompanyId, validBuildingId1))
+        mockMvc.perform(withAuth(get("/api/v1/companies/{companyId}/buildings/{buildingId}", validCompanyId, validBuildingId1)))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(containsString("Building not found"))); // Example message check
     }
@@ -199,7 +210,7 @@ class BuildingRestControllerTest {
      */
     @Test
     void testDeleteBuilding_InvalidId() throws Exception {
-        mockMvc.perform(delete("/api/v1/companies/{companyId}/buildings/{buildingId}", validCompanyId, "invalidBuildingId"))
+        mockMvc.perform(withAuth(delete("/api/v1/companies/{companyId}/buildings/{buildingId}", validCompanyId, "invalidBuildingId")))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(containsString("Building not found"))); // Example message check
     }
@@ -211,7 +222,7 @@ class BuildingRestControllerTest {
     @Test
     void testDeleteBuilding_CompanyNotFound() throws Exception {
         String invalidCompanyId = "invalidCompanyId"; // Invalid company ID
-        mockMvc.perform(delete("/api/v1/companies/{companyId}/buildings/{buildingId}", invalidCompanyId, validBuildingId1))
+        mockMvc.perform(withAuth(delete("/api/v1/companies/{companyId}/buildings/{buildingId}", invalidCompanyId, validBuildingId1)))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(containsString("Building not found"))); // Example message check
     }
@@ -222,7 +233,7 @@ class BuildingRestControllerTest {
      */
     @Test
     void testDeleteBuilding_BuildingNotFound() throws Exception {
-        mockMvc.perform(delete("/api/v1/companies/{companyId}/buildings/{buildingId}", validCompanyId, "invalidBuildingId"))
+        mockMvc.perform(withAuth(delete("/api/v1/companies/{companyId}/buildings/{buildingId}", validCompanyId, "invalidBuildingId")))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(containsString("Building not found"))); // Example message check
     }
