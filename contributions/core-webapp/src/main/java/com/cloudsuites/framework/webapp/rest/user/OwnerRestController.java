@@ -56,7 +56,7 @@ public class OwnerRestController {
 
     private static void validateOwner(String ownerId) throws InvalidOperationException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getDetails();
+        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
         if (UserType.OWNER.name().equals(customUserDetails.getUserType()) && !customUserDetails.getPersonaId().equals(ownerId)) {
             throw new InvalidOperationException(WebAppConstants.Owner.INVALID_OWNER);
         }
