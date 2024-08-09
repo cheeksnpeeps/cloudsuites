@@ -1,9 +1,12 @@
 package com.cloudsuites.framework.webapp.rest.property;
 
 import com.cloudsuites.framework.modules.property.features.repository.CompanyRepository;
+import com.cloudsuites.framework.modules.user.AdminRepository;
+import com.cloudsuites.framework.modules.user.UserRepository;
 import com.cloudsuites.framework.services.property.features.entities.Company;
 import com.cloudsuites.framework.services.property.features.service.CompanyService;
 import com.cloudsuites.framework.services.user.entities.Address;
+import com.cloudsuites.framework.webapp.authentication.utils.AdminTestHelper;
 import com.cloudsuites.framework.webapp.rest.property.dto.CompanyDto;
 import com.cloudsuites.framework.webapp.rest.user.dto.AddressDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import java.util.List;
 
@@ -47,14 +51,27 @@ class CompanyRestControllerTest {
 
     private String validCompanyId;
 
+    private AdminTestHelper adminTestHelper;
+    private String accessToken;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private AdminRepository adminRepository;
+
     /**
      * Set up test data before each test.
      * This method initializes test data for a company.
      */
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         clearDatabase();
         validCompanyId = createCompany("Test Company").getCompanyId();
+        adminTestHelper = new AdminTestHelper(mockMvc, objectMapper, null, null);
+        accessToken = adminTestHelper.registerAdminAndGetToken("testRegisterAdmin", "+14166024668");
+    }
+
+    private MockHttpServletRequestBuilder withAuth(MockHttpServletRequestBuilder requestBuilder) {
+        return requestBuilder.header("Authorization", "Bearer " + accessToken);
     }
 
     // -------------------- GET Requests --------------------
@@ -65,7 +82,7 @@ class CompanyRestControllerTest {
      */
     @Test
     void testGetAllCompanies() throws Exception {
-        mockMvc.perform(get("/api/v1/companies"))
+        mockMvc.perform(withAuth(get("/api/v1/companies")))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(result -> {
@@ -82,7 +99,7 @@ class CompanyRestControllerTest {
      */
     @Test
     void testGetCompanyById_ValidId() throws Exception {
-        mockMvc.perform(get("/api/v1/companies/{companyId}", validCompanyId))
+        mockMvc.perform(withAuth(get("/api/v1/companies/{companyId}", validCompanyId)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(result -> {
@@ -98,7 +115,7 @@ class CompanyRestControllerTest {
      */
     @Test
     void testGetCompanyById_InvalidId() throws Exception {
-        mockMvc.perform(get("/api/v1/companies/{companyId}", "invalidCompanyId"))
+        mockMvc.perform(withAuth(get("/api/v1/companies/{companyId}", "invalidCompanyId")))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(containsString("Company not found")));
     }
@@ -112,7 +129,7 @@ class CompanyRestControllerTest {
     @Test
     void testSaveCompany_ValidData() throws Exception {
         CompanyDto newCompanyDto = createMockCompanyDto("New Company");
-        mockMvc.perform(post("/api/v1/companies")
+        mockMvc.perform(withAuth(post("/api/v1/companies"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newCompanyDto)))
                 .andExpect(status().isCreated())
@@ -131,7 +148,7 @@ class CompanyRestControllerTest {
     @Test
     void testSaveCompany_InvalidData_EmptyName() throws Exception {
         CompanyDto newCompanyDto = createMockCompanyDto("");
-        mockMvc.perform(post("/api/v1/companies")
+        mockMvc.perform(withAuth(post("/api/v1/companies"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newCompanyDto)))
                 .andExpect(status().isBadRequest())
@@ -146,10 +163,10 @@ class CompanyRestControllerTest {
      */
     @Test
     void testDeleteCompany_ValidId() throws Exception {
-        mockMvc.perform(delete("/api/v1/companies/{companyId}", validCompanyId))
+        mockMvc.perform(withAuth(delete("/api/v1/companies/{companyId}", validCompanyId)))
                 .andExpect(status().isNoContent());
 
-        mockMvc.perform(get("/api/v1/companies/{companyId}", validCompanyId))
+        mockMvc.perform(withAuth(get("/api/v1/companies/{companyId}", validCompanyId)))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(containsString("Company not found")));
     }
@@ -160,7 +177,7 @@ class CompanyRestControllerTest {
      */
     @Test
     void testDeleteCompany_InvalidId() throws Exception {
-        mockMvc.perform(delete("/api/v1/companies/{companyId}", "invalidCompanyId"))
+        mockMvc.perform(withAuth(delete("/api/v1/companies/{companyId}", "invalidCompanyId")))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(containsString("Company not found")));
     }
@@ -173,6 +190,7 @@ class CompanyRestControllerTest {
      */
     private void clearDatabase() {
         companyRepository.deleteAll();
+        adminRepository.deleteAll();
     }
 
     /**
