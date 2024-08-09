@@ -7,6 +7,7 @@ import com.cloudsuites.framework.services.property.features.entities.Building;
 import com.cloudsuites.framework.services.property.features.entities.Company;
 import com.cloudsuites.framework.services.property.personas.entities.Staff;
 import com.cloudsuites.framework.services.property.personas.entities.StaffRole;
+import com.cloudsuites.framework.services.property.personas.entities.StaffStatus;
 import com.cloudsuites.framework.services.user.entities.Identity;
 import com.cloudsuites.framework.webapp.authentication.utils.AdminTestHelper;
 import com.cloudsuites.framework.webapp.rest.user.dto.IdentityDto;
@@ -123,6 +124,7 @@ public class StaffRestControllerTest {
     void testCreateStaff_ValidData() throws Exception {
         StaffDto staff = new StaffDto();
         staff.setStaffRole(StaffRole.BUILDING_SUPERVISOR);
+        staff.setStatus(StaffStatus.ACTIVE);
         IdentityDto identity = new IdentityDto();
         identity.setUsername("newStaff");
         staff.setIdentity(identity);
@@ -151,6 +153,7 @@ public class StaffRestControllerTest {
     void testCreateStaff_ExistingUsername() throws Exception {
         StaffDto staff = new StaffDto();
         staff.setStaffRole(StaffRole.BUILDING_SUPERVISOR);
+        staff.setStatus(StaffStatus.ACTIVE);
         IdentityDto identity = new IdentityDto();
         identity.setUsername("testStaff");
         staff.setIdentity(identity);
@@ -173,6 +176,7 @@ public class StaffRestControllerTest {
     void testCreateBuildingStaff_ValidData() throws Exception {
         StaffDto staff = new StaffDto();
         staff.setStaffRole(StaffRole.BUILDING_SUPERVISOR);
+        staff.setStatus(StaffStatus.ACTIVE);
         IdentityDto identity = new IdentityDto();
         identity.setUsername("buildingStaff");
         staff.setIdentity(identity);
