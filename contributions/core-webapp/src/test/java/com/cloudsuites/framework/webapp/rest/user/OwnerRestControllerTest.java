@@ -251,7 +251,7 @@ class OwnerRestControllerTest {
      */
     @Test
     void testDeleteOwner_InvalidId() throws Exception {
-        mockMvc.perform(delete("/api/v1/owners/{ownerId}", "invalidOwnerId"))
+        mockMvc.perform(withAuth(delete("/api/v1/owners/{ownerId}", "invalidOwnerId")))
                 .andExpect(status().isNotFound());
     }
 
@@ -266,7 +266,7 @@ class OwnerRestControllerTest {
         mockMvc.perform(withAuth(post("/api/v1/owners/{ownerId}/buildings/{buildingId}/units/{unitId}/transfer", validOwnerId1, validBuildingId1, newUnitId)));
 
         // Attempt to delete the owner while they still have associated units
-        mockMvc.perform(delete("/api/v1/owners/{ownerId}", validOwnerId1))
+        mockMvc.perform(withAuth(delete("/api/v1/owners/{ownerId}", validOwnerId1)))
                 .andExpect(status().isConflict()) // Assuming your API returns 409 for conflict
                 .andExpect(content().string(containsString("Owner has units. Cannot delete owner with units."))); // Example message check
     }
