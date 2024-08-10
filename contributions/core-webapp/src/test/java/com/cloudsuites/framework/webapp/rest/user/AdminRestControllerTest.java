@@ -1,6 +1,6 @@
 package com.cloudsuites.framework.webapp.rest.user;
 
-import com.cloudsuites.framework.modules.user.AdminRepository;
+import com.cloudsuites.framework.modules.user.repository.AdminRepository;
 import com.cloudsuites.framework.services.common.exception.InvalidOperationException;
 import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
 import com.cloudsuites.framework.services.user.AdminService;
