@@ -1,8 +1,8 @@
 package com.cloudsuites.framework.webapp.rest.property;
 
 import com.cloudsuites.framework.modules.property.features.repository.CompanyRepository;
-import com.cloudsuites.framework.modules.user.AdminRepository;
-import com.cloudsuites.framework.modules.user.UserRepository;
+import com.cloudsuites.framework.modules.user.repository.AdminRepository;
+import com.cloudsuites.framework.modules.user.repository.UserRepository;
 import com.cloudsuites.framework.services.property.features.entities.Company;
 import com.cloudsuites.framework.services.property.features.service.CompanyService;
 import com.cloudsuites.framework.services.user.entities.Address;

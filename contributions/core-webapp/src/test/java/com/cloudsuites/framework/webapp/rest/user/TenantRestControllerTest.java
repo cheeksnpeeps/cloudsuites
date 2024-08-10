@@ -3,7 +3,7 @@ package com.cloudsuites.framework.webapp.rest.user;
 import com.cloudsuites.framework.modules.property.features.repository.BuildingRepository;
 import com.cloudsuites.framework.modules.property.features.repository.UnitRepository;
 import com.cloudsuites.framework.modules.property.personas.repository.TenantRepository;
-import com.cloudsuites.framework.modules.user.AdminRepository;
+import com.cloudsuites.framework.modules.user.repository.AdminRepository;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
 import com.cloudsuites.framework.services.property.features.entities.Building;

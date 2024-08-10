@@ -3,7 +3,7 @@ import com.cloudsuites.framework.modules.property.features.repository.BuildingRe
 import com.cloudsuites.framework.modules.property.features.repository.FloorRepository;
 import com.cloudsuites.framework.modules.property.features.repository.UnitRepository;
 import com.cloudsuites.framework.modules.property.personas.repository.OwnerRepository;
-import com.cloudsuites.framework.modules.user.AdminRepository;
+import com.cloudsuites.framework.modules.user.repository.AdminRepository;
 import com.cloudsuites.framework.services.property.features.entities.Building;
 import com.cloudsuites.framework.services.property.features.entities.Floor;
 import com.cloudsuites.framework.services.property.features.entities.Unit;

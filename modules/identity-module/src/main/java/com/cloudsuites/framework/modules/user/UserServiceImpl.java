@@ -1,6 +1,7 @@
 package com.cloudsuites.framework.modules.user;
 
 
+import com.cloudsuites.framework.modules.user.repository.UserRepository;
 import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
 import com.cloudsuites.framework.services.user.UserService;
 import com.cloudsuites.framework.services.user.entities.Identity;

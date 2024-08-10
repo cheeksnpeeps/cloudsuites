@@ -1,7 +1,7 @@
 package com.cloudsuites.framework.webapp.authentication;
 
 import com.cloudsuites.framework.modules.jwt.JwtTokenProvider;
-import com.cloudsuites.framework.modules.user.UserRoleRepository;
+import com.cloudsuites.framework.modules.user.repository.UserRoleRepository;
 import com.cloudsuites.framework.services.property.personas.entities.StaffRole;
 import com.cloudsuites.framework.services.user.entities.AdminRole;
 import com.cloudsuites.framework.services.user.entities.UserType;
