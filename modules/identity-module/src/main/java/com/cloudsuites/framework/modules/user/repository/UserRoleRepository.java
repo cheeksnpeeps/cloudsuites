@@ -1,4 +1,4 @@
-package com.cloudsuites.framework.modules.user;
+package com.cloudsuites.framework.modules.user.repository;
 
 import com.cloudsuites.framework.services.user.entities.UserRole;
 import com.cloudsuites.framework.services.user.entities.UserType;
@@ -25,4 +25,7 @@ public interface UserRoleRepository extends JpaRepository<UserRole, String> {
 
     @Transactional(readOnly = true)
     List<UserRole> findUserRoleByIdentityId(String userId);
+
+    @Transactional(readOnly = true)
+    List<UserRole> findUserRoleByPersonaId(String adminId);
 }
