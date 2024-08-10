@@ -1,4 +1,4 @@
-package com.cloudsuites.framework.modules.user;
+package com.cloudsuites.framework.modules.user.repository;
 
 import com.cloudsuites.framework.services.user.entities.Identity;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,7 +1,7 @@
 package com.cloudsuites.framework.webapp.authentication.filter;
 
 import com.cloudsuites.framework.modules.jwt.JwtTokenProvider;
-import com.cloudsuites.framework.modules.user.UserRoleRepository;
+import com.cloudsuites.framework.modules.user.repository.UserRoleRepository;
 import com.cloudsuites.framework.webapp.authentication.service.CustomUserDetails;
 import com.cloudsuites.framework.webapp.authentication.service.CustomUserDetailsService;
 import com.cloudsuites.framework.webapp.authentication.util.WebAppConstants;

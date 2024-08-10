@@ -3,7 +3,7 @@ package com.cloudsuites.framework.webapp.rest.property;
 import com.cloudsuites.framework.modules.property.features.repository.BuildingRepository;
 import com.cloudsuites.framework.modules.property.features.repository.FloorRepository;
 import com.cloudsuites.framework.modules.property.features.repository.UnitRepository;
-import com.cloudsuites.framework.modules.user.AdminRepository;
+import com.cloudsuites.framework.modules.user.repository.AdminRepository;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import com.cloudsuites.framework.services.property.features.entities.Building;
 import com.cloudsuites.framework.services.property.features.entities.Floor;

@@ -1,6 +1,6 @@
 package com.cloudsuites.framework.webapp.authentication.service;
 
-import com.cloudsuites.framework.modules.user.UserRoleRepository;
+import com.cloudsuites.framework.modules.user.repository.UserRoleRepository;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import com.cloudsuites.framework.services.user.UserService;
 import com.cloudsuites.framework.services.user.entities.Identity;
