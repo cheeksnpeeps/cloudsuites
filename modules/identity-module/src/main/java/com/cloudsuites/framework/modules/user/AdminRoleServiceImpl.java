@@ -47,9 +47,9 @@ public class AdminRoleServiceImpl implements AdminRoleService {
             return new NotFoundResponseException("Admin not found");
         });
         admin.setRole(adminRole);
-        logger.info("Admin role updated for adminId: {}", adminId);
+        logger.debug("Admin found: {}", admin);
         cleaupAdminRoles(List.of(admin));
-        userRoleRepository.save(admin.getUserRole());
+        logger.info("Admin role updated for adminId: {}", adminId);
         return adminRepository.save(admin);
     }
 
@@ -99,13 +99,16 @@ public class AdminRoleServiceImpl implements AdminRoleService {
             List<UserRole> roles = userRoleRepository.findUserRoleByPersonaId(admin.getAdminId());
             logger.debug("AdminId: {} has {} roles", admin.getAdminId(), roles.size());
             if (roles.size() > 1) {
+                logger.debug("Deleting all roles for adminId: {}", admin.getAdminId());
                 userRoleRepository.deleteAll(roles);
                 logger.info("Deleted all roles for adminId: {}", admin.getAdminId());
             } else if (roles.size() == 1 && !roles.get(0).getRole().equals(admin.getRole().name())) {
+                logger.debug("Deleting role for adminId: {} and saving new role", admin.getAdminId());
                 userRoleRepository.delete(roles.get(0));
                 userRoleRepository.save(admin.getUserRole());
                 logger.info("Deleted role for adminId: {} and saved new role", admin.getAdminId());
             } else if (roles.isEmpty()) {
+                logger.debug("No roles found for adminId: {} saving new role", admin.getAdminId());
                 userRoleRepository.save(admin.getUserRole());
                 logger.info("Saved role for adminId: {} as no previous roles existed", admin.getAdminId());
             }
