@@ -40,6 +40,9 @@ public class Owner {
     @Enumerated(EnumType.STRING)
     private OwnerStatus status;
 
+    @Enumerated(EnumType.STRING)
+    private OwnerRole role;
+
     public Owner() {
         this.isPrimaryTenant = false;
         this.status = OwnerStatus.INACTIVE;// Default value
@@ -54,7 +57,7 @@ public class Owner {
         userRole.setIdentityId(this.getIdentity().getUserId());
         userRole.setPersonaId(this.ownerId);
         userRole.setUserType(UserType.OWNER);
-        userRole.setRole(UserType.OWNER.name());
+        userRole.setRole(this.role.name());
         return userRole;
     }
 
@@ -73,4 +76,10 @@ public class Owner {
         unit.setOwner(this);
     }
 
+    public void updateOwner(Owner owner) {
+        if (this.isPrimaryTenant != owner.getIsPrimaryTenant()) {
+            logger.debug("Updating isPrimaryTenant from {} to {}", this.isPrimaryTenant, owner.getIsPrimaryTenant());
+            this.isPrimaryTenant = owner.getIsPrimaryTenant();
+        }
+    }
 }

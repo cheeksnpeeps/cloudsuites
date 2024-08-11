@@ -195,10 +195,15 @@ public class OwnerServiceImpl implements OwnerService {
 
     @Override
     public Owner updateOwner(String ownerId, Owner owner) throws NotFoundResponseException {
-        if (ownerRepository.findById(ownerId).isEmpty()) {
-            logger.error("Owner not found with ID: {}", ownerId);
-            throw new NotFoundResponseException("Owner not found with ID: " + ownerId);
-        }
+        Owner existingOwner = ownerRepository.findById(ownerId)
+                .orElseThrow(() -> {
+                    logger.error("Owner not found with ID: {}", ownerId);
+                    return new NotFoundResponseException("Owner not found with ID: " + ownerId);
+                });
+        existingOwner.getIdentity().updateIdentity(owner.getIdentity());
+        userService.updateUser(existingOwner.getIdentity().getUserId(), existingOwner.getIdentity());
+
+        existingOwner.updateOwner(owner);
         logger.info("Updating owner with ID: {}", ownerId);
         Owner updatedOwner = ownerRepository.save(owner);
         logger.info("Owner updated successfully with ID: {}", updatedOwner.getOwnerId());
