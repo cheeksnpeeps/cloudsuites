@@ -1,5 +1,6 @@
 package com.cloudsuites.framework.webapp.rest.user.dto;
 
+import com.cloudsuites.framework.services.property.personas.entities.OwnerRole;
 import com.cloudsuites.framework.services.property.personas.entities.OwnerStatus;
 import com.cloudsuites.framework.webapp.rest.property.dto.UnitDto;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
@@ -21,11 +22,11 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class OwnerDto {
 
-    @JsonView({Views.OwnerView.class, Views.TenantView.class, Views.UnitView.class})
+    @JsonView({Views.RoleView.class, Views.OwnerView.class, Views.TenantView.class, Views.UnitView.class})
     @Schema(hidden = true)
     private String ownerId;
 
-    @JsonView({Views.OwnerView.class, Views.TenantView.class, Views.UnitView.class})
+    @JsonView({Views.RoleView.class, Views.OwnerView.class, Views.TenantView.class, Views.UnitView.class})
     @Schema(description = "Owner's identity details")
     @Valid // Ensure that the Identity object is validated
     @NotNull(message = "Identity is required")
@@ -39,7 +40,11 @@ public class OwnerDto {
     @JsonView(Views.OwnerView.class)
     private Boolean isPrimaryTenant;
 
-    @JsonView(Views.OwnerView.class)
+    @JsonView({Views.RoleView.class, Views.OwnerView.class})
     @Schema(description = "Owner status", example = "ACTIVE")
     private OwnerStatus status;
+
+    @JsonView({Views.RoleView.class, Views.OwnerView.class})
+    @Schema(description = "Owner role", example = "DEFAULT")
+    private OwnerRole role;
 }
