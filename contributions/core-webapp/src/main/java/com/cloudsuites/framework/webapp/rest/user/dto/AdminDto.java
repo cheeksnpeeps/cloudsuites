@@ -19,22 +19,22 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class AdminDto {
 
-    @JsonView({Views.AdminView.class, Views.AdminRoleView.class})
+    @JsonView({Views.AdminView.class, Views.RoleView.class})
     @Schema(hidden = true)
     private String adminId;
 
-    @JsonView({Views.AdminView.class, Views.AdminRoleView.class})
+    @JsonView({Views.AdminView.class, Views.RoleView.class})
     @Schema(description = "Admin identity details")
     @Valid // Ensure that the Identity object is validated
     @NotNull(message = "Identity is required")
     private IdentityDto identity;
 
-    @JsonView({Views.AdminRoleView.class, Views.AdminView.class})
+    @JsonView({Views.RoleView.class, Views.AdminView.class})
     @Schema(description = "Admin status", example = "ACTIVE")
     @NotNull(message = "Status is required")
     private AdminStatus status;
 
-    @JsonView({Views.AdminRoleView.class, Views.AdminView.class})
+    @JsonView({Views.RoleView.class, Views.AdminView.class})
     @Schema(description = "Role of the admin", example = "SUPER_ADMIN")
     @NotNull(message = "Role is required")
     private AdminRole role;

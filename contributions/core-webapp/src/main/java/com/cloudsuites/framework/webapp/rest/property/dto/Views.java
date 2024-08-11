@@ -28,6 +28,6 @@ public class Views {
     public class AdminView {
     }
 
-    public class AdminRoleView {
+    public class RoleView {
     }
 }
