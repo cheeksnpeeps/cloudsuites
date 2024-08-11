@@ -1,11 +1,11 @@
 package com.cloudsuites.framework.webapp.authentication.utils;
 
 import com.cloudsuites.framework.services.otp.OtpService;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
-@Configuration
+@TestConfiguration
 @Profile("test")
 public class TestTwilioConfig {
 
