@@ -1,5 +1,6 @@
 package com.cloudsuites.framework.webapp.rest.user.dto;
 
+import com.cloudsuites.framework.services.property.personas.entities.TenantRole;
 import com.cloudsuites.framework.services.property.personas.entities.TenantStatus;
 import com.cloudsuites.framework.webapp.rest.property.dto.BuildingDto;
 import com.cloudsuites.framework.webapp.rest.property.dto.UnitDto;
@@ -54,6 +55,10 @@ public class TenantDto{
     @Schema(description = "Tenant status", example = "ACTIVE")
     @JsonView({Views.TenantView.class, Views.UnitView.class, Views.OwnerView.class})
     private TenantStatus status;
+
+    @Schema(description = "Tenant role", example = "DEFAULT")
+    @JsonView({Views.TenantView.class, Views.UnitView.class, Views.OwnerView.class})
+    private TenantRole role;
 
     public TenantDto() {
         this.isPrimaryTenant = false; // Default value
