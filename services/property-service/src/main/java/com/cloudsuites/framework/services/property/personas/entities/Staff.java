@@ -15,6 +15,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.List;
+import java.util.Objects;
 
 @Getter
 @Setter
@@ -57,7 +58,7 @@ public class Staff {
         userRole.setIdentityId(this.getIdentity().getUserId());
         userRole.setPersonaId(this.staffId);
         userRole.setUserType(UserType.STAFF);
-        userRole.setRole(this.role.name());
+        userRole.setRole(Objects.requireNonNullElse(role, StaffRole.DEFAULT).name());
         return userRole;
     }
 

@@ -15,6 +15,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 @Data
 @Entity
@@ -57,7 +58,7 @@ public class Owner {
         userRole.setIdentityId(this.getIdentity().getUserId());
         userRole.setPersonaId(this.ownerId);
         userRole.setUserType(UserType.OWNER);
-        userRole.setRole(this.role.name());
+        userRole.setRole(Objects.requireNonNullElse(role, OwnerRole.DEFAULT).name());
         return userRole;
     }
 
