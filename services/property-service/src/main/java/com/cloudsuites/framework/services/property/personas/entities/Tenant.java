@@ -50,6 +50,9 @@ public class Tenant {
     @Enumerated(EnumType.STRING)
     private TenantStatus status;
 
+    @Enumerated(EnumType.STRING)
+    private TenantRole role;
+
     public List<GrantedAuthority> getAuthorities() {
         return Collections.singletonList(new SimpleGrantedAuthority(UserType.TENANT.name()));
     }
@@ -59,19 +62,29 @@ public class Tenant {
         userRole.setIdentityId(this.getIdentity().getUserId());
         userRole.setPersonaId(this.tenantId);
         userRole.setUserType(UserType.TENANT);
-        userRole.setRole(UserType.TENANT.name());
+        userRole.setRole(this.role.name());
         return userRole;
     }
 
     public Tenant() {
         this.isOwner = false; // Default value
         this.isPrimaryTenant = false;
-        this.status = TenantStatus.INACTIVE;// Default value
     }
 
     @PrePersist
     public void onCreate() {
         this.tenantId = IdGenerator.generateULID("TN-");
         logger.debug("Generated tenantId: {}", this.tenantId);
+    }
+
+    public void updateTenant(Tenant tenant) {
+        if (!this.isPrimaryTenant.equals(tenant.isPrimaryTenant)) {
+            logger.debug("Updating primary tenant status from {} to {}", this.isPrimaryTenant, tenant.isPrimaryTenant);
+            this.isPrimaryTenant = tenant.isPrimaryTenant;
+        }
+        if (!this.isOwner.equals(tenant.isOwner)) {
+            logger.debug("Updating owner status from {} to {}", this.isOwner, tenant.isOwner);
+            this.isOwner = tenant.isOwner;
+        }
     }
 }

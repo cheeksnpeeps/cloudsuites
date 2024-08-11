@@ -168,6 +168,7 @@ public class TenantServiceImpl implements TenantService {
             logger.debug("Updating tenant identity.");
             existingTenant.getIdentity().updateIdentity(tenant.getIdentity());
             userService.updateUser(existingTenant.getIdentity().getUserId(), existingTenant.getIdentity());
+            existingTenant.updateTenant(tenant);
             logger.debug("Updated Tenant Identity: {}", existingTenant.getIdentity().getUserId());
         } else {
             logger.debug("No identity update required.");

@@ -1,6 +1,7 @@
 package com.cloudsuites.framework.modules.property.personas.repository;
 
 import com.cloudsuites.framework.services.property.personas.entities.Tenant;
+import com.cloudsuites.framework.services.property.personas.entities.TenantRole;
 import com.cloudsuites.framework.services.property.personas.entities.TenantStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -32,4 +33,10 @@ public interface TenantRepository extends JpaRepository<Tenant, String> {
 
     @Transactional(readOnly = true)
     Optional<List<Tenant>> findByBuilding_BuildingIdAndStatus(String buildingId, TenantStatus status);
+
+    @Transactional(readOnly = true)
+    public List<Tenant> findByRole(TenantRole tenantRole);
+
+    @Transactional(readOnly = true)
+    List<Tenant> findByRoleAndStatus(TenantRole tenantRole, TenantStatus status);
 }
