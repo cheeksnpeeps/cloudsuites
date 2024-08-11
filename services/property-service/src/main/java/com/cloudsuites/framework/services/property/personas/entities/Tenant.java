@@ -16,6 +16,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 @Getter
 @Setter
@@ -62,7 +63,7 @@ public class Tenant {
         userRole.setIdentityId(this.getIdentity().getUserId());
         userRole.setPersonaId(this.tenantId);
         userRole.setUserType(UserType.TENANT);
-        userRole.setRole(this.role.name());
+        userRole.setRole(Objects.requireNonNullElse(role, TenantRole.DEFAULT).name());
         return userRole;
     }
 

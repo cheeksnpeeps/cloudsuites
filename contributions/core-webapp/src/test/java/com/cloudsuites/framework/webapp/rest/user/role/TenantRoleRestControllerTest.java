@@ -92,7 +92,7 @@ class TenantRoleRestControllerTest {
                 .andExpect(result -> {
                     String jsonResponse = result.getResponse().getContentAsString();
                     List<TenantDto> tenantDtos = objectMapper.readValue(jsonResponse, objectMapper.getTypeFactory().constructCollectionType(List.class, TenantDto.class));
-                    assertThat(tenantDtos).hasSize(2); // One tenant created in setup
+                    assertThat(tenantDtos).hasSize(1); // One tenant created in setup
                 });
     }
 

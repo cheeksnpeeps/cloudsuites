@@ -23,11 +23,11 @@ public class TenantDto{
     private String buildingId;
 
     @Schema(hidden = true)
-    @JsonView({Views.TenantView.class, Views.UnitView.class, Views.OwnerView.class})
+    @JsonView({Views.RoleView.class, Views.TenantView.class, Views.UnitView.class, Views.OwnerView.class})
     private String tenantId;
 
     @Schema(description = "Identity of the tenant")
-    @JsonView({Views.TenantView.class, Views.UnitView.class, Views.OwnerView.class})
+    @JsonView({Views.RoleView.class, Views.TenantView.class, Views.UnitView.class, Views.OwnerView.class})
     @Valid // Ensure that the Identity object is validated
     @NotNull(message = "Identity is required")
     private IdentityDto identity;
@@ -53,16 +53,15 @@ public class TenantDto{
     private OwnerDto owner;
 
     @Schema(description = "Tenant status", example = "ACTIVE")
-    @JsonView({Views.TenantView.class, Views.UnitView.class, Views.OwnerView.class})
+    @JsonView({Views.RoleView.class, Views.TenantView.class, Views.UnitView.class, Views.OwnerView.class})
     private TenantStatus status;
 
     @Schema(description = "Tenant role", example = "DEFAULT")
-    @JsonView({Views.TenantView.class, Views.UnitView.class, Views.OwnerView.class})
+    @JsonView({Views.RoleView.class, Views.TenantView.class, Views.UnitView.class, Views.OwnerView.class})
     private TenantRole role;
 
     public TenantDto() {
         this.isPrimaryTenant = false; // Default value
         this.isOwner = false; // Default value
-        this.status = TenantStatus.INACTIVE;// Default value
     }
 }

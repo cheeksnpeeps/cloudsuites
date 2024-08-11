@@ -20,21 +20,22 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class StaffDto {
 
-    @JsonView(Views.StaffView.class)
+    @JsonView({Views.RoleView.class, Views.StaffView.class})
     @Schema(hidden = true)
     private String staffId;
 
-    @JsonView({Views.StaffView.class})
+    @JsonView({Views.RoleView.class, Views.StaffView.class})
     @Schema(description = "Owner's identity details")
     @Valid // Ensure that the Identity object is validated
     @NotNull(message = "Identity is required")
     private IdentityDto identity;
 
     @Valid // Ensure that the Identity object is validated
+    @JsonView({Views.RoleView.class, Views.StaffView.class})
     @NotNull(message = "Staff status is required")
     private StaffStatus status;
 
-    @JsonView(Views.StaffView.class)
+    @JsonView({Views.RoleView.class, Views.StaffView.class})
     @Schema(description = "Role of the staff", example = "BUILDING_SECURITY")
     @Valid // Ensure that the Identity object is validated
     @NotNull(message = "Staff role is required")

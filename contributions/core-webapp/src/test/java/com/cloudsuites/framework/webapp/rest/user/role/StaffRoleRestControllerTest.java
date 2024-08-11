@@ -92,7 +92,7 @@ class StaffRoleRestControllerTest {
                 .andExpect(result -> {
                     String jsonResponse = result.getResponse().getContentAsString();
                     List<StaffDto> staffDtos = objectMapper.readValue(jsonResponse, objectMapper.getTypeFactory().constructCollectionType(List.class, StaffDto.class));
-                    assertThat(staffDtos).hasSize(2); // One staff created in setup
+                    assertThat(staffDtos).hasSize(1); // One staff created in setup
                 });
     }
 

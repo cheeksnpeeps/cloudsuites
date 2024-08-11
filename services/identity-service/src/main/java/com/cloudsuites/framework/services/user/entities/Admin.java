@@ -9,6 +9,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.List;
+import java.util.Objects;
 
 @Data
 @Entity
@@ -42,7 +43,7 @@ public class Admin {
         userRole.setIdentityId(this.getIdentity().getUserId());
         userRole.setPersonaId(this.adminId);
         userRole.setUserType(UserType.ADMIN);
-        userRole.setRole(role.name());
+        userRole.setRole(Objects.requireNonNullElse(role, AdminRole.USER).name());
         return userRole;
     }
 
