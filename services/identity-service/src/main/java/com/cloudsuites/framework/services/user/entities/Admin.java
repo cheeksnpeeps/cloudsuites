@@ -51,4 +51,7 @@ public class Admin {
         this.adminId = IdGenerator.generateULID("ADM-");
         logger.debug("Generated adminId: {}", this.adminId);
     }
+
+    public void updateAdmin(Admin admin) {
+    }
 }

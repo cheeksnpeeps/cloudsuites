@@ -63,6 +63,8 @@ public class AdminServiceImpl implements AdminService {
 
         logger.info(IdentityConstants.Admin.LOG_UPDATING_ADMIN, adminId);
         savedAdmin.getIdentity().updateIdentity(admin.getIdentity());
+        userService.updateUser(savedAdmin.getIdentity().getUserId(), savedAdmin.getIdentity());
+        savedAdmin.updateAdmin(admin);
         Admin updatedAdmin = adminRepository.save(savedAdmin);
         logger.info(IdentityConstants.Admin.LOG_ADMIN_UPDATED, updatedAdmin.getAdminId());
         return updatedAdmin;
