@@ -127,7 +127,7 @@ public class StaffRestControllerTest {
     @Test
     void testCreateStaff_ValidData() throws Exception {
         StaffDto staff = new StaffDto();
-        staff.setStaffRole(StaffRole.BUILDING_SUPERVISOR);
+        staff.setRole(StaffRole.BUILDING_SUPERVISOR);
         staff.setStatus(StaffStatus.ACTIVE);
         IdentityDto identity = new IdentityDto();
         identity.setUsername("newStaff");
@@ -156,7 +156,7 @@ public class StaffRestControllerTest {
     @Test
     void testCreateStaff_ExistingUsername() throws Exception {
         StaffDto staff = new StaffDto();
-        staff.setStaffRole(StaffRole.BUILDING_SUPERVISOR);
+        staff.setRole(StaffRole.BUILDING_SUPERVISOR);
         staff.setStatus(StaffStatus.ACTIVE);
         IdentityDto identity = new IdentityDto();
         identity.setUsername("testStaff");
@@ -179,7 +179,7 @@ public class StaffRestControllerTest {
     @Test
     void testCreateBuildingStaff_ValidData() throws Exception {
         StaffDto staff = new StaffDto();
-        staff.setStaffRole(StaffRole.BUILDING_SUPERVISOR);
+        staff.setRole(StaffRole.BUILDING_SUPERVISOR);
         staff.setStatus(StaffStatus.ACTIVE);
         IdentityDto identity = new IdentityDto();
         identity.setUsername("buildingStaff");

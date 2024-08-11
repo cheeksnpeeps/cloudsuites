@@ -25,6 +25,6 @@ public enum StaffRole {
     @Schema(description = "Building Security")
     BUILDING_SECURITY,
 
-    ALL_STAFF, @Schema(description = "Other role")
+    ALL_STAFF, DELETED, @Schema(description = "Other role")
     OTHER
 }
