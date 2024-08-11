@@ -1,4 +1,4 @@
-package com.cloudsuites.framework.webapp.rest.user;
+package com.cloudsuites.framework.webapp.rest.user.role;
 
 import com.cloudsuites.framework.modules.user.repository.AdminRepository;
 import com.cloudsuites.framework.modules.user.repository.UserRepository;

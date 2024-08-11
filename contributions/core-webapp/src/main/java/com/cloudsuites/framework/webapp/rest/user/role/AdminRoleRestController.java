@@ -1,4 +1,4 @@
-package com.cloudsuites.framework.webapp.rest.user;
+package com.cloudsuites.framework.webapp.rest.user.role;
 
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import com.cloudsuites.framework.services.user.AdminRoleService;
@@ -44,7 +44,7 @@ public class AdminRoleRestController {
     @Operation(summary = "Get Admin by ID", description = "Retrieve admin details based on their ID")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Admin not found")
-    @JsonView(Views.AdminRoleView.class)  // Use the specific view for admin role
+    @JsonView(Views.RoleView.class)  // Use the specific view for admin role
     @GetMapping("/admins/{adminId}/roles")
     public ResponseEntity<AdminDto> getAdminRoleById(
             @Parameter(description = "ID of the admin to be retrieved") @PathVariable String adminId) throws NotFoundResponseException {
@@ -58,7 +58,7 @@ public class AdminRoleRestController {
     @Operation(summary = "Update Admin Role", description = "Update the role of an existing admin")
     @ApiResponse(responseCode = "200", description = "Admin role updated successfully", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Admin not found")
-    @JsonView(Views.AdminRoleView.class)  // Use the specific view for admin role
+    @JsonView(Views.RoleView.class)  // Use the specific view for admin role
     @PutMapping("/admins/{adminId}/roles")
     public ResponseEntity<AdminDto> updateAdminRole(
             @Parameter(description = "ID of the admin to be updated") @PathVariable String adminId,
@@ -85,7 +85,7 @@ public class AdminRoleRestController {
     @PreAuthorize("hasAuthority('SUPER_ADMIN')")
     @Operation(summary = "Get All Admins Roles", description = "Retrieve all admins roles")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
-    @JsonView(Views.AdminRoleView.class)  // Use the specific view for admin role
+    @JsonView(Views.RoleView.class)  // Use the specific view for admin role
     @GetMapping("/admins/roles")
     public ResponseEntity<List<AdminDto>> getAdminsRoles() {
         logger.debug("Getting all admins roles");
@@ -97,7 +97,7 @@ public class AdminRoleRestController {
     @PreAuthorize("hasAuthority('SUPER_ADMIN')")
     @Operation(summary = "Get Admins by Role", description = "Retrieve all admins with a specific role")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
-    @JsonView(Views.AdminRoleView.class)  // Use the specific view for admin role
+    @JsonView(Views.RoleView.class)  // Use the specific view for admin role
     @GetMapping("/admins/roles/{adminRole}")
     public ResponseEntity<List<AdminDto>> getAdminsByRole(
             @Parameter(description = "Admin role to filter by") @PathVariable AdminRole adminRole) {
@@ -110,7 +110,7 @@ public class AdminRoleRestController {
     @PreAuthorize("hasAuthority('SUPER_ADMIN')")
     @Operation(summary = "Get Admins by Role and Status", description = "Retrieve all admins with a specific role and status")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
-    @JsonView(Views.AdminRoleView.class)  // Use the specific view for admin role
+    @JsonView(Views.RoleView.class)  // Use the specific view for admin role
     @GetMapping("/admins/roles/{adminRole}/status/{status}")
     public ResponseEntity<List<AdminDto>> getAdminsByRoleAndStatus(
             @Parameter(description = "Admin role to filter by") @PathVariable AdminRole adminRole,
