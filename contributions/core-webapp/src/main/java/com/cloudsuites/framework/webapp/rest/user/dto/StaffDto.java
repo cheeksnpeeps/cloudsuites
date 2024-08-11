@@ -38,7 +38,7 @@ public class StaffDto {
     @Schema(description = "Role of the staff", example = "BUILDING_SECURITY")
     @Valid // Ensure that the Identity object is validated
     @NotNull(message = "Staff role is required")
-    private StaffRole staffRole;
+    private StaffRole role;
 
     @JsonView(Views.StaffView.class)
     @Schema(hidden = true)
