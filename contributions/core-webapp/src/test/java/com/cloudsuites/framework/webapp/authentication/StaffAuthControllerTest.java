@@ -87,7 +87,7 @@ class StaffAuthControllerTest {
     @Test
     void testRegisterStaff_ValidData() throws Exception {
         StaffDto newStaffDto = new StaffDto();
-        newStaffDto.setStaffRole(StaffRole.BUILDING_SUPERVISOR);
+        newStaffDto.setRole(StaffRole.BUILDING_SUPERVISOR);
         newStaffDto.setStatus(StaffStatus.ACTIVE);
         IdentityDto identity = new IdentityDto();
         identity.setUsername("testRegisterStaff");
@@ -110,7 +110,7 @@ class StaffAuthControllerTest {
     @ValueSource(strings = {"", " "})
     void testRegisterStaff_InvalidData_EmptyUsername(String invalidUsername) throws Exception {
         StaffDto newStaffDto = new StaffDto();
-        newStaffDto.setStaffRole(StaffRole.BUILDING_SUPERVISOR);
+        newStaffDto.setRole(StaffRole.BUILDING_SUPERVISOR);
         newStaffDto.setStatus(StaffStatus.ACTIVE);
         IdentityDto identity = new IdentityDto();
         identity.setUsername(invalidUsername); // Invalid username

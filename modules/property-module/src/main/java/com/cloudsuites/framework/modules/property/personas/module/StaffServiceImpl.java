@@ -95,6 +95,7 @@ public class StaffServiceImpl implements StaffService {
                 });
     }
 
+    @Transactional
     @Override
     public Staff getStaffById(String staffId) throws NotFoundResponseException {
         logger.info("Fetching staff with ID: {}", staffId);
@@ -108,8 +109,15 @@ public class StaffServiceImpl implements StaffService {
     @Override
     public Staff updateStaff(String staffId, Staff staff) throws NotFoundResponseException {
         logger.info("Updating staff with ID: {}", staffId);
-        Staff existingStaff = getStaffById(staffId);
-        existingStaff.setIdentity(staff.getIdentity());
+        Staff existingStaff = staffRepository.findById(staffId)
+                .orElseThrow(() -> {
+                    logger.error("Staff not found with ID: {}", staffId);
+                    return new NotFoundResponseException("Staff not found with ID: " + staffId);
+                });
+        existingStaff.getIdentity().updateIdentity(staff.getIdentity());
+        userService.updateUser(existingStaff.getIdentity().getUserId(), existingStaff.getIdentity());
+
+        existingStaff.updateStaff(staff);
         // Update other fields as necessary
         Staff updatedStaff = staffRepository.save(existingStaff);
         logger.info("Staff updated successfully with ID: {}", updatedStaff.getStaffId());

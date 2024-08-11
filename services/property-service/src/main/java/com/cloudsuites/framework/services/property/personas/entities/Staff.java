@@ -57,7 +57,7 @@ public class Staff {
         userRole.setIdentityId(this.getIdentity().getUserId());
         userRole.setPersonaId(this.staffId);
         userRole.setUserType(UserType.STAFF);
-        userRole.setRole(role.name());
+        userRole.setRole(this.role.name());
         return userRole;
     }
 
@@ -65,5 +65,8 @@ public class Staff {
     public void onCreate() {
         this.staffId = IdGenerator.generateULID("ST-");
         logger.debug("Generated staffId: {}", this.staffId);
+    }
+
+    public void updateStaff(Staff staff) {
     }
 }
