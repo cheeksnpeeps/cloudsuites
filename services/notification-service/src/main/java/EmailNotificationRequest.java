@@ -1,0 +1,2 @@
+public class EmailNotificationRequest {
+}
