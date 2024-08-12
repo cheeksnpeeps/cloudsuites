@@ -3,17 +3,11 @@ package com.cloudsuites.framework.services.notification;
 import org.springframework.stereotype.Service;
 
 @Service
-public class NotificationService {
+public interface NotificationService {
 
-    public void sendPushNotification(PushNotificationRequest request) {
-        // Logic to send push notification using Firebase or other service
-    }
+    void sendPushNotification(PushNotificationRequest request);
 
-    public void sendEmailNotification(EmailNotificationRequest request) {
-        // Logic to send email notification using Spring Mail
-    }
+    void sendEmailNotification(EmailNotificationRequest request);
 
-    public void sendSmsNotification(SmsNotificationRequest request) {
-        // Logic to send SMS using Twilio or other SMS gateway
-    }
+    void sendSmsNotification(SmsNotificationRequest request);
 }

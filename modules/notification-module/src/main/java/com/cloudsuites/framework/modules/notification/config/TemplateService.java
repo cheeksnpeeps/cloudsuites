@@ -1,4 +1,4 @@
-package com.cloudsuites.framework.services.notification;
+package com.cloudsuites.framework.modules.notification.config;
 
 import org.springframework.stereotype.Component;
 
