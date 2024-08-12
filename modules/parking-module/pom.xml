@@ -22,7 +22,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.cloudsuites.framework.services</groupId>
-			<artifactId>parking-service</artifactId>
+			<artifactId>notification-service</artifactId>
 			<version>${core.version}</version>
 		</dependency>
 	</dependencies>

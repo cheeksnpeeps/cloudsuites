@@ -15,6 +15,7 @@
 	<name>CloudSuites - Framework - Services</name>
 	<modules>
 		<module>common-service</module>
+		<module>notification-service</module>
 		<module>parking-service</module>
 		<module>property-service</module>
 		<module>identity-service</module>
