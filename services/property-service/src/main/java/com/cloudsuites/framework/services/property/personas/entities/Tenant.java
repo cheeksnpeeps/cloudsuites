@@ -2,6 +2,7 @@ package com.cloudsuites.framework.services.property.personas.entities;
 
 import com.cloudsuites.framework.modules.common.utils.IdGenerator;
 import com.cloudsuites.framework.services.property.features.entities.Building;
+import com.cloudsuites.framework.services.property.features.entities.Lease;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.user.entities.Identity;
 import com.cloudsuites.framework.services.user.entities.UserRole;
@@ -53,6 +54,10 @@ public class Tenant {
 
     @Enumerated(EnumType.STRING)
     private TenantRole role;
+
+    @OneToOne(optional = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "lease_id")
+    private Lease lease;
 
     public List<GrantedAuthority> getAuthorities() {
         return Collections.singletonList(new SimpleGrantedAuthority(UserType.TENANT.name()));
