@@ -80,11 +80,13 @@ public class UnitRestControllerTest {
         // Create multiple Unit entities
         Unit unit1 = new Unit();
         unit1.setUnitNumber(101);
+        unit1.setNumberOfBedrooms(3);
         unit1.setBuilding(building);
         unitService.saveUnit(unit1);
 
         Unit unit2 = new Unit();
         unit2.setUnitNumber(102);
+        unit2.setNumberOfBedrooms(3);
         unit2.setBuilding(building);
         unitService.saveUnit(unit2);
 
@@ -100,6 +102,7 @@ public class UnitRestControllerTest {
         // Create a Unit entity
         Unit unit = new Unit();
         unit.setUnitNumber(102);
+        unit.setNumberOfBedrooms(3);
         unit.setBuilding(building);
         unit = unitService.saveUnit(unit); // Save and retrieve the unit
 
@@ -123,6 +126,7 @@ public class UnitRestControllerTest {
         // Create a Unit entity
         Unit unit = new Unit();
         unit.setUnitNumber(103);
+        unit.setNumberOfBedrooms(3);
         unit.setBuilding(building);
         unit = unitService.saveUnit(unit); // Save the unit
 
