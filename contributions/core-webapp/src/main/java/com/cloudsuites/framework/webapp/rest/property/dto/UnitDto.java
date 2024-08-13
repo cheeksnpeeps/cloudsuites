@@ -41,6 +41,13 @@ public class UnitDto {
 	@Max(value = 99999, message = "Unit number must be no more than 5 digits")
 	private Integer unitNumber;
 
+	@Schema(description = "Number of bedrooms in the unit", example = "2")
+	@JsonView({Views.UnitView.class, Views.FloorView.class, Views.TenantView.class, Views.OwnerView.class})
+	@NotNull(message = "Number of bedrooms must be provided")
+	@Min(value = 1, message = "Number of bedrooms must be at least 0")
+	@Max(value = 99, message = "Number of bedrooms must be no more than 99")
+	private Integer numberOfBedrooms;
+
 	@Schema(description = "Tenants of the unit")
 	@JsonView({Views.UnitView.class, Views.OwnerView.class})
 	private List<TenantDto> tenants;
