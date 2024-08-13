@@ -43,6 +43,9 @@ public class Unit {
 	@Column(name = "square_footage")
 	private Double squareFootage;
 
+	@Column(name = "number_of_bedrooms")
+	private Integer numberOfBedrooms;
+
 	@PrePersist
 	protected void onCreate() {
 		this.unitId = IdGenerator.generateULID("UN-");

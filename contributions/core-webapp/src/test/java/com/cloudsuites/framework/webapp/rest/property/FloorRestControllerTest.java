@@ -141,6 +141,7 @@ class FloorRestControllerTest {
         newFloorDto.setFloorNumber(2);
         UnitDto unit = new UnitDto();
         unit.setUnitNumber(201);
+        unit.setNumberOfBedrooms(3);
         newFloorDto.setUnits(List.of(unit));
 
         mockMvc.perform(withAuth(post("/api/v1/buildings/{buildingId}/floors", validBuildingId))
@@ -235,6 +236,7 @@ class FloorRestControllerTest {
         floor.setFloorNumber(1);
         Unit unit = new Unit();
         unit.setUnitNumber(101);
+        unit.setNumberOfBedrooms(3);
         unit.setFloor(floor);
         floor.addUnit(unit);
         // Set other properties as needed
