@@ -62,11 +62,20 @@ public class TenantRestController {
     public ResponseEntity<TenantDto> createTenant(@Valid @RequestBody @Parameter(description = "Tenant details") TenantDto tenantDto,
                                                   @PathVariable String buildingId,
                                                   @PathVariable String unitId) throws InvalidOperationException, UsernameAlreadyExistsException, NotFoundResponseException {
+
         Unit unit = validateBuildingAndUnit(buildingId, unitId);
-        logger.debug(WebAppConstants.Tenant.LOG_REGISTERING_TENANT, tenantDto.getIdentity().getUsername());
+        // Log the phone number of the tenant being registered
+        logger.debug("Registering tenant with phone number: {}", tenantDto.getIdentity().getFirstName());
+
+        // Convert TenantDto to Tenant entity
         Tenant tenant = tenantMapper.convertToEntity(tenantDto);
-        tenant = tenantService.createTenant(tenant, unit);
-        logger.info(WebAppConstants.Tenant.LOG_TENANT_REGISTERED_SUCCESS, tenant.getTenantId(), tenantDto.getIdentity().getUsername());
+        // Set the building information for the tenant
+        tenant.setBuilding(buildingService.getBuildingById(buildingId));
+        logger.debug("Assigned building ID to tenant: {}", tenant.getBuilding() != null ? tenant.getBuilding().getBuildingId() : "null");
+
+        Tenant createdTenant = tenantService.createTenant(tenant, unit);
+        logger.debug("Created tenant with ID: {}", tenant.getTenantId());
+
         return ResponseEntity.status(HttpStatus.CREATED).body(tenantMapper.convertToDTO(tenant));
     }
 

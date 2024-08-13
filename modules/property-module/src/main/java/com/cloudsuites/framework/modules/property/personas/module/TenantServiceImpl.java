@@ -1,11 +1,13 @@
 package com.cloudsuites.framework.modules.property.personas.module;
 
+import com.cloudsuites.framework.modules.property.features.repository.LeaseRepository;
 import com.cloudsuites.framework.modules.property.features.repository.UnitRepository;
 import com.cloudsuites.framework.modules.property.personas.repository.TenantRepository;
 import com.cloudsuites.framework.modules.user.repository.UserRoleRepository;
 import com.cloudsuites.framework.services.common.exception.InvalidOperationException;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
+import com.cloudsuites.framework.services.property.features.entities.Lease;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.property.features.service.UnitService;
 import com.cloudsuites.framework.services.property.personas.entities.Tenant;
@@ -34,18 +36,24 @@ public class TenantServiceImpl implements TenantService {
     private final OwnerService ownerService;
     private final UnitRepository unitRepository;
     private final UserRoleRepository userRoleRepository;
+    private final LeaseRepository leaseRepository;
 
-    public TenantServiceImpl(TenantRepository tenantRepository, UserService userService, UnitService unitService, OwnerService ownerService, UnitRepository unitRepository, UserRoleRepository userRoleRepository) {
+    public TenantServiceImpl(TenantRepository tenantRepository, UserService userService, UnitService unitService, OwnerService ownerService, UnitRepository unitRepository, UserRoleRepository userRoleRepository, LeaseRepository leaseRepository) {
         this.tenantRepository = tenantRepository;
         this.userService = userService;
         this.unitService = unitService;
         this.ownerService = ownerService;
         this.unitRepository = unitRepository;
         this.userRoleRepository = userRoleRepository;
+        this.leaseRepository = leaseRepository;
     }
 
     @Override
     public Tenant createTenant(Tenant tenant, Unit unit) throws NotFoundResponseException, InvalidOperationException, UsernameAlreadyExistsException {
+        if (Boolean.TRUE.equals(tenant.getIsPrimaryTenant())) {
+            logger.debug("Tenant is marked as primary. Clearing existing tenants for unit: {}", unit.getUnitId());
+            clearExistingTenants(unit);
+        }
         // Log the start of the tenant creation process
         logger.debug("Starting tenant creation process for tenant: {}", tenant);
 
@@ -85,9 +93,51 @@ public class TenantServiceImpl implements TenantService {
 
         unit.addTenant(savedTenant);
         unitRepository.save(unit);
+
+        // Handle owner registration if applicable
+        if (tenant.getIsOwner() != null && tenant.getIsOwner()) {
+            logger.debug("Tenant is also an owner. Creating or updating owner record.");
+            ownerService.createOrUpdateOwner(savedTenant);
+            logger.debug("Owner record created or updated for tenant ID: {}", tenant.getTenantId());
+        } else {
+            logger.debug("Tenant is not an owner. Skipping owner registration.");
+        }
         // Log success and return the saved tenant
         logger.info("Tenant created successfully with ID: {}", savedTenant.getTenantId());
         return savedTenant;
+    }
+
+    private void clearExistingTenants(Unit unit) {
+        logger.debug("Tenant is marked as primary. Fetching existing tenants for unit: {}", unit.getUnitId());
+
+        // Fetch existing tenants for the specified building and unit
+        Optional<List<Tenant>> existingTenants = tenantRepository.findByBuilding_BuildingIdAndUnit_UnitIdAndStatus(unit.getBuilding().getBuildingId(), unit.getUnitId(), TenantStatus.ACTIVE);
+        if (existingTenants.isEmpty()) {
+            logger.debug("No existing tenants found for unit: {}", unit.getUnitId());
+            return;
+        }
+        logger.debug("Existing tenants for unit {}: {}", unit.getUnitId(), existingTenants.get());
+        // Deactivate existing tenants if the new tenant is primary
+        for (Tenant existingTenant : existingTenants.get()) {
+            existingTenant.setStatus(TenantStatus.INACTIVE);
+            tenantRepository.save(existingTenant);
+            logger.debug("Deactivated existing tenant ID: {}", existingTenant.getTenantId());
+        }
+    }
+
+    private void registerLease(Tenant tenant, Unit unit) {
+        Lease lease = leaseRepository.findByTenantIdAndUnitIdAndOwnerId(tenant.getTenantId(), unit.getUnitId(), unit.getOwner().getOwnerId());
+        if (lease != null) {
+            logger.info("Lease already exists for tenant: {} and unit: {}", tenant.getTenantId(), unit.getUnitId());
+            lease.updateLease(tenant.getLease());
+            leaseRepository.save(lease);
+            return;
+        }
+        lease = tenant.getLease();
+        lease.setTenantId(tenant.getTenantId());
+        lease.setUnitId(unit.getUnitId());
+        lease.setOwnerId(unit.getOwner().getOwnerId());
+        leaseRepository.save(lease);
     }
 
     @Override
