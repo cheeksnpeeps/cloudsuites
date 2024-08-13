@@ -3,23 +3,51 @@ package com.cloudsuites.framework.modules.notification.config;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
+import com.google.firebase.messaging.FirebaseMessaging;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 @Configuration
+@EnableConfigurationProperties(FirebaseProperties.class)
 public class FirebaseConfig {
 
-    @Bean
-    public FirebaseApp firebaseApp() throws IOException {
-        FileInputStream serviceAccount = new FileInputStream("path/to/serviceAccountKey.json");
+    private final FirebaseProperties firebaseProperties;
 
-        FirebaseOptions options = new FirebaseOptions.Builder()
-                .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+    public FirebaseConfig(FirebaseProperties firebaseProperties) {
+        this.firebaseProperties = firebaseProperties;
+    }
+
+    @Bean
+    GoogleCredentials googleCredentials() {
+        try {
+            if (firebaseProperties.getServiceAccount() != null) {
+                try (InputStream is = firebaseProperties.getServiceAccount().getInputStream()) {
+                    return GoogleCredentials.fromStream(is);
+                }
+            } else {
+                // Use standard credentials chain. Useful when running inside GKE
+                return GoogleCredentials.getApplicationDefault();
+            }
+        } catch (IOException ioe) {
+            throw new RuntimeException(ioe);
+        }
+    }
+
+    @Bean
+    FirebaseApp firebaseApp(GoogleCredentials credentials) {
+        FirebaseOptions options = FirebaseOptions.builder()
+                .setCredentials(credentials)
                 .build();
 
         return FirebaseApp.initializeApp(options);
+    }
+
+    @Bean
+    FirebaseMessaging firebaseMessaging(FirebaseApp firebaseApp) {
+        return FirebaseMessaging.getInstance(firebaseApp);
     }
 }
