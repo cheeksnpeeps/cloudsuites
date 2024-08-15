@@ -5,7 +5,7 @@ import com.cloudsuites.framework.modules.property.features.repository.UnitReposi
 import com.cloudsuites.framework.modules.property.personas.repository.TenantRepository;
 import com.cloudsuites.framework.modules.user.repository.AdminRepository;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
-import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
+import com.cloudsuites.framework.services.common.exception.UserAlreadyExistsException;
 import com.cloudsuites.framework.services.property.features.entities.Building;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.property.personas.entities.Tenant;
@@ -144,7 +144,7 @@ class TenantRestControllerTest {
                 .andExpect(result -> {
                     String jsonResponse = result.getResponse().getContentAsString();
                     TenantDto tenantDto = objectMapper.readValue(jsonResponse, TenantDto.class);
-                    assertThat(tenantDto.getIdentity().getUsername()).isEqualTo("newTenant"); // Validate the created tenant username
+                    assertThat(tenantDto.getIdentity().getEmail()).isEqualTo("newTenant"); // Validate the created tenant username
                 });
     }
 
@@ -234,10 +234,10 @@ class TenantRestControllerTest {
         adminRepository.deleteAll();
     }
 
-    private Tenant createTenant(String unitId) throws UsernameAlreadyExistsException {
+    private Tenant createTenant(String unitId) throws UserAlreadyExistsException {
         Tenant tenant = new Tenant();
         Identity identity = new Identity();
-        identity.setUsername("TenantA");
+        identity.setEmail("tenantA@gmail.com");
         identity = userService.createUser(identity);
         tenant.setIdentity(identity);
         Unit unit = unitRepository.findById(unitId).orElseThrow();

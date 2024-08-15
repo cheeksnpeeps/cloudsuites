@@ -2,7 +2,7 @@ package com.cloudsuites.framework.services.property.personas.service;
 
 import com.cloudsuites.framework.services.common.exception.InvalidOperationException;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
-import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
+import com.cloudsuites.framework.services.common.exception.UserAlreadyExistsException;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.property.personas.entities.Tenant;
 import com.cloudsuites.framework.services.property.personas.entities.TenantStatus;
@@ -33,7 +33,7 @@ public interface TenantService {
     Tenant findByUserId(String userId) throws NotFoundResponseException;
 
     @Transactional
-    Tenant createTenant(Tenant tenant, Unit unit) throws NotFoundResponseException, InvalidOperationException, UsernameAlreadyExistsException;
+    Tenant createTenant(Tenant tenant, Unit unit) throws NotFoundResponseException, InvalidOperationException, UserAlreadyExistsException;
 
     @Transactional
     void deleteByTenantId(String tenantId);

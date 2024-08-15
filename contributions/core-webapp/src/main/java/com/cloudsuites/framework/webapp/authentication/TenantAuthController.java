@@ -3,7 +3,7 @@ package com.cloudsuites.framework.webapp.authentication;
 import com.cloudsuites.framework.modules.jwt.JwtTokenProvider;
 import com.cloudsuites.framework.services.common.exception.InvalidOperationException;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
-import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
+import com.cloudsuites.framework.services.common.exception.UserAlreadyExistsException;
 import com.cloudsuites.framework.services.otp.OtpService;
 import com.cloudsuites.framework.services.property.features.entities.Building;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
@@ -89,7 +89,7 @@ public class TenantAuthController {
     public ResponseEntity<TenantDto> registerTenant(
             @PathVariable String buildingId,
             @PathVariable String unitId,
-            @Valid @RequestBody @Parameter(description = "Tenant registration details") TenantDto tenantDto) throws NotFoundResponseException, UsernameAlreadyExistsException, InvalidOperationException {
+            @Valid @RequestBody @Parameter(description = "Tenant registration details") TenantDto tenantDto) throws NotFoundResponseException, UserAlreadyExistsException, InvalidOperationException {
         Unit unit = validateBuildingAndUnit(buildingId, unitId);
         // Log the phone number of the tenant being registered
         logger.debug("Registering tenant with phone number: {}", tenantDto.getIdentity().getPhoneNumber());

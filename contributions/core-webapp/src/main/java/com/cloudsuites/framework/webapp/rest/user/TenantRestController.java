@@ -2,7 +2,7 @@ package com.cloudsuites.framework.webapp.rest.user;
 
 import com.cloudsuites.framework.services.common.exception.InvalidOperationException;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
-import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
+import com.cloudsuites.framework.services.common.exception.UserAlreadyExistsException;
 import com.cloudsuites.framework.services.property.features.entities.Building;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.property.features.service.BuildingService;
@@ -61,7 +61,7 @@ public class TenantRestController {
     @JsonView(Views.TenantView.class)
     public ResponseEntity<TenantDto> createTenant(@Valid @RequestBody @Parameter(description = "Tenant details") TenantDto tenantDto,
                                                   @PathVariable String buildingId,
-                                                  @PathVariable String unitId) throws InvalidOperationException, UsernameAlreadyExistsException, NotFoundResponseException {
+                                                  @PathVariable String unitId) throws InvalidOperationException, UserAlreadyExistsException, NotFoundResponseException {
 
         Unit unit = validateBuildingAndUnit(buildingId, unitId);
         // Log the phone number of the tenant being registered
@@ -76,7 +76,7 @@ public class TenantRestController {
         Tenant createdTenant = tenantService.createTenant(tenant, unit);
         logger.debug("Created tenant with ID: {}", tenant.getTenantId());
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(tenantMapper.convertToDTO(tenant));
+        return ResponseEntity.status(HttpStatus.CREATED).body(tenantMapper.convertToDTO(createdTenant));
     }
 
     @PreAuthorize("hasAuthority('ALL_STAFF')")
