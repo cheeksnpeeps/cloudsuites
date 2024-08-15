@@ -3,7 +3,7 @@ package com.cloudsuites.framework.webapp.authentication;
 import com.cloudsuites.framework.modules.property.features.repository.BuildingRepository;
 import com.cloudsuites.framework.modules.property.features.repository.UnitRepository;
 import com.cloudsuites.framework.services.common.exception.InvalidOperationException;
-import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
+import com.cloudsuites.framework.services.common.exception.UserAlreadyExistsException;
 import com.cloudsuites.framework.services.property.features.entities.Building;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.user.AdminService;
@@ -64,11 +64,11 @@ class AdminAuthControllerTest {
     private AdminService adminService;
 
     @BeforeEach
-    void setUp() throws UsernameAlreadyExistsException, InvalidOperationException {
+    void setUp() throws UserAlreadyExistsException, InvalidOperationException {
         clearDatabase();
 
         // Initialize test data
-        this.testAdmin = createAdmin("testAdmin");
+        this.testAdmin = createAdmin("testAdmin@gmail.com");
         validAdminId = testAdmin.getAdminId();
         validBuildingId = createBuilding("Building1", "City1").getBuildingId();
         validUnitId = createUnit(validBuildingId).getUnitId();
@@ -82,7 +82,7 @@ class AdminAuthControllerTest {
         newTestAdmin.setRole(AdminRole.SUPER_ADMIN);
         newTestAdmin.setStatus(AdminStatus.ACTIVE);
         IdentityDto identity = new IdentityDto();
-        identity.setUsername("testRegisterAdmin");
+        identity.setEmail("testRegisterAdmin@gmail.com");
         identity.setPhoneNumber("+14166024668");
         newTestAdmin.setIdentity(identity);
 
@@ -94,7 +94,7 @@ class AdminAuthControllerTest {
                 .andExpect(result -> {
                     String jsonResponse = result.getResponse().getContentAsString();
                     AdminDto responseAdminDto = objectMapper.readValue(jsonResponse, AdminDto.class);
-                    assertThat(responseAdminDto.getIdentity().getUsername()).isEqualTo("testRegisterAdmin");
+                    assertThat(responseAdminDto.getIdentity().getEmail()).isEqualTo("testRegisterAdmin");
                 });
     }
 
@@ -105,7 +105,7 @@ class AdminAuthControllerTest {
         newAdminDto.setRole(AdminRole.SUPER_ADMIN);
         newAdminDto.setStatus(AdminStatus.ACTIVE);
         IdentityDto identity = new IdentityDto();
-        identity.setUsername(invalidUsername); // Invalid username
+        identity.setEmail("invalidEmail");
         newAdminDto.setIdentity(identity);
 
         mockMvc.perform(post("/api/v1/auth/admins/register")
@@ -121,7 +121,7 @@ class AdminAuthControllerTest {
         IdentityDto identity = new IdentityDto();
         newAdminDto.setStatus(AdminStatus.ACTIVE);
         newAdminDto.setRole(AdminRole.SUPER_ADMIN);
-        identity.setUsername("testAdmin"); // Username already exists
+        identity.setEmail("testAdmin@gmail.com"); // Username already exists
         identity.setPhoneNumber("+14166024668");
         newAdminDto.setIdentity(identity);
 
@@ -212,12 +212,12 @@ class AdminAuthControllerTest {
         // Clear out your database entities here
     }
 
-    private Admin createAdmin(String username) throws UsernameAlreadyExistsException, InvalidOperationException {
+    private Admin createAdmin(String username) throws UserAlreadyExistsException, InvalidOperationException {
         Admin admin = new Admin();
         admin.setRole(AdminRole.SUPER_ADMIN);
         admin.setStatus(AdminStatus.ACTIVE);
         Identity identity = new Identity();
-        identity.setUsername(username);
+        identity.setEmail(username);
         identity.setPhoneNumber("+14166024668");
         admin.setIdentity(identity);
         admin = adminService.createAdmin(admin);
