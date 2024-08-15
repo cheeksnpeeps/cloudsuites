@@ -2,7 +2,7 @@ package com.cloudsuites.framework.webapp.rest.user;
 
 import com.cloudsuites.framework.services.common.exception.InvalidOperationException;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
-import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
+import com.cloudsuites.framework.services.common.exception.UserAlreadyExistsException;
 import com.cloudsuites.framework.services.property.features.service.CompanyService;
 import com.cloudsuites.framework.services.property.personas.entities.Staff;
 import com.cloudsuites.framework.services.property.personas.service.StaffService;
@@ -71,7 +71,7 @@ public class StaffRestController {
     @PostMapping("/companies/{companyId}")
     @JsonView(Views.StaffView.class)
     public ResponseEntity<StaffDto> createStaff(@Valid @RequestBody @Parameter(description = "Staff details to be saved") StaffDto staffDto,
-                                                @PathVariable String companyId) throws NotFoundResponseException, UsernameAlreadyExistsException, InvalidOperationException {
+                                                @PathVariable String companyId) throws NotFoundResponseException, UserAlreadyExistsException, InvalidOperationException {
         Staff staff = mapper.convertToEntity(staffDto);
         staff.setCompany(companyService.getCompanyById(companyId));
         logger.info("Creating a new staff for Company with ID: {}", companyId);
@@ -108,7 +108,7 @@ public class StaffRestController {
     @JsonView(Views.StaffView.class)
     public ResponseEntity<StaffDto> createBuildingStaff(@Valid @RequestBody @Parameter(description = "Staff details to be saved") StaffDto staffDto,
                                                         @PathVariable String companyId,
-                                                        @PathVariable String buildingId) throws NotFoundResponseException, UsernameAlreadyExistsException, InvalidOperationException {
+                                                        @PathVariable String buildingId) throws NotFoundResponseException, UserAlreadyExistsException, InvalidOperationException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         logger.debug("Current user roles: {}", authentication.getAuthorities());
 
