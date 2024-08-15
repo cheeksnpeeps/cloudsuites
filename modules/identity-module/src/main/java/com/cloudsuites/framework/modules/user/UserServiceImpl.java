@@ -2,7 +2,7 @@ package com.cloudsuites.framework.modules.user;
 
 
 import com.cloudsuites.framework.modules.user.repository.UserRepository;
-import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
+import com.cloudsuites.framework.services.common.exception.UserAlreadyExistsException;
 import com.cloudsuites.framework.services.user.UserService;
 import com.cloudsuites.framework.services.user.entities.Identity;
 import jakarta.transaction.Transactional;
@@ -44,12 +44,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Identity createUser(Identity identity) throws UsernameAlreadyExistsException {
-        Optional<Identity> existingIdentity = userRepository.findByUsername(identity.getUsername());
+    public Identity createUser(Identity identity) throws UserAlreadyExistsException {
+        Optional<Identity> existingIdentity = userRepository.findByEmail(identity.getEmail());
         if (existingIdentity.isEmpty()) {
             return userRepository.save(identity);
         }
-        throw new UsernameAlreadyExistsException("Username already exists: " + identity.getUsername());
+        throw new UserAlreadyExistsException("Username already exists: " + identity.getEmail());
     }
 
     @Override
@@ -67,8 +67,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean existsByUsername(String username) {
-        return userRepository.existsByUsername(username);
+    public boolean existsByEmail(String username) {
+        return userRepository.existsByEmail(username);
     }
 
 }
