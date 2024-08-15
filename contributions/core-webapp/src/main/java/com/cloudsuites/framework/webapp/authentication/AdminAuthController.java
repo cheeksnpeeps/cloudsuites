@@ -3,7 +3,7 @@ package com.cloudsuites.framework.webapp.authentication;
 import com.cloudsuites.framework.modules.jwt.JwtTokenProvider;
 import com.cloudsuites.framework.services.common.exception.InvalidOperationException;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
-import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
+import com.cloudsuites.framework.services.common.exception.UserAlreadyExistsException;
 import com.cloudsuites.framework.services.otp.OtpService;
 import com.cloudsuites.framework.services.user.AdminService;
 import com.cloudsuites.framework.services.user.UserService;
@@ -59,7 +59,7 @@ public class AdminAuthController {
     @PostMapping("/register")
     @JsonView(Views.AdminView.class)
     public ResponseEntity<AdminDto> registerAdmin(@Valid @RequestBody @Parameter(description = "Admin registration details") AdminDto adminDto)
-            throws UsernameAlreadyExistsException, InvalidOperationException {
+            throws UserAlreadyExistsException, InvalidOperationException {
         logger.debug(WebAppConstants.Auth.REGISTERING_ADMIN_LOG, adminDto.getIdentity().getPhoneNumber());
         // Convert DTO to entity and save
         Admin admin = adminMapper.convertToEntity(adminDto);
