@@ -102,7 +102,7 @@ class StaffRoleRestControllerTest {
     void testUpdateStaffRole_ValidData() throws Exception {
         StaffDto staff = new StaffDto();
         IdentityDto identity = new IdentityDto();
-        identity.setUsername("testUpdateStaffRole");
+        identity.setEmail("testUpdateStaffRole@gmail.com");
         staff.setRole(StaffRole.BUILDING_SECURITY);
         staff.setStatus(StaffStatus.ACTIVE);
         staff.setIdentity(identity);
@@ -123,7 +123,7 @@ class StaffRoleRestControllerTest {
     void testUpdateStaffRole_InvalidId() throws Exception {
         StaffDto staff = new StaffDto();
         IdentityDto identity = new IdentityDto();
-        identity.setUsername("testUpdateStaffRole");
+        identity.setEmail("testUpdateStaffRole@gmail.com");
         staff.setRole(StaffRole.BUILDING_SECURITY);
         staff.setStatus(StaffStatus.ACTIVE);
         staff.setIdentity(identity);
@@ -164,7 +164,7 @@ class StaffRoleRestControllerTest {
     private Staff createStaff(String username, StaffRole role) {
         Staff staff = new Staff();
         Identity identity = new Identity();
-        identity.setUsername(username);
+        identity.setEmail(username);
         staff.setRole(role);
         staff.setStatus(StaffStatus.ACTIVE);
         identity = userRepository.save(identity);
