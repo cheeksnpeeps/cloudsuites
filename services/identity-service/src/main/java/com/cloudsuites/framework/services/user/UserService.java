@@ -1,6 +1,6 @@
 package com.cloudsuites.framework.services.user;
 
-import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
+import com.cloudsuites.framework.services.common.exception.UserAlreadyExistsException;
 import com.cloudsuites.framework.services.user.entities.Identity;
 import org.springframework.stereotype.Service;
 
@@ -17,11 +17,11 @@ public interface UserService {
 
     List<Identity> getAllUsers();
 
-    Identity createUser(Identity identity) throws UsernameAlreadyExistsException;
+    Identity createUser(Identity identity) throws UserAlreadyExistsException;
 
     Identity updateUser(String userId, Identity identity);
 
     void deleteUser(String userId);
 
-    boolean existsByUsername(String username);
+    boolean existsByEmail(String username);
 }
