@@ -5,7 +5,7 @@ import com.cloudsuites.framework.modules.property.features.repository.CompanyRep
 import com.cloudsuites.framework.modules.property.features.repository.UnitRepository;
 import com.cloudsuites.framework.services.common.exception.InvalidOperationException;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
-import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
+import com.cloudsuites.framework.services.common.exception.UserAlreadyExistsException;
 import com.cloudsuites.framework.services.property.features.entities.Building;
 import com.cloudsuites.framework.services.property.features.entities.Company;
 import com.cloudsuites.framework.services.property.personas.entities.Staff;
@@ -73,11 +73,11 @@ class StaffAuthControllerTest {
     private CompanyRepository companyRepository;
 
     @BeforeEach
-    void setUp() throws UsernameAlreadyExistsException, InvalidOperationException, NotFoundResponseException {
+    void setUp() throws UserAlreadyExistsException, InvalidOperationException, NotFoundResponseException {
         clearDatabase();
 
         this.validCompanyId = createCompany().getCompanyId();
-        this.testStaff = createStaff("testStaff");
+        this.testStaff = createStaff("testStaff@gmail.com");
         this.validStaffId = testStaff.getStaffId();
         this.validBuildingId = createBuilding("Building1", "City1").getBuildingId();
     }
@@ -90,7 +90,7 @@ class StaffAuthControllerTest {
         newStaffDto.setRole(StaffRole.BUILDING_SUPERVISOR);
         newStaffDto.setStatus(StaffStatus.ACTIVE);
         IdentityDto identity = new IdentityDto();
-        identity.setUsername("testRegisterStaff");
+        identity.setEmail("testRegisterStaff@gmail.com");
         identity.setPhoneNumber("+14166024668");
         newStaffDto.setIdentity(identity);
 
@@ -102,7 +102,7 @@ class StaffAuthControllerTest {
                 .andExpect(result -> {
                     String jsonResponse = result.getResponse().getContentAsString();
                     StaffDto responseStaffDto = objectMapper.readValue(jsonResponse, StaffDto.class);
-                    assertThat(responseStaffDto.getIdentity().getUsername()).isEqualTo("testRegisterStaff");
+                    assertThat(responseStaffDto.getIdentity().getEmail()).isEqualTo("testRegisterStaff");
                 });
     }
 
@@ -113,7 +113,7 @@ class StaffAuthControllerTest {
         newStaffDto.setRole(StaffRole.BUILDING_SUPERVISOR);
         newStaffDto.setStatus(StaffStatus.ACTIVE);
         IdentityDto identity = new IdentityDto();
-        identity.setUsername(invalidUsername); // Invalid username
+        identity.setEmail("invalidEmail");
         newStaffDto.setIdentity(identity);
 
         mockMvc.perform(post("/api/v1/auth/staff/companies/{companyId}/buildings/{buildingId}/register", validCompanyId, validBuildingId)
@@ -202,12 +202,12 @@ class StaffAuthControllerTest {
         // Clear out your database entities here
     }
 
-    private Staff createStaff(String username) throws UsernameAlreadyExistsException, InvalidOperationException, NotFoundResponseException {
+    private Staff createStaff(String username) throws UserAlreadyExistsException, InvalidOperationException, NotFoundResponseException {
         Staff staff = new Staff();
         staff.setRole(StaffRole.BUILDING_SUPERVISOR);
         staff.setStatus(StaffStatus.ACTIVE);
         Identity identity = new Identity();
-        identity.setUsername(username);
+        identity.setEmail(username);
         identity.setPhoneNumber("+14166024668");
         staff.setIdentity(identity);
         staff = staffService.createStaff(staff, validCompanyId, validBuildingId);

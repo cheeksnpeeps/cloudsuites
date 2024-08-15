@@ -112,7 +112,7 @@ public class StaffRestControllerTest {
                 .andExpect(result -> {
                     String jsonResponse = result.getResponse().getContentAsString();
                     StaffDto staffDto = objectMapper.readValue(jsonResponse, StaffDto.class);
-                    assertThat(staffDto.getIdentity().getUsername()).isEqualTo("testStaff");
+                    assertThat(staffDto.getIdentity().getEmail()).isEqualTo("testStaff");
                 });
     }
 
@@ -130,7 +130,7 @@ public class StaffRestControllerTest {
         staff.setRole(StaffRole.BUILDING_SUPERVISOR);
         staff.setStatus(StaffStatus.ACTIVE);
         IdentityDto identity = new IdentityDto();
-        identity.setUsername("newStaff");
+        identity.setEmail("newStaff@gmail.com");
         staff.setIdentity(identity);
 
         String responseContent = mockMvc.perform(withAuth(post("/api/v1/staff/companies/{companyId}", validCompanyId)
@@ -141,7 +141,7 @@ public class StaffRestControllerTest {
                 .andReturn().getResponse().getContentAsString();
 
         StaffDto staffDto = objectMapper.readValue(responseContent, StaffDto.class);
-        assertThat(staffDto.getIdentity().getUsername()).isEqualTo("newStaff");
+        assertThat(staffDto.getIdentity().getEmail()).isEqualTo("newStaff");
     }
 
     @Test
@@ -159,7 +159,7 @@ public class StaffRestControllerTest {
         staff.setRole(StaffRole.BUILDING_SUPERVISOR);
         staff.setStatus(StaffStatus.ACTIVE);
         IdentityDto identity = new IdentityDto();
-        identity.setUsername("testStaff");
+        identity.setEmail("testStaff@gmail.com");
         staff.setIdentity(identity);
         mockMvc.perform(withAuth(post("/api/v1/staff/companies/{companyId}", validCompanyId))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -182,7 +182,7 @@ public class StaffRestControllerTest {
         staff.setRole(StaffRole.BUILDING_SUPERVISOR);
         staff.setStatus(StaffStatus.ACTIVE);
         IdentityDto identity = new IdentityDto();
-        identity.setUsername("buildingStaff");
+        identity.setEmail("buildingStaff@gmail.com");
         staff.setIdentity(identity);
         String responseContent = mockMvc.perform(withAuth(post("/api/v1/staff/companies/{companyId}/building/{buildingId}", validCompanyId, validBuildingId))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -192,7 +192,7 @@ public class StaffRestControllerTest {
                 .andReturn().getResponse().getContentAsString();
 
         StaffDto staffDto = objectMapper.readValue(responseContent, StaffDto.class);
-        assertThat(staffDto.getIdentity().getUsername()).isEqualTo("buildingStaff");
+        assertThat(staffDto.getIdentity().getEmail()).isEqualTo("buildingStaff");
     }
 
     // -------------------- PUT Requests --------------------
@@ -208,7 +208,7 @@ public class StaffRestControllerTest {
                 .andReturn().getResponse().getContentAsString();
 
         StaffDto staffDto = objectMapper.readValue(responseContent, StaffDto.class);
-        assertThat(staffDto.getIdentity().getUsername()).isEqualTo("updatedStaff");
+        assertThat(staffDto.getIdentity().getEmail()).isEqualTo("updatedStaff");
     }
 
     @Test
@@ -255,7 +255,7 @@ public class StaffRestControllerTest {
         Staff staff = new Staff();
         staff.setRole(StaffRole.BUILDING_SUPERVISOR);
         Identity identity = new Identity();
-        identity.setUsername("testStaff");
+        identity.setEmail("testStaff@gmail.com");
         staff.setIdentity(identity);
         staff.setCompany(companyRepository.findById(companyId).orElseThrow());
         return staffRepository.save(staff);
