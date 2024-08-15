@@ -6,7 +6,7 @@ import com.cloudsuites.framework.modules.property.personas.repository.StaffRepos
 import com.cloudsuites.framework.modules.user.repository.UserRoleRepository;
 import com.cloudsuites.framework.services.common.exception.InvalidOperationException;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
-import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
+import com.cloudsuites.framework.services.common.exception.UserAlreadyExistsException;
 import com.cloudsuites.framework.services.property.personas.entities.Staff;
 import com.cloudsuites.framework.services.property.personas.service.StaffService;
 import com.cloudsuites.framework.services.user.UserService;
@@ -41,7 +41,7 @@ public class StaffServiceImpl implements StaffService {
     }
 
     @Override
-    public Staff createStaff(Staff staff, String companyId, String buildingId) throws UsernameAlreadyExistsException, InvalidOperationException, NotFoundResponseException {
+    public Staff createStaff(Staff staff, String companyId, String buildingId) throws UserAlreadyExistsException, InvalidOperationException, NotFoundResponseException {
         staff.setCompany(companyRepository.findById(companyId)
                 .orElseThrow(() -> {
                     logger.error("Company not found with ID: {}", companyId);
@@ -70,19 +70,19 @@ public class StaffServiceImpl implements StaffService {
         return savedStaff;
     }
 
-    private void validateIdentity(String staffId, Identity identity) throws UsernameAlreadyExistsException, InvalidOperationException {
+    private void validateIdentity(String staffId, Identity identity) throws UserAlreadyExistsException, InvalidOperationException {
         if (identity == null) {
             logger.error("Identity not found for staff: {}", staffId);
             throw new InvalidOperationException("Identity not found for staff: " + staffId);
         }
-        logger.debug("Creating identity with username: {}", identity.getUsername());
-        if (!StringUtils.hasText(identity.getUsername())) {
-            logger.error("Username not found for staff: {}", staffId);
-            throw new InvalidOperationException("Username is required");
+        logger.debug("Creating identity with enail: {}", identity.getEmail());
+        if (!StringUtils.hasText(identity.getEmail())) {
+            logger.error("Email not found for tenant: {}", staffId);
+            throw new InvalidOperationException("Email is required");
         }
-        if (userService.existsByUsername(identity.getUsername())) {
-            logger.error("User already exists with username: {}", identity.getUsername());
-            throw new UsernameAlreadyExistsException("User already exists with username: " + identity.getUsername());
+        if (userService.existsByEmail(identity.getEmail())) {
+            logger.error("User already exists with email: {}", identity.getEmail());
+            throw new UserAlreadyExistsException("User already exists with email: " + identity.getEmail());
         }
     }
 

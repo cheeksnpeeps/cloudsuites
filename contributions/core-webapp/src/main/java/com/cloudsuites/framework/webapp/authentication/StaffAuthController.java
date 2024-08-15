@@ -3,7 +3,7 @@ package com.cloudsuites.framework.webapp.authentication;
 import com.cloudsuites.framework.modules.jwt.JwtTokenProvider;
 import com.cloudsuites.framework.services.common.exception.InvalidOperationException;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
-import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
+import com.cloudsuites.framework.services.common.exception.UserAlreadyExistsException;
 import com.cloudsuites.framework.services.otp.OtpService;
 import com.cloudsuites.framework.services.property.personas.entities.Staff;
 import com.cloudsuites.framework.services.property.personas.service.StaffService;
@@ -61,7 +61,7 @@ public class StaffAuthController {
     public ResponseEntity<StaffDto> registerStaff(@Valid @RequestBody @Parameter(description = "Staff registration details") StaffDto staffDto,
                                                   @PathVariable String buildingId,
                                                   @PathVariable String companyId)
-            throws UsernameAlreadyExistsException, InvalidOperationException, NotFoundResponseException {
+            throws UserAlreadyExistsException, InvalidOperationException, NotFoundResponseException {
         logger.debug(WebAppConstants.Auth.REGISTERING_STAFF_LOG, staffDto.getIdentity().getPhoneNumber());
         Staff staff = staffMapper.convertToEntity(staffDto);
         staff = staffService.createStaff(staff, companyId, buildingId);
