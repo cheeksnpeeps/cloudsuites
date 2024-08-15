@@ -54,9 +54,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(problemDetails);
     }
 
-    @ExceptionHandler(UsernameAlreadyExistsException.class)
-    protected ResponseEntity<ProblemDetails> usernameAlreadyExistsException(UsernameAlreadyExistsException ex, HttpServletRequest request) {
-        logger.error("UsernameAlreadyExistsException occurred: URI={}, Message={}", request.getRequestURI(), ex.getMessage(), ex);
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    protected ResponseEntity<ProblemDetails> usernameAlreadyExistsException(UserAlreadyExistsException ex, HttpServletRequest request) {
+        logger.error("UserAlreadyExistsException occurred: URI={}, Message={}", request.getRequestURI(), ex.getMessage(), ex);
         ProblemDetails problemDetails = ProblemDetails.builder()
                 .withTitle("Username Already Exists")
                 .withStatus(HttpStatus.CONFLICT.value())
