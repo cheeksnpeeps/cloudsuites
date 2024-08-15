@@ -3,7 +3,7 @@ package com.cloudsuites.framework.webapp.authentication;
 import com.cloudsuites.framework.modules.jwt.JwtTokenProvider;
 import com.cloudsuites.framework.services.common.exception.InvalidOperationException;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
-import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
+import com.cloudsuites.framework.services.common.exception.UserAlreadyExistsException;
 import com.cloudsuites.framework.services.otp.OtpService;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.property.features.service.UnitService;
@@ -64,7 +64,7 @@ public class OwnerAuthController {
     @JsonView(Views.OwnerView.class)
     public ResponseEntity<OwnerDto> registerOwner(@PathVariable String buildingId,
                                                   @PathVariable String unitId,
-                                                  @Valid @RequestBody @Parameter(description = "Owner registration details") OwnerDto ownerDto) throws NotFoundResponseException, UsernameAlreadyExistsException, InvalidOperationException {
+                                                  @Valid @RequestBody @Parameter(description = "Owner registration details") OwnerDto ownerDto) throws NotFoundResponseException, UserAlreadyExistsException, InvalidOperationException {
         logger.debug(WebAppConstants.Auth.REGISTERING_OWNER_LOG, ownerDto.getIdentity().getPhoneNumber());
         Unit unit = unitService.getUnitById(buildingId, unitId);
 
