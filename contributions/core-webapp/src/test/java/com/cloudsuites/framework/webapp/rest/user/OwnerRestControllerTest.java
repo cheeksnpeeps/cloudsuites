@@ -113,7 +113,7 @@ class OwnerRestControllerTest {
                 .andExpect(result -> {
                     String jsonResponse = result.getResponse().getContentAsString();
                     OwnerDto ownerDto = objectMapper.readValue(jsonResponse, OwnerDto.class);
-                    assertThat(ownerDto.getIdentity().getUsername()).isEqualTo("test1");
+                    assertThat(ownerDto.getIdentity().getEmail()).isEqualTo("test1");
                 });
     }
 
@@ -202,7 +202,7 @@ class OwnerRestControllerTest {
                 .andExpect(result -> {
                     String jsonResponse = result.getResponse().getContentAsString();
                     OwnerDto ownerDto = objectMapper.readValue(jsonResponse, OwnerDto.class);
-                    assertThat(ownerDto.getIdentity().getUsername()).isEqualTo("updatedOwner");
+                    assertThat(ownerDto.getIdentity().getEmail()).isEqualTo("updatedOwner");
                 });
     }
 
@@ -349,7 +349,6 @@ class OwnerRestControllerTest {
     private Owner createOwner(String username) {
         Owner owner = new Owner();
         Identity identity = new Identity();
-        identity.setUsername(username);
         owner.setIdentity(identity);
         return ownerRepository.save(owner);
     }

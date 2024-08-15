@@ -102,7 +102,7 @@ class OwnerRoleRestControllerTest {
     void testUpdateOwnerRole_ValidData() throws Exception {
         OwnerDto owner = new OwnerDto();
         IdentityDto identity = new IdentityDto();
-        identity.setUsername("testUpdateOwnerRole");
+        identity.setEmail("testUpdateOwnerRole@gmail.com");
         owner.setRole(OwnerRole.DEFAULT);
         owner.setStatus(OwnerStatus.ACTIVE);
         owner.setIdentity(identity);
@@ -123,7 +123,7 @@ class OwnerRoleRestControllerTest {
     void testUpdateOwnerRole_InvalidId() throws Exception {
         OwnerDto owner = new OwnerDto();
         IdentityDto identity = new IdentityDto();
-        identity.setUsername("testUpdateOwnerRole");
+        identity.setEmail("testUpdateOwnerRole@gmail.com");
         owner.setRole(OwnerRole.DEFAULT);
         owner.setStatus(OwnerStatus.ACTIVE);
         owner.setIdentity(identity);
@@ -164,7 +164,7 @@ class OwnerRoleRestControllerTest {
     private Owner createOwner(String username, OwnerRole role) {
         Owner owner = new Owner();
         Identity identity = new Identity();
-        identity.setUsername(username);
+        identity.setEmail(username);
         owner.setRole(role);
         owner.setStatus(OwnerStatus.ACTIVE);
         identity = userRepository.save(identity);

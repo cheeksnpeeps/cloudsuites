@@ -60,7 +60,7 @@ class OwnerAuthControllerTest {
         clearDatabase();
 
         // Initialize test data
-        this.testOwner = createOwner("testOwner");
+        this.testOwner = createOwner("testOwner@gmail.com");
         validOwnerId = testOwner.getOwnerId();
         validBuildingId = createBuilding("Building1", "City1").getBuildingId();
         validUnitId = createUnit(validBuildingId).getUnitId();
@@ -82,7 +82,7 @@ class OwnerAuthControllerTest {
     void testRegisterOwner_ValidData() throws Exception {
         OwnerDto newTestOwner = new OwnerDto();
         IdentityDto identity = new IdentityDto();
-        identity.setUsername("testRegisterOwnerV");
+        identity.setEmail("testRegisterOwnerV@gmail.com");
         identity.setPhoneNumber("+14166024668");
         newTestOwner.setIdentity(identity);
 
@@ -94,7 +94,7 @@ class OwnerAuthControllerTest {
                 .andExpect(result -> {
                     String jsonResponse = result.getResponse().getContentAsString();
                     OwnerDto responseOwnerDto = objectMapper.readValue(jsonResponse, OwnerDto.class);
-                    assertThat(responseOwnerDto.getIdentity().getUsername()).isEqualTo("testRegisterOwnerV");
+                    assertThat(responseOwnerDto.getIdentity().getEmail()).isEqualTo("testRegisterOwnerV");
                 });
     }
 
@@ -107,7 +107,7 @@ class OwnerAuthControllerTest {
     void testRegisterOwner_InvalidData_EmptyUsername(String invalidUsername) throws Exception {
         OwnerDto newOwnerDto = new OwnerDto();
         IdentityDto identity = new IdentityDto();
-        identity.setUsername(invalidUsername); // Invalid username
+        identity.setEmail("invalidEmail");
         newOwnerDto.setIdentity(identity);
 
         mockMvc.perform(post("/api/v1/auth/buildings/{buildingId}/units/{unitId}/owner/register", validBuildingId, validUnitId)
@@ -125,7 +125,7 @@ class OwnerAuthControllerTest {
     void testRegisterOwner_DuplicateUsername() throws Exception {
         OwnerDto newOwnerDto = new OwnerDto();
         IdentityDto identity = new IdentityDto();
-        identity.setUsername("testOwner"); // Username already exists
+        identity.setEmail("testOwner@gmail.com");
         newOwnerDto.setIdentity(identity);
 
         // Try to register again with the same username
@@ -228,7 +228,7 @@ class OwnerAuthControllerTest {
     void testRegisterOwner_InvalidBuildingId() throws Exception {
         OwnerDto newTestOwner = new OwnerDto();
         IdentityDto identity = new IdentityDto();
-        identity.setUsername("testRegisterOwnerV");
+        identity.setEmail("testRegisterOwnerV@gmail.com");
         identity.setPhoneNumber("+14166024668");
         newTestOwner.setIdentity(identity);
 
@@ -261,10 +261,10 @@ class OwnerAuthControllerTest {
         unitRepository.deleteAll();
     }
 
-    private Owner createOwner(String username) {
+    private Owner createOwner(String email) {
         Owner owner = new Owner();
         Identity identity = new Identity();
-        identity.setUsername(username);
+        identity.setEmail(email);
         identity.setPhoneNumber("+14166024668");
         owner.setIdentity(identity);
         return ownerRepository.save(owner);
