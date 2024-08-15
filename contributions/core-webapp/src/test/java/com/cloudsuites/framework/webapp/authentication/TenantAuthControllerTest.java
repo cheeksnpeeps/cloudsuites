@@ -218,7 +218,7 @@ class TenantAuthControllerTest {
     private TenantDto createTenantDto(String phoneNumber) {
         TenantDto tenantDto = new TenantDto();
         IdentityDto identity = new IdentityDto();
-        identity.setUsername("testTenant");
+        identity.setEmail("testTenant@gmail.com");
         identity.setPhoneNumber(phoneNumber);
         tenantDto.setIdentity(identity);
         tenantDto.setIsPrimaryTenant(true);
