@@ -6,7 +6,7 @@ import com.cloudsuites.framework.modules.property.personas.repository.TenantRepo
 import com.cloudsuites.framework.modules.user.repository.UserRoleRepository;
 import com.cloudsuites.framework.services.common.exception.InvalidOperationException;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
-import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
+import com.cloudsuites.framework.services.common.exception.UserAlreadyExistsException;
 import com.cloudsuites.framework.services.property.features.entities.Lease;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.property.features.service.UnitService;
@@ -49,7 +49,7 @@ public class TenantServiceImpl implements TenantService {
     }
 
     @Override
-    public Tenant createTenant(Tenant tenant, Unit unit) throws NotFoundResponseException, InvalidOperationException, UsernameAlreadyExistsException {
+    public Tenant createTenant(Tenant tenant, Unit unit) throws NotFoundResponseException, InvalidOperationException, UserAlreadyExistsException {
         if (Boolean.TRUE.equals(tenant.getIsPrimaryTenant())) {
             logger.debug("Tenant is marked as primary. Clearing existing tenants for unit: {}", unit.getUnitId());
             clearExistingTenants(unit);
@@ -63,14 +63,14 @@ public class TenantServiceImpl implements TenantService {
             logger.error("Identity not found for tenant: {}", tenant);
             throw new InvalidOperationException("Identity not found for tenant: " + tenant);
         }
-        logger.debug("Creating identity with username: {}", identity.getUsername());
-        if (!StringUtils.hasText(identity.getUsername())) {
-            logger.error("Username not found for tenant: {}", tenant);
-            throw new InvalidOperationException("Username is required");
+        logger.debug("Creating identity with email: {}", identity.getEmail());
+        if (!StringUtils.hasText(identity.getEmail())) {
+            logger.error("Email not found for tenant: {}", tenant);
+            throw new InvalidOperationException("Email is required");
         }
-        if (userService.existsByUsername(identity.getUsername())) {
-            logger.error("User already exists with username: {}", identity.getUsername());
-            throw new UsernameAlreadyExistsException("User already exists with username: " + identity.getUsername());
+        if (userService.existsByEmail(identity.getEmail())) {
+            logger.error("User already exists with email: {}", identity.getEmail());
+            throw new UserAlreadyExistsException("User already exists with email: " + identity.getEmail());
         }
         Identity savedIdentity = userService.createUser(identity);
         tenant.setIdentity(savedIdentity);
