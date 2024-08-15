@@ -2,6 +2,8 @@ package com.cloudsuites.framework.services.user.entities;
 
 import com.cloudsuites.framework.modules.common.utils.IdGenerator;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,9 +22,6 @@ public class Identity {
 	@Column(name = "user_id", unique = true, nullable = false)
 	private String userId;
 
-	@Column(name = "username", unique = true, nullable = false)
-	private String username;
-
 	@Column
 	private Gender gender;
 
@@ -35,7 +34,9 @@ public class Identity {
 	@Column(name = "phone_number")
 	private String phoneNumber;
 
-	@Column(name = "email")
+	@NotNull(message = "Email is mandatory")
+	@Email(message = "Email should be valid")
+	@Column(name = "email", unique = true, nullable = false)
 	private String email;
 
 	@JoinColumn(name = "created_by")
@@ -79,9 +80,6 @@ public class Identity {
 		}
 		if (identity.getGender() != null) {
 			this.setGender(identity.getGender());
-		}
-		if (StringUtils.hasText(identity.getUsername())) {
-			this.setUsername(identity.getUsername());
 		}
 	}
 }
