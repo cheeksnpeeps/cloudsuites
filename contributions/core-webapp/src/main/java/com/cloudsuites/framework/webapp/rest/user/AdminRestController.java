@@ -2,7 +2,7 @@ package com.cloudsuites.framework.webapp.rest.user;
 
 import com.cloudsuites.framework.services.common.exception.InvalidOperationException;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
-import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
+import com.cloudsuites.framework.services.common.exception.UserAlreadyExistsException;
 import com.cloudsuites.framework.services.property.features.service.UnitService;
 import com.cloudsuites.framework.services.user.AdminService;
 import com.cloudsuites.framework.services.user.entities.Admin;
@@ -79,11 +79,11 @@ public class AdminRestController {
     @ApiResponse(responseCode = "201", description = "Admin created successfully", content = @Content(mediaType = "application/json"))
     @PostMapping("")
     @JsonView(Views.AdminView.class)
-    public ResponseEntity<AdminDto> createAdmin(@Valid @RequestBody @Parameter(description = "Admin details") AdminDto adminDto) throws InvalidOperationException, UsernameAlreadyExistsException {
-        logger.debug(WebAppConstants.Admin.LOG_REGISTERING_ADMIN, adminDto.getIdentity().getUsername());
+    public ResponseEntity<AdminDto> createAdmin(@Valid @RequestBody @Parameter(description = "Admin details") AdminDto adminDto) throws InvalidOperationException, UserAlreadyExistsException {
+        logger.debug(WebAppConstants.Admin.LOG_REGISTERING_ADMIN, adminDto.getIdentity().getEmail());
         Admin admin = mapper.convertToEntity(adminDto);
         admin = adminService.createAdmin(admin);
-        logger.info(WebAppConstants.Admin.LOG_ADMIN_REGISTERED_SUCCESS, admin.getAdminId(), adminDto.getIdentity().getUsername());
+        logger.info(WebAppConstants.Admin.LOG_ADMIN_REGISTERED_SUCCESS, admin.getAdminId(), adminDto.getIdentity().getEmail());
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.convertToDTO(admin));
     }
 

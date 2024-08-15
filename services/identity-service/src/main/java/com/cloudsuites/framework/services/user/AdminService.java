@@ -2,7 +2,7 @@ package com.cloudsuites.framework.services.user;
 
 import com.cloudsuites.framework.services.common.exception.InvalidOperationException;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
-import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
+import com.cloudsuites.framework.services.common.exception.UserAlreadyExistsException;
 import com.cloudsuites.framework.services.user.entities.Admin;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +16,7 @@ public interface AdminService {
     Admin getAdminById(String adminId) throws NotFoundResponseException;
 
     @Transactional
-    Admin createAdmin(Admin admin) throws UsernameAlreadyExistsException, InvalidOperationException;
+    Admin createAdmin(Admin admin) throws UserAlreadyExistsException, InvalidOperationException;
 
     @Transactional
     Admin updateAdmin(String adminId, Admin admin) throws NotFoundResponseException;
