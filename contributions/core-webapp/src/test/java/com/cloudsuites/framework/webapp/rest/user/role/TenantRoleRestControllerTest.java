@@ -102,7 +102,7 @@ class TenantRoleRestControllerTest {
     void testUpdateTenantRole_ValidData() throws Exception {
         TenantDto tenant = new TenantDto();
         IdentityDto identity = new IdentityDto();
-        identity.setUsername("testUpdateTenantRole");
+        identity.setEmail("testUpdateTenantRole@gmail.com");
         tenant.setRole(TenantRole.DEFAULT);
         tenant.setStatus(TenantStatus.ACTIVE);
         tenant.setIdentity(identity);
@@ -123,7 +123,7 @@ class TenantRoleRestControllerTest {
     void testUpdateTenantRole_InvalidId() throws Exception {
         TenantDto tenant = new TenantDto();
         IdentityDto identity = new IdentityDto();
-        identity.setUsername("testUpdateTenantRole");
+        identity.setEmail("testUpdateTenantRole@gmail.com");
         tenant.setRole(TenantRole.DEFAULT);
         tenant.setStatus(TenantStatus.ACTIVE);
         tenant.setIdentity(identity);
@@ -163,7 +163,7 @@ class TenantRoleRestControllerTest {
     private Tenant createTenant(String username, TenantRole role) {
         Tenant tenant = new Tenant();
         Identity identity = new Identity();
-        identity.setUsername(username);
+        identity.setEmail(username);
         tenant.setRole(role);
         tenant.setStatus(TenantStatus.ACTIVE);
         identity = userRepository.save(identity);
