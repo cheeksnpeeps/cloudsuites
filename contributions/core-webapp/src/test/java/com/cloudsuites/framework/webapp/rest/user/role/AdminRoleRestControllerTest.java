@@ -103,7 +103,7 @@ class AdminRoleRestControllerTest {
 
         AdminDto admin = new AdminDto();
         IdentityDto identity = new IdentityDto();
-        identity.setUsername("testUpdateAdminRole");
+        identity.setEmail("testUpdateAdminRole@gmail.com");
         admin.setRole(AdminRole.USER);
         admin.setStatus(AdminStatus.ACTIVE);
         admin.setIdentity(identity);
@@ -124,7 +124,7 @@ class AdminRoleRestControllerTest {
     void testUpdateAdminRole_InvalidId() throws Exception {
         AdminDto admin = new AdminDto();
         IdentityDto identity = new IdentityDto();
-        identity.setUsername("testUpdateAdminRole");
+        identity.setEmail("testUpdateAdminRole@gmail.com");
         admin.setRole(AdminRole.USER);
         admin.setStatus(AdminStatus.ACTIVE);
         admin.setIdentity(identity);
@@ -164,7 +164,7 @@ class AdminRoleRestControllerTest {
     private Admin createAdmin(String username, AdminRole role) {
         Admin admin = new Admin();
         Identity identity = new Identity();
-        identity.setUsername(username);
+        identity.setEmail(username);
         admin.setRole(role);
         admin.setStatus(AdminStatus.ACTIVE);
         identity = userRepository.save(identity);

@@ -2,7 +2,7 @@ package com.cloudsuites.framework.webapp.rest.user;
 
 import com.cloudsuites.framework.modules.user.repository.AdminRepository;
 import com.cloudsuites.framework.services.common.exception.InvalidOperationException;
-import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
+import com.cloudsuites.framework.services.common.exception.UserAlreadyExistsException;
 import com.cloudsuites.framework.services.user.AdminService;
 import com.cloudsuites.framework.services.user.entities.Admin;
 import com.cloudsuites.framework.services.user.entities.AdminRole;
@@ -83,7 +83,7 @@ public class AdminRestControllerTest {
                 .andExpect(result -> {
                     String jsonResponse = result.getResponse().getContentAsString();
                     AdminDto adminDto = objectMapper.readValue(jsonResponse, AdminDto.class);
-                    assertThat(adminDto.getIdentity().getUsername()).isEqualTo("testAdmin");
+                    assertThat(adminDto.getIdentity().getEmail()).isEqualTo("testAdmin");
                 });
     }
 
@@ -106,7 +106,7 @@ public class AdminRestControllerTest {
                 .andReturn().getResponse().getContentAsString();
 
         AdminDto adminDto = objectMapper.readValue(responseContent, AdminDto.class);
-        assertThat(adminDto.getIdentity().getUsername()).isEqualTo("newAdmin");
+        assertThat(adminDto.getIdentity().getEmail()).isEqualTo("newAdmin");
     }
 
     @Test
@@ -140,7 +140,7 @@ public class AdminRestControllerTest {
                 .andReturn().getResponse().getContentAsString();
 
         AdminDto adminDto = objectMapper.readValue(responseContent, AdminDto.class);
-        assertThat(adminDto.getIdentity().getUsername()).isEqualTo("updatedAdmin");
+        assertThat(adminDto.getIdentity().getEmail()).isEqualTo("updatedAdmin");
     }
 
     @Test
@@ -175,10 +175,9 @@ public class AdminRestControllerTest {
         adminRepository.deleteAll();
     }
 
-    private Admin createAdmin(String username, String email) throws UsernameAlreadyExistsException, InvalidOperationException {
+    private Admin createAdmin(String username, String email) throws UserAlreadyExistsException, InvalidOperationException {
         Admin admin = new Admin();
         Identity identity = new Identity();
-        identity.setUsername(username);
         identity.setEmail(email);
         admin.setIdentity(identity);
         admin.setRole(AdminRole.USER);
