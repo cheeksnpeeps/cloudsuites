@@ -2,7 +2,7 @@ package com.cloudsuites.framework.webapp.rest.user;
 
 import com.cloudsuites.framework.services.common.exception.InvalidOperationException;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
-import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
+import com.cloudsuites.framework.services.common.exception.UserAlreadyExistsException;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.property.features.service.UnitService;
 import com.cloudsuites.framework.services.property.personas.entities.Owner;
@@ -98,11 +98,11 @@ public class OwnerRestController {
     @ApiResponse(responseCode = "201", description = "Owner created successfully", content = @Content(mediaType = "application/json"))
     @PostMapping("")
     @JsonView(Views.OwnerView.class)
-    public ResponseEntity<OwnerDto> createOwner(@Valid @RequestBody @Parameter(description = "Owner details") OwnerDto ownerDto) throws InvalidOperationException, UsernameAlreadyExistsException {
-        logger.debug(WebAppConstants.Owner.LOG_REGISTERING_OWNER, ownerDto.getIdentity().getUsername());
+    public ResponseEntity<OwnerDto> createOwner(@Valid @RequestBody @Parameter(description = "Owner details") OwnerDto ownerDto) throws InvalidOperationException, UserAlreadyExistsException {
+        logger.debug(WebAppConstants.Owner.LOG_REGISTERING_OWNER, ownerDto.getIdentity().getEmail());
         Owner owner = mapper.convertToEntity(ownerDto);
         owner = ownerService.createOwner(owner);
-        logger.info(WebAppConstants.Owner.LOG_OWNER_REGISTERED_SUCCESS, owner.getOwnerId(), ownerDto.getIdentity().getUsername());
+        logger.info(WebAppConstants.Owner.LOG_OWNER_REGISTERED_SUCCESS, owner.getOwnerId(), ownerDto.getIdentity().getEmail());
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.convertToDTO(owner));
     }
 

@@ -5,7 +5,7 @@ import com.cloudsuites.framework.modules.property.personas.repository.TenantRepo
 import com.cloudsuites.framework.modules.user.repository.UserRoleRepository;
 import com.cloudsuites.framework.services.common.exception.InvalidOperationException;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
-import com.cloudsuites.framework.services.common.exception.UsernameAlreadyExistsException;
+import com.cloudsuites.framework.services.common.exception.UserAlreadyExistsException;
 import com.cloudsuites.framework.services.property.features.entities.Building;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.property.features.service.UnitService;
@@ -53,7 +53,7 @@ public class OwnerServiceImpl implements OwnerService {
     }
 
     @Override
-    public Owner createOwner(Owner newOwner) throws UsernameAlreadyExistsException, InvalidOperationException {
+    public Owner createOwner(Owner newOwner) throws UserAlreadyExistsException, InvalidOperationException {
         Owner owner = createIdentiy(newOwner);
         owner = ownerRepository.save(owner);
         logger.info("Owner created successfully with ID: {}", owner.getOwnerId());
@@ -63,7 +63,7 @@ public class OwnerServiceImpl implements OwnerService {
     }
 
     @Override
-    public Owner createOwner(Owner newOwner, Building building, Unit unit) throws NotFoundResponseException, UsernameAlreadyExistsException, InvalidOperationException {
+    public Owner createOwner(Owner newOwner, Building building, Unit unit) throws NotFoundResponseException, UserAlreadyExistsException, InvalidOperationException {
         Owner owner = createIdentiy(newOwner);
 
         // validate building and unit
@@ -113,7 +113,7 @@ public class OwnerServiceImpl implements OwnerService {
         return savedOwner;
     }
 
-    private Owner createIdentiy(Owner owner) throws UsernameAlreadyExistsException, InvalidOperationException {
+    private Owner createIdentiy(Owner owner) throws UserAlreadyExistsException, InvalidOperationException {
         // Log the start of the tenant creation process
         logger.debug("Starting owner creation process for owner: {}", owner);
         // Step 1: Create and save the identity for the tenant
@@ -123,14 +123,14 @@ public class OwnerServiceImpl implements OwnerService {
             logger.error("Identity not found for owner: {}", owner);
             throw new InvalidOperationException("Identity not found for owner: " + owner);
         }
-        logger.debug("Creating identity with username: {}", identity.getUsername());
-        if (!StringUtils.hasText(identity.getUsername())) {
-            logger.error("Username not found for owner: {}", owner);
-            throw new InvalidOperationException("Username is required");
+        logger.debug("Creating identity with enail: {}", identity.getEmail());
+        if (!StringUtils.hasText(identity.getEmail())) {
+            logger.error("Email not found for tenant: {}", owner);
+            throw new InvalidOperationException("Email is required");
         }
-        if (userService.existsByUsername(identity.getUsername())) {
-            logger.error("User already exists with username: {}", identity.getUsername());
-            throw new UsernameAlreadyExistsException("User already exists with username: " + identity.getUsername());
+        if (userService.existsByEmail(identity.getEmail())) {
+            logger.error("User already exists with email: {}", identity.getEmail());
+            throw new UserAlreadyExistsException("User already exists with email: " + identity.getEmail());
         }
         Identity savedIdentity = userService.createUser(identity);
         owner.setIdentity(savedIdentity);
