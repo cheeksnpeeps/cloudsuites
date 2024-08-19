@@ -164,7 +164,7 @@ class StaffRoleRestControllerTest {
     private Staff createStaff(String username, StaffRole role) {
         Staff staff = new Staff();
         Identity identity = new Identity();
-        identity.setEmail(username);
+        identity.setEmail(username + "@gmail.com");
         staff.setRole(role);
         staff.setStatus(StaffStatus.ACTIVE);
         identity = userRepository.save(identity);
