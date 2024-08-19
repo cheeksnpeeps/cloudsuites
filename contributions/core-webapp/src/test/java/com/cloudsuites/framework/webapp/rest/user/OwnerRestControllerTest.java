@@ -113,7 +113,7 @@ class OwnerRestControllerTest {
                 .andExpect(result -> {
                     String jsonResponse = result.getResponse().getContentAsString();
                     OwnerDto ownerDto = objectMapper.readValue(jsonResponse, OwnerDto.class);
-                    assertThat(ownerDto.getIdentity().getEmail()).isEqualTo("test1");
+                    assertThat(ownerDto.getIdentity().getEmail()).isEqualTo("test1@gmail.com");
                 });
     }
 
@@ -135,7 +135,7 @@ class OwnerRestControllerTest {
      */
     @Test
     void testCreateOwner_ValidData() throws Exception {
-        String newOwnerJson = "{\"identity\":{\"username\":\"newOwner\"}}";
+        String newOwnerJson = "{\"identity\":{\"username\":\"newOwner\", \"email\":\"newOwner@company.com\"}}";
         mockMvc.perform(withAuth(post("/api/v1/owners"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(newOwnerJson))
@@ -148,13 +148,13 @@ class OwnerRestControllerTest {
      * It expects a 400 Bad Request response and checks for an appropriate error message.
      */
     @Test
-    void testCreateOwner_InvalidData_EmptyUsername() throws Exception {
-        String newOwnerJson = "{\"identity\":{\"username\":\"\"}}"; // Invalid username
+    void testCreateOwner_InvalidData_EmptyEmail() throws Exception {
+        String newOwnerJson = "{\"identity\":{\"username\":\"\", \"email\":\"\"}}"; // Invalid username
         mockMvc.perform(withAuth(post("/api/v1/owners"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(newOwnerJson))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(containsString("Username must be between"))); // Example message check
+                .andExpect(content().string(containsString("Email must be between 5 and 50 characters long"))); // Example message check
     }
 
     /**
@@ -163,12 +163,12 @@ class OwnerRestControllerTest {
      */
     @Test
     void testCreateOwner_InvalidData_NullUsername() throws Exception {
-        String newOwnerJson = "{\"identity\":{\"username\":null}}"; // Null username
+        String newOwnerJson = "{\"identity\":{\"username\":null, \"email\":null}}"; // Null username
         mockMvc.perform(withAuth(post("/api/v1/owners"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(newOwnerJson))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(containsString("Username is required"))); // Example message check
+                .andExpect(content().string(containsString("Email is mandatory"))); // Example message check
     }
 
     /**
@@ -176,8 +176,8 @@ class OwnerRestControllerTest {
      * It expects a 409 Conflict response and checks for an appropriate error message.
      */
     @Test
-    void testCreateOwner_DuplicateUsername() throws Exception {
-        String newOwnerJson = "{\"identity\":{\"username\":\"test1\"}}"; // Username already exists
+    void testCreateOwner_DuplicateEmail() throws Exception {
+        String newOwnerJson = "{\"identity\":{\"username\":\"test1\", \"email\":\"test1@gmail.com\"}}"; // Username already exists
         mockMvc.perform(withAuth(post("/api/v1/owners"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(newOwnerJson))
@@ -193,7 +193,7 @@ class OwnerRestControllerTest {
      */
     @Test
     void testUpdateOwner_ValidData() throws Exception {
-        String updatedOwnerJson = "{\"identity\":{\"username\":\"updatedOwner\"}}";
+        String updatedOwnerJson = "{\"identity\":{\"username\":\"updatedOwner\", \"email\":\"valid@company.com\"}}";
         mockMvc.perform(withAuth(put("/api/v1/owners/{ownerId}", validOwnerId1))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(updatedOwnerJson))
@@ -202,7 +202,7 @@ class OwnerRestControllerTest {
                 .andExpect(result -> {
                     String jsonResponse = result.getResponse().getContentAsString();
                     OwnerDto ownerDto = objectMapper.readValue(jsonResponse, OwnerDto.class);
-                    assertThat(ownerDto.getIdentity().getEmail()).isEqualTo("updatedOwner");
+                    assertThat(ownerDto.getIdentity().getEmail()).isEqualTo("valid@company.com");
                 });
     }
 
@@ -212,7 +212,7 @@ class OwnerRestControllerTest {
      */
     @Test
     void testUpdateOwner_InvalidId() throws Exception {
-        String updatedOwnerJson = "{\"identity\":{\"username\":\"updatedOwner\"}}";
+        String updatedOwnerJson = "{\"identity\":{\"username\":\"updatedOwner\", \"email\":\"updated@company.com\"}}";
         mockMvc.perform(withAuth(put("/api/v1/owners/{ownerId}", "invalidOwnerId"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(updatedOwnerJson))
@@ -224,13 +224,13 @@ class OwnerRestControllerTest {
      * It expects a 400 Bad Request response and checks for an appropriate error message.
      */
     @Test
-    void testUpdateOwner_InvalidData_EmptyUsername() throws Exception {
-        String updatedOwnerJson = "{\"identity\":{\"username\":\"\"}}"; // Invalid username
+    void testUpdateOwner_InvalidData_EmptyEmail() throws Exception {
+        String updatedOwnerJson = "{\"identity\":{\"username\":\"\", \"email\":\"\"}}"; // Invalid username
         mockMvc.perform(withAuth(put("/api/v1/owners/{ownerId}", validOwnerId1))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(updatedOwnerJson))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(containsString("Username must be between"))); // Example message check
+                .andExpect(content().string(containsString("Email must be between 5 and 50 characters long"))); // Example message check
     }
 
     // -------------------- DELETE Requests --------------------
@@ -349,6 +349,7 @@ class OwnerRestControllerTest {
     private Owner createOwner(String username) {
         Owner owner = new Owner();
         Identity identity = new Identity();
+        identity.setEmail(username + "@gmail.com");
         owner.setIdentity(identity);
         return ownerRepository.save(owner);
     }

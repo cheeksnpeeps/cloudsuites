@@ -112,7 +112,7 @@ public class StaffRestControllerTest {
                 .andExpect(result -> {
                     String jsonResponse = result.getResponse().getContentAsString();
                     StaffDto staffDto = objectMapper.readValue(jsonResponse, StaffDto.class);
-                    assertThat(staffDto.getIdentity().getEmail()).isEqualTo("testStaff");
+                    assertThat(staffDto.getIdentity().getEmail()).isEqualTo("testStaff@gmail.com");
                 });
     }
 
@@ -141,7 +141,7 @@ public class StaffRestControllerTest {
                 .andReturn().getResponse().getContentAsString();
 
         StaffDto staffDto = objectMapper.readValue(responseContent, StaffDto.class);
-        assertThat(staffDto.getIdentity().getEmail()).isEqualTo("newStaff");
+        assertThat(staffDto.getIdentity().getEmail()).isEqualTo("newStaff@gmail.com");
     }
 
     @Test
@@ -192,14 +192,14 @@ public class StaffRestControllerTest {
                 .andReturn().getResponse().getContentAsString();
 
         StaffDto staffDto = objectMapper.readValue(responseContent, StaffDto.class);
-        assertThat(staffDto.getIdentity().getEmail()).isEqualTo("buildingStaff");
+        assertThat(staffDto.getIdentity().getEmail()).isEqualTo("buildingStaff@gmail.com");
     }
 
     // -------------------- PUT Requests --------------------
 
     @Test
     void testUpdateStaff_ValidData() throws Exception {
-        String updatedStaffJson = "{\"identity\":{\"username\":\"updatedStaff\"}}";
+        String updatedStaffJson = "{\"identity\":{\"username\":\"updatedStaff\",\"email\":\"updatedStaff@gmail.com\"}}";
         String responseContent = mockMvc.perform(withAuth(put("/api/v1/staff/{id}", validStaffId))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(updatedStaffJson))
@@ -208,7 +208,7 @@ public class StaffRestControllerTest {
                 .andReturn().getResponse().getContentAsString();
 
         StaffDto staffDto = objectMapper.readValue(responseContent, StaffDto.class);
-        assertThat(staffDto.getIdentity().getEmail()).isEqualTo("updatedStaff");
+        assertThat(staffDto.getIdentity().getEmail()).isEqualTo("updatedStaff@gmail.com");
     }
 
     @Test

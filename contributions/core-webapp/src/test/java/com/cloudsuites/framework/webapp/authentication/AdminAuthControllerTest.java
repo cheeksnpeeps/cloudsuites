@@ -94,7 +94,7 @@ class AdminAuthControllerTest {
                 .andExpect(result -> {
                     String jsonResponse = result.getResponse().getContentAsString();
                     AdminDto responseAdminDto = objectMapper.readValue(jsonResponse, AdminDto.class);
-                    assertThat(responseAdminDto.getIdentity().getEmail()).isEqualTo("testRegisterAdmin");
+                    assertThat(responseAdminDto.getIdentity().getEmail()).isEqualTo("testRegisterAdmin@gmail.com");
                 });
     }
 
@@ -112,7 +112,7 @@ class AdminAuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newAdminDto)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(containsString("Username must be between"))); // Example message check
+                .andExpect(content().string(containsString("Email should be valid"))); // Example message check
     }
 
     @Test
