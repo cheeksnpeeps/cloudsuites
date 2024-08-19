@@ -49,7 +49,7 @@ public class AdminTestHelper {
         admin.setRole(AdminRole.SUPER_ADMIN);
         admin.setStatus(AdminStatus.ACTIVE);
         Identity identity = new Identity();
-        identity.setEmail(username);
+        identity.setEmail(username + "@gmail.com");
         identity.setPhoneNumber(phoneNumber);
         admin.setIdentity(identity);
 

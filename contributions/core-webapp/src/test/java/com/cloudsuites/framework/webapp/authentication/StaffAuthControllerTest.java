@@ -102,7 +102,7 @@ class StaffAuthControllerTest {
                 .andExpect(result -> {
                     String jsonResponse = result.getResponse().getContentAsString();
                     StaffDto responseStaffDto = objectMapper.readValue(jsonResponse, StaffDto.class);
-                    assertThat(responseStaffDto.getIdentity().getEmail()).isEqualTo("testRegisterStaff");
+                    assertThat(responseStaffDto.getIdentity().getEmail()).isEqualTo("testRegisterStaff@gmail.com");
                 });
     }
 
@@ -120,7 +120,7 @@ class StaffAuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newStaffDto)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(containsString("Username must be between"))); // Example message check
+                .andExpect(content().string(containsString("Email should be valid"))); // Example message check
     }
 
     // -------------------- OTP Verification Tests --------------------

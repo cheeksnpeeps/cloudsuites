@@ -134,7 +134,7 @@ class TenantRestControllerTest {
 
     @Test
     void createTenant_shouldReturnCreatedTenant() throws Exception {
-        String newTenantJson = "{\"identity\":{\"username\":\"newTenant\"}}"; // New tenant data
+        String newTenantJson = "{\"identity\":{\"email\":\"newTenant@gmail.com\"}}"; // New tenant data
 
         mockMvc.perform(withAuth(post("/api/v1/buildings/{buildingId}/units/{unitId}/tenants", validBuildingId, validUnitId)
                         .contentType(MediaType.APPLICATION_JSON))
@@ -144,13 +144,13 @@ class TenantRestControllerTest {
                 .andExpect(result -> {
                     String jsonResponse = result.getResponse().getContentAsString();
                     TenantDto tenantDto = objectMapper.readValue(jsonResponse, TenantDto.class);
-                    assertThat(tenantDto.getIdentity().getEmail()).isEqualTo("newTenant"); // Validate the created tenant username
+                    assertThat(tenantDto.getIdentity().getEmail()).isEqualTo("newTenant@gmail.com"); // Validate the created tenant username
                 });
     }
 
     @Test
-    void createTenant_withDuplicateUsername_shouldReturnConflict() throws Exception {
-        String newTenantJson = "{\"identity\":{\"username\":\"TenantA\"}}"; // Username already exists
+    void createTenant_withDuplicateEmail_shouldReturnConflict() throws Exception {
+        String newTenantJson = "{\"identity\":{\"username\":\"TenantA\",\"email\":\"tenantA@gmail.com\"}}"; // Username already exists
 
         mockMvc.perform(withAuth(post("/api/v1/buildings/{buildingId}/units/{unitId}/tenants", validBuildingId, validUnitId)
                         .contentType(MediaType.APPLICATION_JSON))
@@ -160,14 +160,14 @@ class TenantRestControllerTest {
     }
 
     @Test
-    void createTenant_withEmptyUsername_shouldReturnBadRequest() throws Exception {
-        String newTenantJson = "{\"identity\":{\"username\":\"\"}}"; // Invalid username
+    void createTenant_withEmptyEmail_shouldReturnBadRequest() throws Exception {
+        String newTenantJson = "{\"identity\":{\"email\":\"\"}}"; // Invalid username
 
         mockMvc.perform(withAuth(post("/api/v1/buildings/{buildingId}/units/{unitId}/tenants", validBuildingId, validUnitId)
                         .contentType(MediaType.APPLICATION_JSON))
                         .content(newTenantJson))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(containsString("Username must be between"))); // Example error message
+                .andExpect(content().string(containsString("Email must be between"))); // Example error message
     }
 
     // -------------------- PUT Requests --------------------

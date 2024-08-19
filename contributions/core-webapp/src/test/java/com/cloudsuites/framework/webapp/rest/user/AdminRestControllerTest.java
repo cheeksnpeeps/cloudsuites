@@ -83,7 +83,7 @@ public class AdminRestControllerTest {
                 .andExpect(result -> {
                     String jsonResponse = result.getResponse().getContentAsString();
                     AdminDto adminDto = objectMapper.readValue(jsonResponse, AdminDto.class);
-                    assertThat(adminDto.getIdentity().getEmail()).isEqualTo("testAdmin");
+                    assertThat(adminDto.getIdentity().getEmail()).isEqualTo("test@company.com");
                 });
     }
 
@@ -106,7 +106,7 @@ public class AdminRestControllerTest {
                 .andReturn().getResponse().getContentAsString();
 
         AdminDto adminDto = objectMapper.readValue(responseContent, AdminDto.class);
-        assertThat(adminDto.getIdentity().getEmail()).isEqualTo("newAdmin");
+        assertThat(adminDto.getIdentity().getEmail()).isEqualTo("new@company.com");
     }
 
     @Test
@@ -140,12 +140,12 @@ public class AdminRestControllerTest {
                 .andReturn().getResponse().getContentAsString();
 
         AdminDto adminDto = objectMapper.readValue(responseContent, AdminDto.class);
-        assertThat(adminDto.getIdentity().getEmail()).isEqualTo("updatedAdmin");
+        assertThat(adminDto.getIdentity().getEmail()).isEqualTo("updated@company.com");
     }
 
     @Test
     void testUpdateAdmin_InvalidId() throws Exception {
-        String updatedAdminJson = "{\"status\": \"ACTIVE\", \"role\": \"SUPER_ADMIN\",\"identity\":{\"username\":\"updatedAdmin\"}}";
+        String updatedAdminJson = "{\"status\": \"ACTIVE\", \"role\": \"SUPER_ADMIN\",\"identity\":{\"username\":\"updatedAdmin\", \"email\":\"updated@company.com\"}}";
         mockMvc.perform(withAuth(put("/api/v1/admins/{adminId}", "invalidAdminId"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(updatedAdminJson))
