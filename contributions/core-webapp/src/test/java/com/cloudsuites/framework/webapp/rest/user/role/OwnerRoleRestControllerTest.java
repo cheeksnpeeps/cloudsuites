@@ -164,7 +164,7 @@ class OwnerRoleRestControllerTest {
     private Owner createOwner(String username, OwnerRole role) {
         Owner owner = new Owner();
         Identity identity = new Identity();
-        identity.setEmail(username);
+        identity.setEmail(username + "@gmail.com");
         owner.setRole(role);
         owner.setStatus(OwnerStatus.ACTIVE);
         identity = userRepository.save(identity);
