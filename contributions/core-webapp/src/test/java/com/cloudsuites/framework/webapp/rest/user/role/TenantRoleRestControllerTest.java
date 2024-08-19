@@ -163,7 +163,7 @@ class TenantRoleRestControllerTest {
     private Tenant createTenant(String username, TenantRole role) {
         Tenant tenant = new Tenant();
         Identity identity = new Identity();
-        identity.setEmail(username);
+        identity.setEmail(username + "@gmail.com");
         tenant.setRole(role);
         tenant.setStatus(TenantStatus.ACTIVE);
         identity = userRepository.save(identity);
