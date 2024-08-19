@@ -53,7 +53,6 @@ class AdminRoleRestControllerTest {
     @BeforeEach
     void setUp() throws Exception {
         clearDatabase();
-
         // Initialize test data
         validAdminId = createAdmin("testAdmin", AdminRole.USER).getAdminId();
         adminTestHelper = new AdminTestHelper(mockMvc, objectMapper, null, null);
@@ -164,7 +163,7 @@ class AdminRoleRestControllerTest {
     private Admin createAdmin(String username, AdminRole role) {
         Admin admin = new Admin();
         Identity identity = new Identity();
-        identity.setEmail(username);
+        identity.setEmail(username + "@gmail.com");
         admin.setRole(role);
         admin.setStatus(AdminStatus.ACTIVE);
         identity = userRepository.save(identity);
