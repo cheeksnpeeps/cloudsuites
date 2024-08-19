@@ -94,7 +94,7 @@ class OwnerAuthControllerTest {
                 .andExpect(result -> {
                     String jsonResponse = result.getResponse().getContentAsString();
                     OwnerDto responseOwnerDto = objectMapper.readValue(jsonResponse, OwnerDto.class);
-                    assertThat(responseOwnerDto.getIdentity().getEmail()).isEqualTo("testRegisterOwnerV");
+                    assertThat(responseOwnerDto.getIdentity().getEmail()).isEqualTo("testRegisterOwnerV@gmail.com");
                 });
     }
 
@@ -114,7 +114,7 @@ class OwnerAuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newOwnerDto)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(containsString("Username must be between"))); // Example message check
+                .andExpect(content().string(containsString("Email should be valid"))); // Example message check
     }
 
     /**
