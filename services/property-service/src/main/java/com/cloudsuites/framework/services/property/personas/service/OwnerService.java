@@ -34,4 +34,5 @@ public interface OwnerService {
 
     void createOrUpdateOwner(Tenant tenant) throws NotFoundResponseException;
 
+    Owner findOwnerByUnitId(String unitId);
 }

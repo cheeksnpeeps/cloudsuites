@@ -46,4 +46,5 @@ public interface TenantService {
 
     @Transactional
     void saveTenant(Tenant tenant);
+
 }
