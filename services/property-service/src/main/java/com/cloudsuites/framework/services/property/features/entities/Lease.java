@@ -9,15 +9,12 @@ import java.time.LocalDate;
 @Data
 @Entity
 @Table(name = "lease", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"tenant_id", "owner_id", "unit_id"})
+        @UniqueConstraint(columnNames = {"owner_id", "unit_id" })
 })
 public class Lease {
     @Id
     @Column(name = "lease_id", unique = true, nullable = false)
     private String leaseId;
-
-    @Column(name = "tenant_id")
-    private String tenantId;
 
     @Column(name = "owner_id")
     private String ownerId;

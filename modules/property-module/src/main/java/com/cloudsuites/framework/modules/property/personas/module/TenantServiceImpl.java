@@ -10,6 +10,7 @@ import com.cloudsuites.framework.services.common.exception.UserAlreadyExistsExce
 import com.cloudsuites.framework.services.property.features.entities.Lease;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.property.features.service.UnitService;
+import com.cloudsuites.framework.services.property.personas.entities.Owner;
 import com.cloudsuites.framework.services.property.personas.entities.Tenant;
 import com.cloudsuites.framework.services.property.personas.entities.TenantStatus;
 import com.cloudsuites.framework.services.property.personas.service.OwnerService;
@@ -65,7 +66,7 @@ public class TenantServiceImpl implements TenantService {
         }
         logger.debug("Creating identity with email: {}", identity.getEmail());
         if (!StringUtils.hasText(identity.getEmail())) {
-            logger.error("Email not found for tenant: {}", tenant);
+            logger.error("Email not provided for tenant: {}", tenant);
             throw new InvalidOperationException("Email is required");
         }
         if (userService.existsByEmail(identity.getEmail())) {
@@ -78,16 +79,34 @@ public class TenantServiceImpl implements TenantService {
 
         // Save the updated unit
         logger.debug("Saving updated unit with tenants");
-        unitService.saveUnit(unit);
+        unit = unitService.saveUnit(unit);
 
         // Set the unit in the tenant object
         tenant.setUnit(unit);
         logger.debug("Tenant unit set to: {}", unit.getUnitId());
 
+        if (Boolean.FALSE.equals(tenant.getIsOwner())) {
+            logger.debug("Tenant is not an owner.");
+            Owner owner = unit.getOwner();
+            logger.debug("Registering lease for owner: {} and unit: {}", owner.getOwnerId(), unit.getUnitId());
+            Lease savedLease = leaseRepository.findByUnitIdAndOwnerId(owner.getOwnerId(), unit.getUnitId());
+            if (savedLease != null) {
+                logger.info("Lease already exists for owner: {} and unit: {}. Updating lease.", owner.getOwnerId(), unit.getUnitId());
+                savedLease.updateLease(tenant.getLease());
+                leaseRepository.save(savedLease);
+                tenant.setLease(savedLease);
+            } else {
+                Lease lease = tenant.getLease();
+                lease.setUnitId(unit.getUnitId());
+                lease.setOwnerId(unit.getOwner().getOwnerId());
+                logger.debug("Creating lease for tenant: {} and unit: {}", tenant.getTenantId(), unit.getUnitId());
+                lease = leaseRepository.save(lease);
+                tenant.setLease(lease);
+            }
+        }
         // Step 4: Save the tenant
         logger.debug("Saving tenant to repository");
         Tenant savedTenant = tenantRepository.save(tenant);
-
         UserRole userRole = userRoleRepository.save(savedTenant.getUserRole());
         logger.debug("User role created: {} - {}", userRole.getPersonaId(), userRole.getRole());
 
@@ -99,8 +118,6 @@ public class TenantServiceImpl implements TenantService {
             logger.debug("Tenant is also an owner. Creating or updating owner record.");
             ownerService.createOrUpdateOwner(savedTenant);
             logger.debug("Owner record created or updated for tenant ID: {}", tenant.getTenantId());
-        } else {
-            logger.debug("Tenant is not an owner. Skipping owner registration.");
         }
         // Log success and return the saved tenant
         logger.info("Tenant created successfully with ID: {}", savedTenant.getTenantId());
@@ -114,7 +131,6 @@ public class TenantServiceImpl implements TenantService {
         Optional<List<Tenant>> existingTenants = tenantRepository.findByBuilding_BuildingIdAndUnit_UnitIdAndStatus(unit.getBuilding().getBuildingId(), unit.getUnitId(), TenantStatus.ACTIVE);
         if (existingTenants.isEmpty()) {
             logger.debug("No existing tenants found for unit: {}", unit.getUnitId());
-            return;
         }
         logger.debug("Existing tenants for unit {}: {}", unit.getUnitId(), existingTenants.get());
         // Deactivate existing tenants if the new tenant is primary
@@ -123,21 +139,6 @@ public class TenantServiceImpl implements TenantService {
             tenantRepository.save(existingTenant);
             logger.debug("Deactivated existing tenant ID: {}", existingTenant.getTenantId());
         }
-    }
-
-    private void registerLease(Tenant tenant, Unit unit) {
-        Lease lease = leaseRepository.findByTenantIdAndUnitIdAndOwnerId(tenant.getTenantId(), unit.getUnitId(), unit.getOwner().getOwnerId());
-        if (lease != null) {
-            logger.info("Lease already exists for tenant: {} and unit: {}", tenant.getTenantId(), unit.getUnitId());
-            lease.updateLease(tenant.getLease());
-            leaseRepository.save(lease);
-            return;
-        }
-        lease = tenant.getLease();
-        lease.setTenantId(tenant.getTenantId());
-        lease.setUnitId(unit.getUnitId());
-        lease.setOwnerId(unit.getOwner().getOwnerId());
-        leaseRepository.save(lease);
     }
 
     @Override
