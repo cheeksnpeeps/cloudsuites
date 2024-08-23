@@ -65,13 +65,15 @@ public class TenantRestController {
 
         Unit unit = validateBuildingAndUnit(buildingId, unitId);
         // Log the phone number of the tenant being registered
-        logger.debug("Registering tenant with phone number: {}", tenantDto.getIdentity().getFirstName());
+        logger.debug("Registering tenant with first name: {}", tenantDto.getIdentity().getFirstName());
+
 
         // Convert TenantDto to Tenant entity
         Tenant tenant = tenantMapper.convertToEntity(tenantDto);
         // Set the building information for the tenant
         tenant.setBuilding(buildingService.getBuildingById(buildingId));
         logger.debug("Assigned building ID to tenant: {}", tenant.getBuilding() != null ? tenant.getBuilding().getBuildingId() : "null");
+
 
         Tenant createdTenant = tenantService.createTenant(tenant, unit);
         logger.debug("Created tenant with ID: {}", tenant.getTenantId());

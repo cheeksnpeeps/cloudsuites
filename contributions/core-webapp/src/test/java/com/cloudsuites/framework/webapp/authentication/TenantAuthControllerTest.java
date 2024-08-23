@@ -2,10 +2,15 @@ package com.cloudsuites.framework.webapp.authentication;
 
 import com.cloudsuites.framework.modules.property.features.repository.BuildingRepository;
 import com.cloudsuites.framework.modules.property.features.repository.UnitRepository;
+import com.cloudsuites.framework.modules.property.personas.repository.OwnerRepository;
 import com.cloudsuites.framework.modules.property.personas.repository.TenantRepository;
 import com.cloudsuites.framework.services.property.features.entities.Building;
+import com.cloudsuites.framework.services.property.features.entities.Lease;
+import com.cloudsuites.framework.services.property.features.entities.LeaseStatus;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
+import com.cloudsuites.framework.services.property.personas.entities.Owner;
 import com.cloudsuites.framework.services.property.personas.entities.Tenant;
+import com.cloudsuites.framework.services.user.entities.Identity;
 import com.cloudsuites.framework.webapp.rest.user.dto.IdentityDto;
 import com.cloudsuites.framework.webapp.rest.user.dto.TenantDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,6 +27,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,6 +55,10 @@ class TenantAuthControllerTest {
     private BuildingRepository buildingRepository;
     @Autowired
     private UnitRepository unitRepository;
+
+    @Autowired
+    private OwnerRepository ownerRepository;
+
     @Autowired
     private ObjectMapper objectMapper;
     private String validBuildingId;
@@ -58,7 +68,9 @@ class TenantAuthControllerTest {
     void setUp() {
         clearDatabase();
         validBuildingId = createBuilding().getBuildingId();
-        validUnitId = createUnit(validBuildingId).getUnitId();
+        Unit unit = createUnit(validBuildingId);
+        validUnitId = unit.getUnitId();
+        createOwner(unit, "existingOwner@gmail.com");
     }
 
     // -------------------- OTP Request Tests --------------------
@@ -215,6 +227,16 @@ class TenantAuthControllerTest {
         return savedUnit;
     }
 
+    private Owner createOwner(Unit unit, String email) {
+        Owner owner = new Owner();
+        Identity identity = new Identity();
+        identity.setEmail(email);
+        identity.setPhoneNumber("+14166024668");
+        owner.setIdentity(identity);
+        owner.addUnit(unit);
+        return ownerRepository.save(owner);
+    }
+
     private TenantDto createTenantDto(String phoneNumber) {
         TenantDto tenantDto = new TenantDto();
         IdentityDto identity = new IdentityDto();
@@ -222,6 +244,13 @@ class TenantAuthControllerTest {
         identity.setPhoneNumber(phoneNumber);
         tenantDto.setIdentity(identity);
         tenantDto.setIsPrimaryTenant(true);
+
+        Lease lease = new Lease();
+        lease.setStatus(LeaseStatus.ACTIVE);
+        lease.setStartDate(LocalDate.now());
+        lease.setEndDate(LocalDate.now().plusYears(1));
+        lease.setRentalAmount(1000.0);
+        tenantDto.setLease(lease);
         return tenantDto;
     }
 
