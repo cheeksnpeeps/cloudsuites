@@ -2,12 +2,15 @@ package com.cloudsuites.framework.webapp.rest.user;
 
 import com.cloudsuites.framework.modules.property.features.repository.BuildingRepository;
 import com.cloudsuites.framework.modules.property.features.repository.UnitRepository;
+import com.cloudsuites.framework.modules.property.personas.repository.OwnerRepository;
 import com.cloudsuites.framework.modules.property.personas.repository.TenantRepository;
 import com.cloudsuites.framework.modules.user.repository.AdminRepository;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import com.cloudsuites.framework.services.common.exception.UserAlreadyExistsException;
 import com.cloudsuites.framework.services.property.features.entities.Building;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
+import com.cloudsuites.framework.services.property.personas.entities.Owner;
+import com.cloudsuites.framework.services.property.personas.entities.OwnerStatus;
 import com.cloudsuites.framework.services.property.personas.entities.Tenant;
 import com.cloudsuites.framework.services.property.personas.entities.TenantStatus;
 import com.cloudsuites.framework.services.property.personas.service.TenantService;
@@ -68,6 +71,9 @@ class TenantRestControllerTest {
 
     @Autowired
     private AdminRepository adminRepository;
+
+    @Autowired
+    private OwnerRepository ownerRepository;
 
     private String validTenantId;
     private String validBuildingId;
@@ -134,7 +140,7 @@ class TenantRestControllerTest {
 
     @Test
     void createTenant_shouldReturnCreatedTenant() throws Exception {
-        String newTenantJson = "{\"identity\":{\"email\":\"newTenant@gmail.com\"}}"; // New tenant data
+        String newTenantJson = "{\"identity\":{\"email\":\"newTenant@gmail.com\"},\"lease\":{\"status\":\"ACTIVE\",\"startDate\":\"2024-08-21\",\"endDate\":\"2025-08-21\",\"rentalAmount\":1000.0}}"; // New tenant data
 
         mockMvc.perform(withAuth(post("/api/v1/buildings/{buildingId}/units/{unitId}/tenants", validBuildingId, validUnitId)
                         .contentType(MediaType.APPLICATION_JSON))
@@ -240,13 +246,26 @@ class TenantRestControllerTest {
         identity.setEmail("tenantA@gmail.com");
         identity = userService.createUser(identity);
         tenant.setIdentity(identity);
+
         Unit unit = unitRepository.findById(unitId).orElseThrow();
         tenant.setUnit(unit);
         tenant.setStatus(TenantStatus.ACTIVE);
         tenant.setBuilding(unit.getBuilding());
         tenant = tenantRepository.save(tenant);
+
+        Owner owner = new Owner();
+        Identity identityO = new Identity();
+        identityO.setEmail("owner@gmail.com");
+        identityO = userService.createUser(identityO);
+        owner.setIdentity(identityO);
+
+        owner.addUnit(unit);
+        owner.setStatus(OwnerStatus.ACTIVE);
+        ownerRepository.save(owner);
+
         unit.addTenant(tenant);
         unitRepository.save(unit);
+
         try {
             List<Tenant> tenants = tenantService.getAllTenantsByBuilding(unit.getBuilding().getBuildingId(), TenantStatus.ACTIVE);
             assertThat(tenants).hasSize(1); // Verify tenant count
