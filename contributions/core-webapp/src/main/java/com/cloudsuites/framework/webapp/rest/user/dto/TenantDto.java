@@ -13,10 +13,12 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TenantDto{
 
@@ -42,9 +44,13 @@ public class TenantDto{
     private BuildingDto building;
 
     @Schema(description = "Tenant is Owner of the same unit", example = "true")
+    @Valid
+    @NotNull(message = "isOwner is required")
     @JsonView({Views.TenantView.class, Views.UnitView.class, Views.OwnerView.class})
     private Boolean isOwner;
 
+    @Valid
+    @NotNull(message = "isPrimaryTenant is required")
     @Schema(description = "Tenant is Primary Tenant (Existing tenants will be cleared)", example = "true")
     @JsonView({Views.TenantView.class, Views.UnitView.class, Views.OwnerView.class})
     private Boolean isPrimaryTenant;
@@ -65,8 +71,4 @@ public class TenantDto{
     @JsonView({Views.RoleView.class, Views.TenantView.class, Views.UnitView.class, Views.OwnerView.class})
     private Lease lease;
 
-    public TenantDto() {
-        this.isPrimaryTenant = false; // Default value
-        this.isOwner = false; // Default value
-    }
 }

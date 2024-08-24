@@ -12,11 +12,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 
 @Getter
@@ -59,10 +55,6 @@ public class Tenant {
     @JoinColumn(name = "lease_id")
     private Lease lease;
 
-    public List<GrantedAuthority> getAuthorities() {
-        return Collections.singletonList(new SimpleGrantedAuthority(UserType.TENANT.name()));
-    }
-
     public UserRole getUserRole() {
         UserRole userRole = new UserRole();
         userRole.setIdentityId(this.getIdentity().getUserId());
@@ -70,11 +62,6 @@ public class Tenant {
         userRole.setUserType(UserType.TENANT);
         userRole.setRole(Objects.requireNonNullElse(role, TenantRole.DEFAULT).name());
         return userRole;
-    }
-
-    public Tenant() {
-        this.isOwner = false; // Default value
-        this.isPrimaryTenant = false;
     }
 
     @PrePersist
