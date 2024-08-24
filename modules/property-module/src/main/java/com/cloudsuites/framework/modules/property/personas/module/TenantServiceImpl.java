@@ -51,60 +51,77 @@ public class TenantServiceImpl implements TenantService {
 
     @Override
     public Tenant createTenant(Tenant tenant, Unit unit) throws NotFoundResponseException, InvalidOperationException, UserAlreadyExistsException {
+        // Validate tenant and identity
+        validateTenantAndIdentity(tenant);
+
         if (Boolean.TRUE.equals(tenant.getIsPrimaryTenant())) {
             logger.debug("Tenant is marked as primary. Clearing existing tenants for unit: {}", unit.getUnitId());
             clearExistingTenants(unit);
         }
-        // Log the start of the tenant creation process
-        logger.debug("Starting tenant creation process for tenant: {}", tenant);
-
-        // Step 1: Create and save the identity for the tenant
-        Identity identity = tenant.getIdentity();
-        if (identity == null) {
-            logger.error("Identity not found for tenant: {}", tenant);
-            throw new InvalidOperationException("Identity not found for tenant: " + tenant);
-        }
-        logger.debug("Creating identity with email: {}", identity.getEmail());
-        if (!StringUtils.hasText(identity.getEmail())) {
-            logger.error("Email not provided for tenant: {}", tenant);
-            throw new InvalidOperationException("Email is required");
-        }
-        if (userService.existsByEmail(identity.getEmail())) {
-            logger.error("User already exists with email: {}", identity.getEmail());
-            throw new UserAlreadyExistsException("User already exists with email: " + identity.getEmail());
-        }
-        Identity savedIdentity = userService.createUser(identity);
+        // Create or fetch identity for tenant
+        Identity savedIdentity = createOrFetchIdentity(tenant);
         tenant.setIdentity(savedIdentity);
-        logger.debug("Identity created and saved: {}", savedIdentity.getUserId());
-
-        // Save the updated unit
-        logger.debug("Saving updated unit with tenants");
-        unit = unitService.saveUnit(unit);
 
         // Set the unit in the tenant object
         tenant.setUnit(unit);
         logger.debug("Tenant unit set to: {}", unit.getUnitId());
 
+        // Save or update lease if tenant is not an owner
         if (Boolean.FALSE.equals(tenant.getIsOwner())) {
-            logger.debug("Tenant is not an owner.");
-            Owner owner = unit.getOwner();
-            logger.debug("Registering lease for owner: {} and unit: {}", owner.getOwnerId(), unit.getUnitId());
-            Lease savedLease = leaseRepository.findByUnitIdAndOwnerId(owner.getOwnerId(), unit.getUnitId());
-            if (savedLease != null) {
-                logger.info("Lease already exists for owner: {} and unit: {}. Updating lease.", owner.getOwnerId(), unit.getUnitId());
-                savedLease.updateLease(tenant.getLease());
-                leaseRepository.save(savedLease);
-                tenant.setLease(savedLease);
-            } else {
-                Lease lease = tenant.getLease();
-                lease.setUnitId(unit.getUnitId());
-                lease.setOwnerId(unit.getOwner().getOwnerId());
-                logger.debug("Creating lease for tenant: {} and unit: {}", tenant.getTenantId(), unit.getUnitId());
-                lease = leaseRepository.save(lease);
-                tenant.setLease(lease);
-            }
+            manageLeaseForTenant(tenant, unit);
+        } else {
+            tenant.setLease(null);
         }
-        // Step 4: Save the tenant
+        // Save the tenant
+        Tenant savedTenant = saveTenantAndRole(tenant, unit);
+        logger.debug("Tenant saved successfully: {}", savedTenant.getLease());
+        // Handle owner registration if applicable
+        handleOwnerRegistrationIfApplicable(savedTenant);
+
+        logger.info("Tenant created successfully with ID: {}", savedTenant.getTenantId());
+        return savedTenant;
+    }
+
+    private void validateTenantAndIdentity(Tenant tenant) throws InvalidOperationException, UserAlreadyExistsException {
+        if (tenant.getIdentity() == null) {
+            logger.error("Identity not found for tenant: {}", tenant);
+            throw new InvalidOperationException("Identity not found for tenant: " + tenant);
+        }
+        if (!StringUtils.hasText(tenant.getIdentity().getEmail())) {
+            logger.error("Email not provided for tenant: {}", tenant);
+            throw new InvalidOperationException("Email is required");
+        }
+        if (userService.existsByEmail(tenant.getIdentity().getEmail())) {
+            logger.error("User already exists with email: {}", tenant.getIdentity().getEmail());
+            throw new UserAlreadyExistsException("User already exists with email: " + tenant.getIdentity().getEmail());
+        }
+    }
+
+    private Identity createOrFetchIdentity(Tenant tenant) throws UserAlreadyExistsException {
+        logger.debug("Creating identity with email: {}", tenant.getIdentity().getEmail());
+        return userService.createUser(tenant.getIdentity());
+    }
+
+    private void manageLeaseForTenant(Tenant tenant, Unit unit) {
+        logger.debug("Tenant is not an owner.");
+        Owner owner = unit.getOwner();
+        Lease savedLease = leaseRepository.findByUnitIdAndOwnerId(owner.getOwnerId(), unit.getUnitId());
+        if (savedLease != null) {
+            logger.info("Lease already exists for owner: {} and unit: {}. Updating lease.", owner.getOwnerId(), unit.getUnitId());
+            savedLease.updateLease(tenant.getLease());
+            leaseRepository.save(savedLease);
+            tenant.setLease(savedLease);
+        } else {
+            Lease lease = tenant.getLease();
+            lease.setUnitId(unit.getUnitId());
+            lease.setOwnerId(owner.getOwnerId());
+            logger.debug("Creating lease for tenant: {} and unit: {}", tenant.getTenantId(), unit.getUnitId());
+            lease = leaseRepository.save(lease);
+            tenant.setLease(lease);
+        }
+    }
+
+    private Tenant saveTenantAndRole(Tenant tenant, Unit unit) {
         logger.debug("Saving tenant to repository");
         Tenant savedTenant = tenantRepository.save(tenant);
         UserRole userRole = userRoleRepository.save(savedTenant.getUserRole());
@@ -113,15 +130,15 @@ public class TenantServiceImpl implements TenantService {
         unit.addTenant(savedTenant);
         unitRepository.save(unit);
 
-        // Handle owner registration if applicable
-        if (tenant.getIsOwner() != null && tenant.getIsOwner()) {
+        return savedTenant;
+    }
+
+    private void handleOwnerRegistrationIfApplicable(Tenant tenant) throws NotFoundResponseException {
+        if (Boolean.TRUE.equals(tenant.getIsOwner())) {
             logger.debug("Tenant is also an owner. Creating or updating owner record.");
-            ownerService.createOrUpdateOwner(savedTenant);
+            ownerService.createOrUpdateOwner(tenant);
             logger.debug("Owner record created or updated for tenant ID: {}", tenant.getTenantId());
         }
-        // Log success and return the saved tenant
-        logger.info("Tenant created successfully with ID: {}", savedTenant.getTenantId());
-        return savedTenant;
     }
 
     private void clearExistingTenants(Unit unit) {
