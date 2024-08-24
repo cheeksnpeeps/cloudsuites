@@ -140,7 +140,23 @@ class TenantRestControllerTest {
 
     @Test
     void createTenant_shouldReturnCreatedTenant() throws Exception {
-        String newTenantJson = "{\"identity\":{\"email\":\"newTenant@gmail.com\"},\"lease\":{\"status\":\"ACTIVE\",\"startDate\":\"2024-08-21\",\"endDate\":\"2025-08-21\",\"rentalAmount\":1000.0}}"; // New tenant data
+        String newTenantJson = "{\"identity\":{\"email\":\"newTenant@gmail.com\"},\"lease\":{\"status\":\"ACTIVE\",\"startDate\":\"2024-08-21\",\"endDate\":\"2025-08-21\",\"rentalAmount\":1000.0},\"isPrimaryTenant\":\"true\",\"isOwner\":\"false\"}; "; // New tenant data
+
+        mockMvc.perform(withAuth(post("/api/v1/buildings/{buildingId}/units/{unitId}/tenants", validBuildingId, validUnitId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                        .content(newTenantJson))
+                .andExpect(status().isCreated())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(result -> {
+                    String jsonResponse = result.getResponse().getContentAsString();
+                    TenantDto tenantDto = objectMapper.readValue(jsonResponse, TenantDto.class);
+                    assertThat(tenantDto.getIdentity().getEmail()).isEqualTo("newTenant@gmail.com"); // Validate the created tenant username
+                });
+    }
+
+    @Test
+    void createTenant_shouldReturnCreatedTenantwithOwnerTrue() throws Exception {
+        String newTenantJson = "{\"identity\":{\"email\":\"newTenant@gmail.com\"},\"lease\":{\"status\":\"ACTIVE\",\"startDate\":\"2024-08-21\",\"endDate\":\"2025-08-21\",\"rentalAmount\":1000.0},\"isPrimaryTenant\":\"true\",\"isOwner\":\"true\"}; "; // New tenant data
 
         mockMvc.perform(withAuth(post("/api/v1/buildings/{buildingId}/units/{unitId}/tenants", validBuildingId, validUnitId)
                         .contentType(MediaType.APPLICATION_JSON))
@@ -156,7 +172,7 @@ class TenantRestControllerTest {
 
     @Test
     void createTenant_withDuplicateEmail_shouldReturnConflict() throws Exception {
-        String newTenantJson = "{\"identity\":{\"username\":\"TenantA\",\"email\":\"tenantA@gmail.com\"}}"; // Username already exists
+        String newTenantJson = "{\"identity\":{\"username\":\"TenantA\",\"email\":\"tenantA@gmail.com\"},\"isPrimaryTenant\":\"true\",\"isOwner\":\"false\"}"; // Username already exists
 
         mockMvc.perform(withAuth(post("/api/v1/buildings/{buildingId}/units/{unitId}/tenants", validBuildingId, validUnitId)
                         .contentType(MediaType.APPLICATION_JSON))
