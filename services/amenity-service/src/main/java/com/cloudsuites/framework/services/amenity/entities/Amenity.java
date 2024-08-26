@@ -3,6 +3,7 @@ package com.cloudsuites.framework.services.amenity.entities;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalTime;
 
 @Data
@@ -13,26 +14,55 @@ public abstract class Amenity {
 
     @Id
     @Column(name = "amenity_id", unique = true, nullable = false)
-    private String amenityId;
+    private String amenityId; // Unique identifier for the amenity
 
-    @Column(name = "name", nullable = false)
-    private String name;
+    @Column(name = "name", unique = true, nullable = false)
+    private String name; // Name of the amenity
 
     @Column(name = "description")
-    private String description;
+    private String description; // Description of the amenity
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false)
-    private AmenityType type;
+    private AmenityType type; // Type of the amenity (e.g., Swimming Pool, Gym)
 
     @Column(name = "is_active", nullable = false)
-    private Boolean isActive;
+    private Boolean isActive = true; // Indicates if the amenity is currently active
 
     @Column(name = "open_time")
-    private LocalTime openTime;
+    private LocalTime openTime; // Opening time of the amenity
 
     @Column(name = "close_time")
-    private LocalTime closeTime;
+    private LocalTime closeTime; // Closing time of the amenity
 
-    // Common fields and methods
+    @Column(name = "location", nullable = false)
+    private String location; // Location or address of the amenity
+
+    @Column(name = "capacity")
+    private Integer capacity; // Maximum capacity for the amenity
+
+    @Column(name = "is_booking_required", nullable = false)
+    private Boolean isBookingRequired = false; // Indicates if booking is required for the amenity
+
+    @Column(name = "is_paid_service", nullable = false)
+    private Boolean isPaidService = false; // Indicates if the amenity requires a fee to use
+
+    @Column(name = "hourly_rate", precision = 10, scale = 2)
+    private BigDecimal hourlyRate; // Hourly rate for using the amenity
+
+    @Column(name = "rules")
+    private String rules; // Rules and regulations for the amenity
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "maintenance_status", nullable = false)
+    private MaintenanceStatus maintenanceStatus = MaintenanceStatus.OPERATIONAL; // Current maintenance status of the amenity
+
+    @Column(name = "advance_booking_period")
+    private Integer advanceBookingPeriod; // Number of days in advance the amenity can be booked
+
+    @Column(name = "booking_duration_limit")
+    private Integer bookingDurationLimit; // Maximum duration for which the amenity can be booked
+
+    @Column(name = "minimum_booking_duration")
+    private Integer minimumBookingDuration; // Minimum duration for which the amenity can be booked
 }
