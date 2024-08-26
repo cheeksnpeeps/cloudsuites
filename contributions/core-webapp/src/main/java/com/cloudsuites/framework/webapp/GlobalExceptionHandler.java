@@ -1,5 +1,6 @@
 package com.cloudsuites.framework.webapp;
 
+import com.cloudsuites.framework.services.amenity.entities.booking.BookingException;
 import com.cloudsuites.framework.services.common.exception.*;
 import io.jsonwebtoken.MalformedJwtException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -127,6 +128,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problemDetails);
+    }
+
+    @ExceptionHandler(BookingException.class)
+    public ResponseEntity<String> handleBookingException(BookingException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(Exception.class)
