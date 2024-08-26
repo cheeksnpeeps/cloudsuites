@@ -244,7 +244,7 @@ class TenantAuthControllerTest {
         identity.setPhoneNumber(phoneNumber);
         tenantDto.setIdentity(identity);
         tenantDto.setIsPrimaryTenant(true);
-
+        tenantDto.setIsOwner(false);
         Lease lease = new Lease();
         lease.setStatus(LeaseStatus.ACTIVE);
         lease.setStartDate(LocalDate.now());
