@@ -19,6 +19,7 @@
 		<module>parking-module</module>
 		<module>identity-module</module>
 		<module>property-module</module>
+		<module>amenity-module</module>
 	</modules>
 </project>
 

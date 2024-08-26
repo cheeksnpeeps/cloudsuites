@@ -19,6 +19,7 @@
 		<module>parking-service</module>
 		<module>property-service</module>
 		<module>identity-service</module>
+		<module>amenity-service</module>
 	</modules>
 </project>
 
