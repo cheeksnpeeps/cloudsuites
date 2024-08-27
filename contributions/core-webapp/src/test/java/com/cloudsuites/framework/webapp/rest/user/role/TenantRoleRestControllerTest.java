@@ -106,7 +106,8 @@ class TenantRoleRestControllerTest {
         tenant.setRole(TenantRole.DEFAULT);
         tenant.setStatus(TenantStatus.ACTIVE);
         tenant.setIdentity(identity);
-
+        tenant.setIsPrimaryTenant(true);
+        tenant.setIsOwner(true);
         mockMvc.perform(withAuth(put("/api/v1/tenants/{tenantId}/roles", validTenantId))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(tenant)))
@@ -127,6 +128,8 @@ class TenantRoleRestControllerTest {
         tenant.setRole(TenantRole.DEFAULT);
         tenant.setStatus(TenantStatus.ACTIVE);
         tenant.setIdentity(identity);
+        tenant.setIsPrimaryTenant(true);
+        tenant.setIsOwner(true);
         mockMvc.perform(withAuth(put("/api/v1/tenants/{tenantId}/roles", "invalidTenantId"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(tenant)))
