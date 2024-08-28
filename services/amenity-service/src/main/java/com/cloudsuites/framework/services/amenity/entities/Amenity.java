@@ -1,10 +1,12 @@
 package com.cloudsuites.framework.services.amenity.entities;
 
+import com.cloudsuites.framework.services.amenity.entities.booking.BookingLimitPeriod;
 import jakarta.persistence.*;
 import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalTime;
+import java.util.Set;
 
 @Data
 @Entity
@@ -65,4 +67,18 @@ public abstract class Amenity {
 
     @Column(name = "minimum_booking_duration")
     private Integer minimumBookingDuration; // Minimum duration for which the amenity can be booked
+
+    @Column(name = "max_bookings_per_tenant")
+    private Integer maxBookingsPerTenant;  // Maximum number of bookings a tenant can make for this amenity
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "booking_limit_period")
+    private BookingLimitPeriod bookingLimitPeriod; // The period for which the booking limit applies (e.g., DAILY, WEEKLY, MONTHLY)
+
+    // List of building IDs (as strings) associated with this amenity
+    @ElementCollection
+    @CollectionTable(name = "amenity_building", joinColumns = @JoinColumn(name = "amenity_id"))
+    @Column(name = "building_id")
+    private Set<String> buildingIds; // Set of building IDs associated with this amenity
+
 }
