@@ -8,7 +8,10 @@ import java.time.LocalDateTime;
 
 @Data
 @Entity
-@Table(name = "amenity_booking")
+@Table(name = "amenity_booking",
+        indexes = {
+                @Index(name = "idx_amenity_user_booking", columnList = "amenity_id, user_id, start_time, end_time")
+        })
 public class AmenityBooking {
 
     @Id
@@ -44,8 +47,12 @@ public class AmenityBooking {
         this.createdAt = LocalDateTime.now();
     }
 
+    @Version
+    private Long version; // For optimistic locking
+
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
 }
