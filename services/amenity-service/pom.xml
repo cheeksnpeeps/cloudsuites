@@ -31,15 +31,5 @@
             <artifactId>identity-module</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
-        <dependency>
-            <groupId>com.cloudsuites.framework.services</groupId>
-            <artifactId>property-service</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.cloudsuites.framework.modules</groupId>
-            <artifactId>property-module</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
     </dependencies>
 </project>
