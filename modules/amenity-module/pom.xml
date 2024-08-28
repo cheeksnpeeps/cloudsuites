@@ -22,11 +22,6 @@
         </dependency>
         <dependency>
             <groupId>com.cloudsuites.framework.services</groupId>
-            <artifactId>property-service</artifactId>
-            <version>${core.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.cloudsuites.framework.services</groupId>
             <artifactId>amenity-service</artifactId>
             <version>${core.version}</version>
         </dependency>
