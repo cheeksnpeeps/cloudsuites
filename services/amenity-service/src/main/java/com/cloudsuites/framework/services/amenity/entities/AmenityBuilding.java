@@ -18,4 +18,12 @@ public class AmenityBuilding {
     @Column(name = "building_id")
     private String buildingId;
 
+    public AmenityBuilding(String amenityId, String buildingId) {
+        this.amenityId = amenityId;
+        this.buildingId = buildingId;
+    }
+
+    public AmenityBuilding() {
+
+    }
 }
