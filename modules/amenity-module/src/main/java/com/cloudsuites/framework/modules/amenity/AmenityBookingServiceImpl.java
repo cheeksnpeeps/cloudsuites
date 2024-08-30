@@ -11,7 +11,9 @@ import com.cloudsuites.framework.services.amenity.service.AmenityBookingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -117,6 +119,18 @@ public class AmenityBookingServiceImpl implements AmenityBookingService {
         return true;
     }
 
+    @Scheduled(cron = "0 0 3 * * ?") // Runs every day at 3 AM
+    @Transactional
+    public void removePastBookings() {
+        LocalDateTime cutoffDate = LocalDateTime.now().minusDays(30); // Adjust cutoff as needed
+        logger.debug("Removing bookings before {}", cutoffDate);
+        try {
+            int deletedCount = bookingRepository.deleteByEndTimeBefore(cutoffDate);
+            logger.info("Deleted {} old bookings", deletedCount);
+        } catch (Exception e) {
+            logger.error("Error while deleting old bookings", e);
+        }
+    }
 
     private LocalDateTime calculateBookingLimitStartTime(BookingLimitPeriod period) {
         LocalDateTime now = LocalDateTime.now();
