@@ -6,6 +6,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalTime;
+import java.util.Set;
 
 @Data
 @Entity
@@ -16,6 +17,17 @@ public abstract class Amenity {
     @Id
     @Column(name = "amenity_id", unique = true, nullable = false)
     private String amenityId; // Unique identifier for the amenity
+
+    @Column(name = "image_url")
+    private String imageUrl;
+
+    @ElementCollection
+    @CollectionTable(name = "amenity_image_gallery", joinColumns = @JoinColumn(name = "amenity_id"))
+    @Column(name = "image_url")
+    private Set<String> imageGallery;
+
+    @Column(name = "video_url")
+    private String videoUrl;
 
     @Column(name = "name", unique = true, nullable = false)
     private String name; // Name of the amenity
