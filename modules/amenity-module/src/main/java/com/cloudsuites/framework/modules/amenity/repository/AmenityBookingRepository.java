@@ -17,5 +17,18 @@ public interface AmenityBookingRepository extends JpaRepository<AmenityBooking, 
     List<AmenityBooking> findOverlappingBookings(@Param("amenityId") String amenityId, @Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime);
 
     int deleteByEndTimeBefore(LocalDateTime cutoffDate);
+
+    @Query("SELECT b FROM AmenityBooking b WHERE b.userId = :userId AND (:amenityType IS NULL OR b.amenity.type = :amenityType) AND (:startDate IS NULL OR b.startTime >= :startDate) AND (:endDate IS NULL OR b.endTime <= :endDate)")
+    List<AmenityBooking> findByUserIdAndFilters(@Param("userId") String userId,
+                                                @Param("type") String type,
+                                                @Param("startDate") LocalDateTime startDate,
+                                                @Param("endDate") LocalDateTime endDate);
+
+    @Query("SELECT b FROM AmenityBooking b WHERE b.amenity.amenityId = :amenityId AND b.startTime >= :start AND b.endTime <= :end")
+    List<AmenityBooking> findByAmenityIdAndTimeRange(@Param("amenityId") String amenityId,
+                                                     @Param("start") LocalDateTime start,
+                                                     @Param("end") LocalDateTime end);
+
+
 }
 
