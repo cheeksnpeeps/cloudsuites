@@ -53,3 +53,7 @@ jwt:
 gcp:
   firebase:
     service-account: classpath:firebase-service-account.json
+scheduler:
+  removePastBookings:
+    cron: "0 0 3 * * ?"
+    cutoffDays: 30

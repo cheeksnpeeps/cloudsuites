@@ -63,3 +63,10 @@ jwt:
   secretKey: ${secretKey}
   accessTokenValidityMs: 86400000  # 1 day in milliseconds
   refreshTokenValidityMs: 604800000  # 7 days in milliseconds
+gcp:
+  firebase:
+    service-account: classpath:firebase-service-account.json
+scheduler:
+  removePastBookings:
+    cron: "0 0 3 * * ?"
+    cutoffDays: 30
