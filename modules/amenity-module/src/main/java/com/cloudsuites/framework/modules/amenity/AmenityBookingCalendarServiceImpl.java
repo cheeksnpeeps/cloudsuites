@@ -61,7 +61,7 @@ public class AmenityBookingCalendarServiceImpl implements AmenityBookingCalendar
         return calculateAvailableSlots(amenity, bookings, start, end);
     }
 
-    private List<LocalDateTime> calculateAvailableSlots(Amenity amenity, List<AmenityBooking> bookings, LocalDateTime start, LocalDateTime end) {
+    List<LocalDateTime> calculateAvailableSlots(Amenity amenity, List<AmenityBooking> bookings, LocalDateTime start, LocalDateTime end) {
         List<LocalDateTime> availableSlots = new ArrayList<>();
 
         // Get opening and closing hours from the amenity entity
