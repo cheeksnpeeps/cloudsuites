@@ -3,9 +3,12 @@ package com.cloudsuites.framework.modules.amenity;
 import com.cloudsuites.framework.modules.amenity.repository.AmenityBookingRepository;
 import com.cloudsuites.framework.modules.amenity.repository.AmenityRepository;
 import com.cloudsuites.framework.services.amenity.entities.Amenity;
+import com.cloudsuites.framework.services.amenity.entities.AmenityType;
 import com.cloudsuites.framework.services.amenity.entities.booking.AmenityBooking;
 import com.cloudsuites.framework.services.amenity.service.AmenityBookingCalendarService;
-import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -15,11 +18,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@Service
+@Component
 public class AmenityBookingCalendarServiceImpl implements AmenityBookingCalendarService {
 
     private final AmenityBookingRepository bookingRepository;
     private final AmenityRepository amenityRepository;
+
+    private static final Logger logger = LoggerFactory.getLogger(AmenityBookingCalendarServiceImpl.class);
 
     public AmenityBookingCalendarServiceImpl(AmenityBookingRepository bookingRepository, AmenityRepository amenityRepository) {
         this.bookingRepository = bookingRepository;
@@ -28,6 +33,7 @@ public class AmenityBookingCalendarServiceImpl implements AmenityBookingCalendar
 
     private static Set<LocalDateTime> getLocalDateTimes(List<AmenityBooking> bookings) {
         Set<LocalDateTime> bookedSlots = new HashSet<>();
+        logger.debug("Calculating booked slots from {} bookings.", bookings.size());
 
         // Mark all booked slots
         for (AmenityBooking booking : bookings) {
@@ -37,32 +43,44 @@ public class AmenityBookingCalendarServiceImpl implements AmenityBookingCalendar
                 slotTime = slotTime.plusHours(1);
             }
         }
+        logger.debug("Found {} booked slots.", bookedSlots.size());
         return bookedSlots;
     }
 
     @Override
-    public List<AmenityBooking> getBookingsForUser(String userId, String amenityType, LocalDateTime startDate, LocalDateTime endDate) {
-        // Fetch bookings from repository based on user and filters
-        return bookingRepository.findByUserIdAndFilters(userId, amenityType, startDate, endDate);
+    public List<AmenityBooking> getBookingsForUser(String userId, AmenityType amenityType, LocalDateTime startDate, LocalDateTime endDate) {
+        logger.info("Fetching bookings for userId: {}, amenityType: {}, startDate: {}, endDate: {}",
+                userId, amenityType, startDate, endDate);
+        List<AmenityBooking> bookings = bookingRepository.findByUserIdAndFilters(userId, amenityType, startDate, endDate);
+        logger.debug("Found {} bookings for userId: {}, amenityType: {}", bookings.size(), userId, amenityType);
+        return bookings;
     }
 
     @Override
     public List<AmenityBooking> getBookingsForAmenity(String amenityId, LocalDateTime start, LocalDateTime end) {
-        // Fetch bookings from repository based on amenityId and time range
-        return bookingRepository.findByAmenityIdAndTimeRange(amenityId, start, end);
+        logger.info("Fetching bookings for amenityId: {}, start: {}, end: {}", amenityId, start, end);
+        List<AmenityBooking> bookings = bookingRepository.findByAmenityIdAndTimeRange(amenityId, start, end);
+        logger.debug("Found {} bookings for amenityId: {}", bookings.size(), amenityId);
+        return bookings;
     }
 
     @Override
     public List<LocalDateTime> getAvailableSlotsForAmenity(String amenityId, LocalDateTime start, LocalDateTime end) {
-        // Fetch all bookings and calculate available slots
+        logger.info("Calculating available slots for amenityId: {}, start: {}, end: {}", amenityId, start, end);
         List<AmenityBooking> bookings = bookingRepository.findByAmenityIdAndTimeRange(amenityId, start, end);
-        // Logic to determine available slots based on existing bookings
-        Amenity amenity = amenityRepository.findById(amenityId).orElseThrow();
-        return calculateAvailableSlots(amenity, bookings, start, end);
+        Amenity amenity = amenityRepository.findById(amenityId).orElseThrow(() -> {
+            logger.error("Amenity with id {} not found.", amenityId);
+            return new RuntimeException("Amenity not found");
+        });
+
+        List<LocalDateTime> availableSlots = calculateAvailableSlots(amenity, bookings, start, end);
+        logger.debug("Found {} available slots for amenityId: {}", availableSlots.size(), amenityId);
+        return availableSlots;
     }
 
     List<LocalDateTime> calculateAvailableSlots(Amenity amenity, List<AmenityBooking> bookings, LocalDateTime start, LocalDateTime end) {
         List<LocalDateTime> availableSlots = new ArrayList<>();
+        logger.debug("Calculating available slots based on {} bookings.", bookings.size());
 
         // Get opening and closing hours from the amenity entity
         LocalTime openingHour = amenity.getOpenTime();
@@ -85,8 +103,7 @@ public class AmenityBookingCalendarServiceImpl implements AmenityBookingCalendar
             slotStartTime = slotStartTime.plusHours(1);
         }
 
+        logger.debug("Calculated {} available slots.", availableSlots.size());
         return availableSlots;
     }
-
 }
-
