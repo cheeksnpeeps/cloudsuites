@@ -1,5 +1,6 @@
 package com.cloudsuites.framework.webapp.rest.property.dto;
 
+import com.cloudsuites.framework.webapp.rest.amenity.dto.AmenityDto;
 import com.cloudsuites.framework.webapp.rest.user.dto.AddressDto;
 import com.cloudsuites.framework.webapp.rest.user.dto.IdentityDto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -16,6 +17,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -71,5 +73,9 @@ public class BuildingDto {
 	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
 	@JsonView(Views.BuildingView.class)
 	private LocalDateTime lastModifiedAt;
+
+	@JsonView(Views.BuildingView.class)
+	@Schema(description = "List of amenities in the building")
+	private List<AmenityDto> amenities;
 
 }
