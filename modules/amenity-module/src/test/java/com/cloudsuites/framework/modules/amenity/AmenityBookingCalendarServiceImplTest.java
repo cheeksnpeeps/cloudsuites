@@ -49,13 +49,13 @@ class AmenityBookingCalendarServiceImplTest {
         booking.setStartTime(startDate);
         booking.setEndTime(endDate);
 
-        when(bookingRepository.findByUserIdAndFilters(userId, AmenityType.BARBECUE_AREA.name(), startDate, endDate)).thenReturn(List.of(booking));
+        when(bookingRepository.findByUserIdAndFilters(userId, AmenityType.BARBECUE_AREA, startDate, endDate)).thenReturn(List.of(booking));
         // Act
-        List<AmenityBooking> bookings = amenityBookingCalendarService.getBookingsForUser(userId, AmenityType.BARBECUE_AREA.name(), startDate, endDate);
+        List<AmenityBooking> bookings = amenityBookingCalendarService.getBookingsForUser(userId, AmenityType.BARBECUE_AREA, startDate, endDate);
         // Assert
         assertEquals(1, bookings.size());
         assertEquals(userId, bookings.get(0).getUserId());
-        verify(bookingRepository, Mockito.times(1)).findByUserIdAndFilters(userId, AmenityType.BARBECUE_AREA.name(), startDate, endDate);
+        verify(bookingRepository, Mockito.times(1)).findByUserIdAndFilters(userId, AmenityType.BARBECUE_AREA, startDate, endDate);
     }
 
     @Test
