@@ -1,5 +1,6 @@
 package com.cloudsuites.framework.webapp;
 
+import com.cloudsuites.framework.services.amenity.entities.booking.AmenityNotFoundException;
 import com.cloudsuites.framework.services.amenity.entities.booking.BookingException;
 import com.cloudsuites.framework.services.common.exception.*;
 import io.jsonwebtoken.MalformedJwtException;
@@ -43,6 +44,20 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(NotFoundResponseException.class)
     protected ResponseEntity<ProblemDetails> handleNotFoundResponseException(NotFoundResponseException ex, HttpServletRequest request) {
+        logger.error("NotFoundResponseException occurred: URI={}, Message={}", request.getRequestURI(), ex.getMessage(), ex);
+        ProblemDetails problemDetails = ProblemDetails.builder()
+                .withTitle("Resource Not Found")
+                .withStatus(HttpStatus.NOT_FOUND.value())
+                .withDetail(ex.getMessage())
+                .withInstance(URI.create(request.getRequestURI()).getPath())
+                .withTimestamp(ZonedDateTime.now())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(problemDetails);
+    }
+
+    @ExceptionHandler(AmenityNotFoundException.class)
+    protected ResponseEntity<ProblemDetails> handleAmenityNotFoundException(AmenityNotFoundException ex, HttpServletRequest request) {
         logger.error("NotFoundResponseException occurred: URI={}, Message={}", request.getRequestURI(), ex.getMessage(), ex);
         ProblemDetails problemDetails = ProblemDetails.builder()
                 .withTitle("Resource Not Found")
