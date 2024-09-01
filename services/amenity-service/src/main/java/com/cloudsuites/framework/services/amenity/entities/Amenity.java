@@ -1,5 +1,6 @@
 package com.cloudsuites.framework.services.amenity.entities;
 
+import com.cloudsuites.framework.modules.common.utils.IdGenerator;
 import com.cloudsuites.framework.services.amenity.entities.booking.BookingLimitPeriod;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -7,6 +8,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalTime;
 import java.util.Set;
+
 
 @Data
 @Entity
@@ -48,7 +50,7 @@ public abstract class Amenity {
     @Column(name = "close_time")
     private LocalTime closeTime; // Closing time of the amenity
 
-    @Column(name = "location", nullable = false)
+    @Column(name = "location")
     private String location; // Location or address of the amenity
 
     @Column(name = "capacity")
@@ -86,4 +88,11 @@ public abstract class Amenity {
     @Column(name = "booking_limit_period")
     private BookingLimitPeriod bookingLimitPeriod; // The period for which the booking limit applies (e.g., DAILY, WEEKLY, MONTHLY)
 
+    protected Amenity() {
+    }
+
+    @PrePersist
+    public void onCreate() {
+        this.amenityId = IdGenerator.generateULID("AMN-");
+    }
 }
