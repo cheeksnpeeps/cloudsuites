@@ -30,4 +30,7 @@ public class Views {
 
     public class RoleView {
     }
+
+    public class AmenityView {
+    }
 }
