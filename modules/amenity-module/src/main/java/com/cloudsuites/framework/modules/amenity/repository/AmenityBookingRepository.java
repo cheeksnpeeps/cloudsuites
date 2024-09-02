@@ -38,5 +38,7 @@ public interface AmenityBookingRepository extends JpaRepository<AmenityBooking, 
                                                      @Param("end") LocalDateTime end);
 
 
+    @Transactional
+    List<AmenityBooking> findByAmenity_AmenityId(String amenityId);
 }
 
