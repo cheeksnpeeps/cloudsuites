@@ -1,5 +1,6 @@
 package com.cloudsuites.framework.webapp;
 
+import com.cloudsuites.framework.services.amenity.entities.booking.AmenityAlreadyExistsException;
 import com.cloudsuites.framework.services.amenity.entities.booking.AmenityNotFoundException;
 import com.cloudsuites.framework.services.amenity.entities.booking.BookingException;
 import com.cloudsuites.framework.services.common.exception.*;
@@ -42,6 +43,19 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problemDetails);
     }
 
+    @ExceptionHandler(BookingException.class)
+    public ResponseEntity<Object> handleBookingException(BookingException ex, HttpServletRequest request) {
+        logger.error("BookingException occurred: Message={}", ex.getMessage(), ex);
+        ProblemDetails problemDetails = ProblemDetails.builder()
+                .withTitle("Booking Error")
+                .withStatus(HttpStatus.BAD_REQUEST.value())
+                .withDetail(ex.getMessage())
+                .withTimestamp(ZonedDateTime.now())
+                .build();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problemDetails);
+    }
+
+
     @ExceptionHandler(NotFoundResponseException.class)
     protected ResponseEntity<ProblemDetails> handleNotFoundResponseException(NotFoundResponseException ex, HttpServletRequest request) {
         logger.error("NotFoundResponseException occurred: URI={}, Message={}", request.getRequestURI(), ex.getMessage(), ex);
@@ -70,9 +84,23 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(problemDetails);
     }
 
+    @ExceptionHandler(AmenityAlreadyExistsException.class)
+    protected ResponseEntity<ProblemDetails> amenityAlreadyExistsException(AmenityAlreadyExistsException ex, HttpServletRequest request) {
+        logger.error("AmenityAlreadyExistsException occurred: URI={}, Message={}", request.getRequestURI(), ex.getMessage(), ex);
+        ProblemDetails problemDetails = ProblemDetails.builder()
+                .withTitle("Amenity Already Exists")
+                .withStatus(HttpStatus.CONFLICT.value())
+                .withDetail(ex.getMessage())
+                .withInstance(URI.create(request.getRequestURI()).getPath())
+                .withTimestamp(ZonedDateTime.now())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(problemDetails);
+    }
+
     @ExceptionHandler(UserAlreadyExistsException.class)
     protected ResponseEntity<ProblemDetails> usernameAlreadyExistsException(UserAlreadyExistsException ex, HttpServletRequest request) {
-        logger.error("UserAlreadyExistsException occurred: URI={}, Message={}", request.getRequestURI(), ex.getMessage(), ex);
+        logger.error("AlreadyExistsException occurred: URI={}, Message={}", request.getRequestURI(), ex.getMessage(), ex);
         ProblemDetails problemDetails = ProblemDetails.builder()
                 .withTitle("Username Already Exists")
                 .withStatus(HttpStatus.CONFLICT.value())
@@ -143,11 +171,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problemDetails);
-    }
-
-    @ExceptionHandler(BookingException.class)
-    public ResponseEntity<String> handleBookingException(BookingException ex) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(Exception.class)
