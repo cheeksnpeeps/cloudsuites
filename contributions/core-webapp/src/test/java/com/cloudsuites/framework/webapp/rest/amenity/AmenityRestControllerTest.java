@@ -3,6 +3,8 @@ package com.cloudsuites.framework.webapp.rest.amenity;
 import com.cloudsuites.framework.modules.amenity.repository.AmenityBuildingRepository;
 import com.cloudsuites.framework.modules.amenity.repository.AmenityRepository;
 import com.cloudsuites.framework.modules.property.features.repository.BuildingRepository;
+import com.cloudsuites.framework.modules.user.repository.AdminRepository;
+import com.cloudsuites.framework.modules.user.repository.UserRepository;
 import com.cloudsuites.framework.services.amenity.entities.Amenity;
 import com.cloudsuites.framework.services.amenity.entities.AmenityBuilding;
 import com.cloudsuites.framework.services.amenity.entities.AmenityType;
@@ -60,6 +62,11 @@ class AmenityRestControllerTest {
 
     private AdminTestHelper adminTestHelper;
     private String accessToken;
+    @Autowired
+    private AdminRepository adminRepository;
+
+    @Autowired
+    private UserRepository identityRepository;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -82,6 +89,8 @@ class AmenityRestControllerTest {
         amenityRepository.deleteAll();
         buildingRepository.deleteAll();
         amenityBuildingRepository.deleteAll();
+        adminRepository.deleteAll();
+        identityRepository.deleteAll();
     }
 
     private Amenity createAmenity(String buildingId) {
@@ -215,6 +224,36 @@ class AmenityRestControllerTest {
         // Verify that the amenity is no longer found after deletion
         mockMvc.perform(withAuth(get("/api/v1/buildings/{buildingId}/amenities/{amenityId}", validBuildingId, validAmenityId)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void createAmenity_withDuplicateName_shouldReturnConflict() throws Exception {
+        AmenityDto newAmenity = new AmenityDto();
+        newAmenity.setName("First Pool"); // Existing name
+        newAmenity.setDescription("Another pool");
+        newAmenity.setType(AmenityType.SWIMMING_POOL);
+        newAmenity.setBuildingIds(List.of(validBuildingId));
+
+        mockMvc.perform(withAuth(post("/api/v1/amenities", validBuildingId))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(newAmenity)))
+                .andExpect(status().isConflict()) // Assuming you handle duplicate entries as a conflict
+                .andExpect(content().string(containsString("menity already exists with name: First Pool")));
+    }
+
+
+    @Test
+    void createAmenity_withoutAuthorization_shouldReturnUnauthorized() throws Exception {
+        AmenityDto newAmenity = new AmenityDto();
+        newAmenity.setName("Unauthorized Pool");
+        newAmenity.setDescription("Pool without authorization");
+        newAmenity.setType(AmenityType.SWIMMING_POOL);
+        newAmenity.setBuildingIds(List.of(validBuildingId));
+
+        mockMvc.perform(post("/api/v1/amenities", validBuildingId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(newAmenity)))
+                .andExpect(status().isForbidden()); // Ensure unauthorized access is properly handled
     }
 
     @Test

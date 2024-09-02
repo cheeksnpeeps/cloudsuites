@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface AmenityRepository extends JpaRepository<Amenity, String> {
 
+    boolean existsByName(String name);
 }

@@ -5,11 +5,11 @@ import com.cloudsuites.framework.modules.amenity.repository.AmenityRepository;
 import com.cloudsuites.framework.services.amenity.entities.Amenity;
 import com.cloudsuites.framework.services.amenity.entities.AmenityBuilding;
 import com.cloudsuites.framework.services.amenity.entities.MaintenanceStatus;
+import com.cloudsuites.framework.services.amenity.entities.booking.AmenityAlreadyExistsException;
 import com.cloudsuites.framework.services.amenity.entities.booking.AmenityNotFoundException;
 import com.cloudsuites.framework.services.amenity.service.AmenityService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
@@ -26,7 +26,6 @@ public class AmenityServiceImpl implements AmenityService {
     private final AmenityRepository amenityRepository;
     private final AmenityBuildingRepository amenityBuildingRepository;
 
-    @Autowired
     public AmenityServiceImpl(AmenityRepository amenityRepository, AmenityBuildingRepository amenityBuildingRepository) {
         this.amenityRepository = amenityRepository;
         this.amenityBuildingRepository = amenityBuildingRepository;
@@ -47,6 +46,10 @@ public class AmenityServiceImpl implements AmenityService {
     @Override
     public Amenity createAmenity(Amenity amenity, List<String> buildingIds) {
         logger.debug("Creating a new amenity: {}", amenity);
+        // check if amenity already exists
+        if (amenityRepository.existsByName(amenity.getName())) {
+            throw new AmenityAlreadyExistsException("Amenity already exists with name: " + amenity.getName());
+        }
         Amenity savedAmenity = amenityRepository.save(amenity);
         if (buildingIds != null) {
             List<AmenityBuilding> amenityBuildings = buildingIds.stream()
