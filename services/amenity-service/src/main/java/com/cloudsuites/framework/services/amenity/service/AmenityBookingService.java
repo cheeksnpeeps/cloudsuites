@@ -4,12 +4,11 @@ import com.cloudsuites.framework.services.amenity.entities.booking.AmenityBookin
 import com.cloudsuites.framework.services.amenity.entities.booking.BookingException;
 import jakarta.transaction.Transactional;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-@Service
 public interface AmenityBookingService {
 
     @Async
@@ -23,4 +22,7 @@ public interface AmenityBookingService {
 
     @Transactional
     boolean isAvailable(String amenityId, LocalDateTime startTime, LocalDateTime endTime);
+
+    @Transactional
+    List<AmenityBooking> getAllBookingsForAmenity(String amenityId);
 }
