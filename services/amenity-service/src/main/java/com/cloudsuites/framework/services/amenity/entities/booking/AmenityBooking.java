@@ -1,5 +1,6 @@
 package com.cloudsuites.framework.services.amenity.entities.booking;
 
+import com.cloudsuites.framework.modules.common.utils.IdGenerator;
 import com.cloudsuites.framework.services.amenity.entities.Amenity;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -15,9 +16,8 @@ import java.time.LocalDateTime;
 public class AmenityBooking {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "booking_id")
-    private Long bookingId;
+    private String bookingId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "amenity_id", nullable = false)
@@ -34,7 +34,7 @@ public class AmenityBooking {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private BookingStatus status;
+    private BookingStatus status = BookingStatus.PENDING;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -45,10 +45,12 @@ public class AmenityBooking {
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
+        this.bookingId = IdGenerator.generateULID("BK-");
     }
 
     @Version
     private Long version; // For optimistic locking
+
 
     @PreUpdate
     protected void onUpdate() {
