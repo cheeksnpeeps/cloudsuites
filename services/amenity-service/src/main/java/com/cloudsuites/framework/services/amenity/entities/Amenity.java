@@ -45,19 +45,19 @@ public abstract class Amenity {
     private Boolean isActive = true; // Indicates if the amenity is currently active
 
     @Column(name = "open_time")
-    private LocalTime openTime; // Opening time of the amenity
+    private LocalTime openTime = LocalTime.of(8, 0); // Opening time of the amenity
 
     @Column(name = "close_time")
-    private LocalTime closeTime; // Closing time of the amenity
+    private LocalTime closeTime = LocalTime.of(20, 0); // Closing time of the amenity
 
     @Column(name = "location")
     private String location; // Location or address of the amenity
 
     @Column(name = "capacity")
-    private Integer capacity; // Maximum capacity for the amenity
+    private Integer capacity = 1; // Maximum capacity of the amenity
 
     @Column(name = "is_booking_required", nullable = false)
-    private Boolean isBookingRequired = false; // Indicates if booking is required for the amenity
+    private Boolean isBookingRequired = true; // Indicates if booking is required for the amenity
 
     @Column(name = "is_paid_service", nullable = false)
     private Boolean isPaidService = false; // Indicates if the amenity requires a fee to use
@@ -73,20 +73,20 @@ public abstract class Amenity {
     private MaintenanceStatus maintenanceStatus = MaintenanceStatus.OPERATIONAL; // Current maintenance status of the amenity
 
     @Column(name = "advance_booking_period")
-    private Integer advanceBookingPeriod; // Number of days in advance the amenity can be booked
+    private Integer advanceBookingPeriod = 10080; // Minimum advance booking period required for the amenity
 
     @Column(name = "booking_duration_limit")
-    private Integer bookingDurationLimit; // Maximum duration for which the amenity can be booked
+    private Integer bookingDurationLimit = 360; // Maximum duration for which the amenity can be booked
 
     @Column(name = "minimum_booking_duration")
-    private Integer minimumBookingDuration; // Minimum duration for which the amenity can be booked
+    private Integer minimumBookingDuration = 60; // Minimum duration for which the amenity can be booked
 
     @Column(name = "max_bookings_per_tenant")
-    private Integer maxBookingsPerTenant;  // Maximum number of bookings a tenant can make for this amenity
+    private Integer maxBookingsPerTenant = 1; // Maximum number of bookings allowed per tenant
 
     @Enumerated(EnumType.STRING)
     @Column(name = "booking_limit_period")
-    private BookingLimitPeriod bookingLimitPeriod; // The period for which the booking limit applies (e.g., DAILY, WEEKLY, MONTHLY)
+    private BookingLimitPeriod bookingLimitPeriod = BookingLimitPeriod.DAILY; // Period for which the booking limit is enforced
 
     protected Amenity() {
     }
