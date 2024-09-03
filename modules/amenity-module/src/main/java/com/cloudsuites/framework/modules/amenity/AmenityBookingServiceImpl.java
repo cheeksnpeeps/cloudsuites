@@ -3,10 +3,8 @@ package com.cloudsuites.framework.modules.amenity;
 import com.cloudsuites.framework.modules.amenity.repository.AmenityBookingRepository;
 import com.cloudsuites.framework.modules.amenity.repository.AmenityRepository;
 import com.cloudsuites.framework.services.amenity.entities.Amenity;
-import com.cloudsuites.framework.services.amenity.entities.MaintenanceStatus;
 import com.cloudsuites.framework.services.amenity.entities.booking.AmenityBooking;
 import com.cloudsuites.framework.services.amenity.entities.booking.BookingException;
-import com.cloudsuites.framework.services.amenity.entities.booking.BookingLimitPeriod;
 import com.cloudsuites.framework.services.amenity.service.AmenityBookingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -27,6 +24,7 @@ public class AmenityBookingServiceImpl implements AmenityBookingService {
 
     private final AmenityRepository amenityRepository;
     private final AmenityBookingRepository bookingRepository;
+    private final AmenityBookingValidator bookingValidator;
     private static final Logger logger = LoggerFactory.getLogger(AmenityBookingServiceImpl.class);
 
     @Value("${scheduler.removePastBookings.cron}")
@@ -35,51 +33,40 @@ public class AmenityBookingServiceImpl implements AmenityBookingService {
     @Value("${scheduler.removePastBookings.cutoffDays}")
     private int cutoffDays;
 
-    public AmenityBookingServiceImpl(AmenityRepository amenityRepository, AmenityBookingRepository bookingRepository) {
+    public AmenityBookingServiceImpl(AmenityRepository amenityRepository, AmenityBookingRepository bookingRepository, AmenityBookingValidator bookingValidator) {
         this.amenityRepository = amenityRepository;
         this.bookingRepository = bookingRepository;
+        this.bookingValidator = bookingValidator;
     }
 
     @Override
     @Async
-    public CompletableFuture<AmenityBooking> asyncBookAmenity(String amenityId, String userId, LocalDateTime startTime, LocalDateTime endTime) throws BookingException {
-        return CompletableFuture.completedFuture(bookAmenity(amenityId, userId, startTime, endTime));
+    @Transactional
+    public CompletableFuture<AmenityBooking> asyncBookAmenity(Amenity amenity, String userId, LocalDateTime startTime, LocalDateTime endTime) throws BookingException {
+        return CompletableFuture.supplyAsync(() -> {
+            logger.debug("Booking amenity: {}", amenity.getAmenityId());
+            // Validate booking constraints
+            bookingValidator.validateBookingConstraints(amenity, userId, startTime, endTime);
+
+            // Create and save the booking
+            AmenityBooking booking = new AmenityBooking();
+            booking.setAmenity(amenity);
+            booking.setUserId(userId);
+            booking.setStartTime(startTime);
+            booking.setEndTime(endTime);
+
+            // Save the booking
+            AmenityBooking savedBooking = bookingRepository.save(booking);
+            logger.debug("Async booking completed: {}", savedBooking);
+
+            return savedBooking;
+        });
     }
 
+
     @Override
-    public AmenityBooking bookAmenity(String amenityId, String userId, LocalDateTime startTime, LocalDateTime endTime) throws BookingException {
-        logger.debug("Booking amenity: {}", amenityId);
-
-        Amenity amenity = amenityRepository.findById(amenityId)
-                .orElseThrow(() -> {
-                    logger.debug("Amenity not found.");
-                    return new BookingException("Amenity not found.");
-                });
-
-        if (!isAvailable(amenity.getAmenityId(), startTime, endTime)) {
-            logger.debug("Amenity is not available during the requested time.");
-            throw new BookingException("Amenity is not available during the requested time.");
-        }
-
-        // Check tenant booking limit
-        if (amenity.getMaxBookingsPerTenant() != null) {
-            LocalDateTime periodStart = calculateBookingLimitStartTime(amenity.getBookingLimitPeriod());
-            int currentBookingCount = bookingRepository.countBookingsForUser(userId, amenityId, periodStart, endTime);
-
-            if (currentBookingCount >= amenity.getMaxBookingsPerTenant()) {
-                logger.debug("Booking limit reached for this amenity.");
-                throw new BookingException("Booking limit reached for this amenity.");
-            }
-        }
-
-        AmenityBooking booking = new AmenityBooking();
-        booking.setAmenity(amenity);
-        booking.setUserId(userId);
-        booking.setStartTime(startTime);
-        booking.setEndTime(endTime);
-        logger.debug("Booking created: {}", booking);
-
-        return bookingRepository.save(booking);
+    public AmenityBooking bookAmenity(Amenity amenity, String userId, LocalDateTime startTime, LocalDateTime endTime) throws BookingException {
+        return asyncBookAmenity(amenity, userId, startTime, endTime).join();
     }
 
     @Override
@@ -106,24 +93,7 @@ public class AmenityBookingServiceImpl implements AmenityBookingService {
         }
 
         Amenity amenity = amenityOpt.get();
-        // Fetch overlapping bookings using the optimized query
-        List<AmenityBooking> overlappingBookings = bookingRepository.findOverlappingBookings(
-                amenity.getAmenityId(), startTime, endTime
-        );
-
-        if (!overlappingBookings.isEmpty()) {
-            logger.debug("Amenity is not available during the requested time.");
-            return false; // Not available if there is an overlap
-        }
-
-        // Check additional constraints, if any
-        if (amenity.getMaintenanceStatus() != MaintenanceStatus.OPERATIONAL) {
-            logger.debug("Amenity is under maintenance.");
-            return false; // Not available if under maintenance
-        }
-
-        logger.debug("Amenity is available.");
-        return true;
+        return bookingValidator.isAvailable(amenity, startTime, endTime);
     }
 
     @Override
@@ -132,6 +102,15 @@ public class AmenityBookingServiceImpl implements AmenityBookingService {
         return bookingRepository.findByAmenity_AmenityId(amenityId);
     }
 
+    @Override
+    public AmenityBooking getAmenityBooking(String bookingId) {
+        logger.debug("Retrieving booking: {}", bookingId);
+        return bookingRepository.findById(bookingId)
+                .orElseThrow(() -> {
+                    logger.debug("Booking not found.");
+                    return new BookingException("Booking not found.");
+                });
+    }
 
     @Scheduled(cron = "${scheduler.removePastBookings.cron}")
     @Transactional
@@ -145,18 +124,4 @@ public class AmenityBookingServiceImpl implements AmenityBookingService {
             logger.error("Error while deleting old bookings", e);
         }
     }
-
-    private LocalDateTime calculateBookingLimitStartTime(BookingLimitPeriod period) {
-        LocalDateTime now = LocalDateTime.now();
-        return switch (period) {
-            case DAILY -> now.truncatedTo(ChronoUnit.DAYS);
-            case WEEKLY -> now.minusDays(now.getDayOfWeek().getValue() - 1).truncatedTo(ChronoUnit.DAYS);
-            case MONTHLY -> now.withDayOfMonth(1).truncatedTo(ChronoUnit.DAYS);
-            default -> {
-                logger.error("Unsupported booking limit period: {}", period);
-                throw new IllegalArgumentException("Unsupported booking limit period: " + period);
-            }
-        };
-    }
-
 }
