@@ -1,5 +1,6 @@
 package com.cloudsuites.framework.services.amenity.service;
 
+import com.cloudsuites.framework.services.amenity.entities.Amenity;
 import com.cloudsuites.framework.services.amenity.entities.booking.AmenityBooking;
 import com.cloudsuites.framework.services.amenity.entities.booking.BookingException;
 import jakarta.transaction.Transactional;
@@ -12,10 +13,10 @@ import java.util.concurrent.CompletableFuture;
 public interface AmenityBookingService {
 
     @Async
-    CompletableFuture<AmenityBooking> asyncBookAmenity(String amenityId, String userId, LocalDateTime startTime, LocalDateTime endTime) throws BookingException;
+    CompletableFuture<AmenityBooking> asyncBookAmenity(Amenity amenity, String userId, LocalDateTime startTime, LocalDateTime endTime) throws BookingException;
 
     @Transactional
-    AmenityBooking bookAmenity(String amenityId, String userId, LocalDateTime startTime, LocalDateTime endTime) throws BookingException;
+    AmenityBooking bookAmenity(Amenity amenity, String userId, LocalDateTime startTime, LocalDateTime endTime) throws BookingException;
 
     @Transactional
     void cancelBooking(String bookingId) throws BookingException;
@@ -25,4 +26,7 @@ public interface AmenityBookingService {
 
     @Transactional
     List<AmenityBooking> getAllBookingsForAmenity(String amenityId);
+
+    @Transactional
+    AmenityBooking getAmenityBooking(String bookingId);
 }
