@@ -1,10 +1,14 @@
 package com.cloudsuites.framework.webapp.rest.amenity;
 
+import com.cloudsuites.framework.services.amenity.entities.Amenity;
 import com.cloudsuites.framework.services.amenity.entities.booking.AmenityBooking;
 import com.cloudsuites.framework.services.amenity.entities.booking.BookingException;
 import com.cloudsuites.framework.services.amenity.service.AmenityBookingService;
+import com.cloudsuites.framework.services.amenity.service.AmenityService;
 import com.cloudsuites.framework.webapp.rest.amenity.dto.AmenityBookingDto;
 import com.cloudsuites.framework.webapp.rest.amenityBooking.mapper.AmenityBookingMapper;
+import com.cloudsuites.framework.webapp.rest.property.dto.Views;
+import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -36,12 +40,14 @@ public class AmenityBookingRestController {
 
     private final AmenityBookingService amenitybookingService;
     private final AmenityBookingMapper mapper;
+    private final AmenityService amenityService;
 
     @Autowired
     public AmenityBookingRestController(AmenityBookingService amenitybookingService,
-                                        AmenityBookingMapper mapper) {
+                                        AmenityBookingMapper mapper, AmenityService amenityService) {
         this.amenitybookingService = amenitybookingService;
         this.mapper = mapper;
+        this.amenityService = amenityService;
     }
 
     @PreAuthorize("hasAuthority('ALL_STAFF') or hasAuthority('TENANT') or hasAuthority('OWNER')")
@@ -50,12 +56,15 @@ public class AmenityBookingRestController {
     @ApiResponse(responseCode = "400", description = "Bad Request")
     @ApiResponse(responseCode = "404", description = "Amenity not found")
     @PostMapping("/amenities/{amenityId}/bookings")
+    @JsonView(Views.AmenityBooking.class)
     public CompletableFuture<ResponseEntity<AmenityBookingDto>> bookAmenity(
             @PathVariable @NotBlank String amenityId,
             @Valid @RequestBody @Parameter(description = "Amenity booking details") AmenityBookingDto amenityBookingDto) {
         logger.debug("Booking amenity {} for user {} from {} to {}", amenityId, amenityBookingDto.getUserId(),
                 amenityBookingDto.getStartTime(), amenityBookingDto.getEndTime());
-        return amenitybookingService.asyncBookAmenity(amenityId,
+
+        Amenity amenity = amenityService.getAmenityById(amenityId).isPresent() ? amenityService.getAmenityById(amenityId).get() : null;
+        return amenitybookingService.asyncBookAmenity(amenity,
                         amenityBookingDto.getUserId(), amenityBookingDto.getStartTime(), amenityBookingDto.getEndTime())
                 .thenApply(booking -> ResponseEntity.status(HttpStatus.CREATED).body(mapper.convertToDTO(booking)))
                 .exceptionally(ex -> {
@@ -72,6 +81,7 @@ public class AmenityBookingRestController {
     @ApiResponse(responseCode = "204", description = "Booking cancelled successfully")
     @ApiResponse(responseCode = "404", description = "Booking not found")
     @DeleteMapping("/amenities/bookings/{bookingId}")
+    @JsonView(Views.AmenityBooking.class)
     public ResponseEntity<Void> cancelBooking(@PathVariable String bookingId) {
         logger.debug("Cancelling booking {}", bookingId);
         try {
@@ -89,6 +99,7 @@ public class AmenityBookingRestController {
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Amenity not found")
     @GetMapping("/amenities/{amenityId}/bookings")
+    @JsonView(Views.AmenityBooking.class)
     public ResponseEntity<List<AmenityBookingDto>> getAllBookingsForAmenity(@PathVariable String amenityId) {
         logger.debug("Retrieving all bookings for amenity {}", amenityId);
         try {
@@ -102,9 +113,29 @@ public class AmenityBookingRestController {
     }
 
     @PreAuthorize("hasAuthority('ALL_STAFF') or hasAuthority('TENANT') or hasAuthority('OWNER')")
+    @Operation(summary = "Get booking for an Amenity", description = "Retrieve a bookings for a specific amenity")
+    @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
+    @ApiResponse(responseCode = "404", description = "Amenity not found")
+    @GetMapping("/amenities/bookings/{bookingId}")
+    @JsonView(Views.AmenityBooking.class)
+    public ResponseEntity<AmenityBookingDto> getBookingForAmenity(
+            @PathVariable String bookingId) {
+        logger.debug("Retrieving booking ID {}", bookingId);
+        try {
+            AmenityBooking amenityBooking = amenitybookingService.getAmenityBooking(bookingId);
+            logger.debug("Found booking {} - start time {} ", bookingId, amenityBooking.getStartTime());
+            return ResponseEntity.ok(mapper.convertToDTO(amenityBooking));
+        } catch (BookingException e) {
+            logger.error("Error retrieving booking {}: {}", bookingId, e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
+    @PreAuthorize("hasAuthority('ALL_STAFF') or hasAuthority('TENANT') or hasAuthority('OWNER')")
     @Operation(summary = "Check Amenity Availability", description = "Check if an amenity is available for a specific time range")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @GetMapping("/amenities/{amenityId}/availability")
+    @JsonView(Views.AmenityBooking.class)
     public ResponseEntity<Boolean> checkAvailability(
             @PathVariable String amenityId,
             @RequestParam @NotBlank @FutureOrPresent LocalDateTime startTime,
