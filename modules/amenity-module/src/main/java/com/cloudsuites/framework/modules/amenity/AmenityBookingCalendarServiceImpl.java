@@ -5,6 +5,7 @@ import com.cloudsuites.framework.modules.amenity.repository.AmenityRepository;
 import com.cloudsuites.framework.services.amenity.entities.Amenity;
 import com.cloudsuites.framework.services.amenity.entities.AmenityType;
 import com.cloudsuites.framework.services.amenity.entities.booking.AmenityBooking;
+import com.cloudsuites.framework.services.amenity.entities.booking.AmenityNotFoundException;
 import com.cloudsuites.framework.services.amenity.service.AmenityBookingCalendarService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,18 +52,20 @@ public class AmenityBookingCalendarServiceImpl implements AmenityBookingCalendar
     public List<AmenityBooking> getBookingsForUser(String userId, AmenityType amenityType, LocalDateTime startDate, LocalDateTime endDate) {
         logger.info("Fetching bookings for userId: {}, amenityType: {}, startDate: {}, endDate: {}",
                 userId, amenityType, startDate, endDate);
-        List<AmenityBooking> bookings = bookingRepository.findByUserIdAndFilters(userId, amenityType, startDate, endDate);
+        List<AmenityBooking> bookings = bookingRepository.findByUserIdAndFilters(userId, null, amenityType, startDate, endDate);
         logger.debug("Found {} bookings for userId: {}, amenityType: {}", bookings.size(), userId, amenityType);
         return bookings;
     }
 
     @Override
-    public List<AmenityBooking> getBookingsForAmenity(String amenityId, LocalDateTime start, LocalDateTime end) {
-        logger.info("Fetching bookings for amenityId: {}, start: {}, end: {}", amenityId, start, end);
-        List<AmenityBooking> bookings = bookingRepository.findByAmenityIdAndTimeRange(amenityId, start, end);
-        logger.debug("Found {} bookings for amenityId: {}", bookings.size(), amenityId);
+    public List<AmenityBooking> getBookingsForAmenity(String amenityId, AmenityType amenityType, LocalDateTime startDate, LocalDateTime endDate) {
+        logger.info("Fetching bookings for amenityId: {}, amenityType: {}, startDate: {}, endDate: {}",
+                amenityId, amenityType, startDate, endDate);
+        List<AmenityBooking> bookings = bookingRepository.findByUserIdAndFilters(null, amenityId, amenityType, startDate, endDate);
+        logger.debug("Found {} bookings for amenityId: {}, amenityType: {}", bookings.size(), amenityId, amenityType);
         return bookings;
     }
+
 
     @Override
     public List<LocalDateTime> getAvailableSlotsForAmenity(String amenityId, LocalDateTime start, LocalDateTime end) {
@@ -70,7 +73,7 @@ public class AmenityBookingCalendarServiceImpl implements AmenityBookingCalendar
         List<AmenityBooking> bookings = bookingRepository.findByAmenityIdAndTimeRange(amenityId, start, end);
         Amenity amenity = amenityRepository.findById(amenityId).orElseThrow(() -> {
             logger.error("Amenity with id {} not found.", amenityId);
-            return new RuntimeException("Amenity not found");
+            return new AmenityNotFoundException("Amenity not found");
         });
 
         List<LocalDateTime> availableSlots = calculateAvailableSlots(amenity, bookings, start, end);
