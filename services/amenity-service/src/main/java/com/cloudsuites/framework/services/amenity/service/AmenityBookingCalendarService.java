@@ -15,7 +15,7 @@ public interface AmenityBookingCalendarService {
     List<AmenityBooking> getBookingsForUser(String userId, AmenityType amenityType, LocalDateTime startDate, LocalDateTime endDate);
 
     @Transactional(readOnly = true)
-    List<AmenityBooking> getBookingsForAmenity(String amenityId, LocalDateTime start, LocalDateTime end);
+    List<AmenityBooking> getBookingsForAmenity(String amenityId, AmenityType amenityType, LocalDateTime startTime, LocalDateTime endTime);
 
     @Transactional(readOnly = true)
     List<LocalDateTime> getAvailableSlotsForAmenity(String amenityId, LocalDateTime start, LocalDateTime end);
