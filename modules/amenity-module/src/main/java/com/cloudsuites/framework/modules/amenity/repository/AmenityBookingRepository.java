@@ -26,9 +26,10 @@ public interface AmenityBookingRepository extends JpaRepository<AmenityBooking, 
     int deleteByEndTimeBefore(LocalDateTime cutoffDate);
 
     @Transactional
-    @Query("SELECT b FROM AmenityBooking b WHERE b.userId = :userId AND (:type IS NULL OR b.amenity.type = :type)" +
+    @Query("SELECT b FROM AmenityBooking b WHERE (:userId IS NULL OR b.userId = :userId) AND (:amenityId IS NULL OR b.amenity.amenityId = :amenityId) AND (:type IS NULL OR b.amenity.type = :type)" +
             " AND (:startDate IS NULL OR b.startTime >= :startDate) AND (:endDate IS NULL OR b.endTime <= :endDate)")
     List<AmenityBooking> findByUserIdAndFilters(@Param("userId") String userId,
+                                                @Param("amenityId") String amenityId,
                                                 @Param("type") AmenityType type,
                                                 @Param("startDate") LocalDateTime startDate,
                                                 @Param("endDate") LocalDateTime endDate);
