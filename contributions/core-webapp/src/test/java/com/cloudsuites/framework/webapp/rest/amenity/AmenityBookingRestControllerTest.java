@@ -16,6 +16,7 @@ import com.cloudsuites.framework.services.property.personas.entities.TenantStatu
 import com.cloudsuites.framework.services.user.entities.Identity;
 import com.cloudsuites.framework.webapp.authentication.utils.AdminTestHelper;
 import com.cloudsuites.framework.webapp.rest.amenity.dto.AmenityBookingDto;
+import com.cloudsuites.framework.webapp.rest.amenity.mapper.AmenityBookingMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -63,7 +64,7 @@ class AmenityBookingRestControllerTest {
     private AmenityBookingRepository amenityBookingRepository;
 
     @Autowired
-    private com.cloudsuites.framework.webapp.rest.amenityBooking.mapper.AmenityBookingMapper amenityBookingMapper;
+    private AmenityBookingMapper mapper;
 
     @Autowired
     private BuildingRepository buildingRepository;

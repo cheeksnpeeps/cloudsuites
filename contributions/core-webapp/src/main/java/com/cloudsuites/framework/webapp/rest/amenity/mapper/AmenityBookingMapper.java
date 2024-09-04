@@ -1,4 +1,4 @@
-package com.cloudsuites.framework.webapp.rest.amenityBooking.mapper;
+package com.cloudsuites.framework.webapp.rest.amenity.mapper;
 
 import com.cloudsuites.framework.services.amenity.entities.booking.AmenityBooking;
 import com.cloudsuites.framework.webapp.rest.amenity.dto.AmenityBookingDto;
