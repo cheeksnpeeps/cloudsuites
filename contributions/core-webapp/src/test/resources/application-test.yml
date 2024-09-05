@@ -7,6 +7,10 @@ logging:
     console: "%-4relative [%thread] %-5level %logger{35} %X{correlationId} - %msg %n"
 
 spring:
+  flyway:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    user: sa
+    password:
   datasource:
     url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     driver-class-name: org.h2.Driver
@@ -64,7 +68,9 @@ jwt:
 gcp:
   firebase:
     service-account: classpath:firebase-service-account.json
-scheduler:
-  removePastBookings:
-    cron: "0 0 3 * * ?"
-    cutoffDays: 30
+partitioning:
+  frequency: "quarterly" # or "monthly"
+  retention_period_months: 3
+  archive_storage_path: "/Users/loc/Desktop/storage"
+archiving:
+  cut_off_period_months: 6
