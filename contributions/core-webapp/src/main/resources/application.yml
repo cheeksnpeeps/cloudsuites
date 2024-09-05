@@ -8,6 +8,10 @@ spring:
   sql:
     init:
       mode: embedded
+  flyway:
+    url: jdbc:postgresql://cloudsuites.postgres.database.azure.com:5432/cloudsuites?user=csuser&password=csPassw0rd&sslmode=require
+    user: csuser
+    password: csPassw0rd
   db:
     url: jdbc:postgresql://cloudsuites.postgres.database.azure.com:5432/cloudsuites?user=csuser&password=csPassw0rd&sslmode=require
     username: csuser
@@ -53,7 +57,9 @@ jwt:
 gcp:
   firebase:
     service-account: classpath:firebase-service-account.json
-scheduler:
-  removePastBookings:
-    cron: "0 0 3 * * ?"
-    cutoffDays: 30
+partitioning:
+  frequency: "quarterly" # or "monthly"
+  retention_period_months: 3
+  archive_storage_path: "/Users/loc/Desktop/storage"
+archiving:
+  cut_off_period_months: 6
