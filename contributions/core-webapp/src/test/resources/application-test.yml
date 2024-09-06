@@ -3,22 +3,35 @@ logging:
     com.cloudsuites: DEBUG
     org.springframework.security: DEBUG
     org.hibernate.SQL: DEBUG
+    org.flywaydb: DEBUG
+    org.springframework.jdbc: DEBUG
   pattern:
     console: "%-4relative [%thread] %-5level %logger{35} %X{correlationId} - %msg %n"
 
 spring:
-  flyway:
-    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    user: sa
-    password:
   datasource:
     url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     driver-class-name: org.h2.Driver
     username: sa
     password:
+  flyway:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    user: sa
+    password:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    placeholders:
+      partitioning.prefix: "amenity_booking_" # Prefix used for partition table names
+      partitioning.frequency: "4" # Frequency of partitioning (e.g., number of quarters per year)
+      partitioning.retention_period_months: "3"  # Retention period for active data (in months)
+      partitioning.archive_storage_path: "/Users/loc/Desktop/storage" # Path for storing archived data
+      archiving.cut_off_period_months: "6" # Cut-off period for archiving (in months)
+      archiving.file_format: ".parquet" # File format for archived data
   jpa:
     properties:
-      hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
+      hibernate.dialect: org.hibernate.dialect.H2Dialect
+    hibernate:
       ddl-auto: update
   sql:
     init:
@@ -68,9 +81,4 @@ jwt:
 gcp:
   firebase:
     service-account: classpath:firebase-service-account.json
-partitioning:
-  frequency: "quarterly" # or "monthly"
-  retention_period_months: 3
-  archive_storage_path: "/Users/loc/Desktop/storage"
-archiving:
-  cut_off_period_months: 6
+

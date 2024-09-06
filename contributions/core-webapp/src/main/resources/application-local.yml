@@ -8,6 +8,25 @@ logging:
   pattern:
     console: "%-4relative [%thread] %-5level %logger{35} %X{correlationId} - %msg %n"
 spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/cloudsuites
+    username: csuser
+    password: csPassw0rd
+    driver-class-name: org.postgresql.Driver
+  flyway:
+    url: jdbc:postgresql://localhost:5432/cloudsuites
+    user: csuser
+    password: csPassw0rd
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    placeholders:
+      partitioning.prefix: "amenity_booking_" # Prefix used for partition table names
+      partitioning.frequency: "4" # Frequency of partitioning (e.g., number of quarters per year)
+      partitioning.retention_period_months: "3"  # Retention period for active data (in months)
+      partitioning.archive_storage_path: "/Users/loc/Desktop/storage" # Path for storing archived data
+      archiving.cut_off_period_months: "6" # Cut-off period for archiving (in months)
+      archiving.file_format: ".parquet" # File format for archived data
   websecurity:
     debug: true
   sql:
@@ -31,11 +50,6 @@ web:
         show_sql: true
         hbm2ddl:
           auto: update
-  datasource:
-    url: jdbc:postgresql://localhost:5432/cloudsuites
-    username: csuser
-    password: csPassw0rd
-    driver-class-name: org.postgresql.Driver
   web:
     resources:
       static-locations: classpath:/static/
@@ -66,9 +80,3 @@ jwt:
 gcp:
   firebase:
     service-account: classpath:firebase-service-account.json
-partitioning:
-  frequency: "quarterly" # or "monthly"
-  retention_period_months: 3
-  archive_storage_path: "/Users/loc/Desktop/storage"
-archiving:
-  cut_off_period_months: 6
