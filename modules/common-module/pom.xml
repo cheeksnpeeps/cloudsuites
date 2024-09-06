@@ -16,6 +16,16 @@
 	<description>Module that contains API of all project services. Depends of Model Module.</description>
 	<dependencies>
 		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>com.cloudsuites.framework.services</groupId>
 			<artifactId>common-service</artifactId>
 			<version>${core.version}</version>
