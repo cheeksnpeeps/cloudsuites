@@ -6,7 +6,7 @@ import com.cloudsuites.framework.services.amenity.entities.booking.BookingExcept
 import com.cloudsuites.framework.services.amenity.service.AmenityBookingService;
 import com.cloudsuites.framework.services.amenity.service.AmenityService;
 import com.cloudsuites.framework.webapp.rest.amenity.dto.AmenityBookingDto;
-import com.cloudsuites.framework.webapp.rest.amenityBooking.mapper.AmenityBookingMapper;
+import com.cloudsuites.framework.webapp.rest.amenity.mapper.AmenityBookingMapper;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
 import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.v3.oas.annotations.Operation;
