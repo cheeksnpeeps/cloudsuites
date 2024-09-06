@@ -22,11 +22,14 @@ spring:
     baseline-on-migrate: true
     placeholders:
       partitioning.prefix: "amenity_booking_" # Prefix used for partition table names
-      partitioning.frequency: "4" # Frequency of partitioning (e.g., number of quarters per year)
+      partitioning.frequency: "4"              # Frequency of partitioning (e.g., number of quarters per year)
       partitioning.retention_period_months: "3"  # Retention period for active data (in months)
-      partitioning.archive_storage_path: "/Users/loc/Desktop/storage" # Path for storing archived data
-      archiving.cut_off_period_months: "6" # Cut-off period for archiving (in months)
-      archiving.file_format: ".parquet" # File format for archived data
+      partitioning.archive_storage_path: "/Users/loc/Desktop/storage"  # Path for storing archived data
+      archiving.cut_off_period_months: "6"     # Cut-off period for archiving (in months)
+      archiving.file_format: ".parquet"         # File format for archived data
+      interval.months: "1"                     # Interval for monthly partitions
+      interval.quarters: "3"                   # Interval for quarterly partitions
+      interval.years: "12"                     # Interval for yearly partitions
   websecurity:
     debug: true
   sql:
