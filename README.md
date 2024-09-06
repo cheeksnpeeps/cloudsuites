@@ -44,36 +44,7 @@ separately in production.
 Our Property Management System deals with a large volume of bookings daily, making efficient data management critical. To optimize query performance and maintain system efficiency, we partition the `Amenity Bookings` table based on time intervals. This approach divides the data into smaller, more manageable segments, which improves performance and simplifies maintenance.
 For a detailed guide on how to implement and manage partitioning for the `Amenity Bookings` table, including how to handle changes in partitioning intervals and manage partitions effectively, please refer to the ([Partition Management Migration](https://github.com/cheeksnpeeps/cloudsuites/blob/74a49c302733bf8d68847d2af89f20701ca453bf/modules/common-module/src/main/resources/db/migration/Partition%20Management%20Migration.md)).
 
-## Functional Overview
-
-### Requirements Summary for the Partition Management SQL Script
-
-- **Create Parent Table for Partitioning:**
-  - A parent table `${partitioning.prefix}` is created with `PARTITION BY RANGE (start_time)` to enable time-based partitioning.
-  - Includes columns: `booking_id`, `amenity_id`, `user_id`, `start_time`, `end_time`, `status`, `created_at`, `updated_at`, and `version`.
-
-- **Logging Partition Creation:**
-  - A `partition_log` table tracks partition names and their creation times, ensuring visibility into the partitions created.
-
-- **Check for Data in Future Partitions Before Dropping:**
-  - The function `check_future_partition_data(partition_prefix TEXT, start_date DATE)` verifies if data exists in partitions to be dropped. It prevents accidental data loss by returning `TRUE` if data is found.
-
-- **Dropping Future Partitions:**
-  - The function `drop_future_partitions(partition_prefix TEXT, start_year INTEGER, start_date DATE)` safely drops future partitions after checking for data. Partitions are dropped using `CASCADE`, and `partition_log` is updated.
-
-- **Handle Interval Changes and Recreate Partitions:**
-  - The function `create_or_update_partitions(current_year INTEGER, frequency INTEGER, interval_months INTEGER)` detects changes in partitioning intervals (monthly, quarterly, yearly). It drops future partitions (if no data is found) and recreates them based on the new interval.
-
-- **Partition Management Logic:**
-  - The `manage_partitions()` function manages partition creation for the current and next year, handles interval changes, and uses `pg_advisory_lock` to prevent concurrency issues.
-
-- **Execution Notice:**
-  - The script raises a notice to perform partition management during maintenance windows to avoid performance impacts during peak times.
-
-- **Version Control and Auditing:**
-  - Emphasizes the need for version control in the migration system and tracking changes across environments (DEV, STAGING, PROD). Includes logging and alerting mechanisms for auditing partition management.
-
-### Requirements Breakdown
+## Requirements Breakdown
 
 1. **Table Creation:**
    - Ensure the partitioning table `${partitioning.prefix}` and `partition_log` are created.
