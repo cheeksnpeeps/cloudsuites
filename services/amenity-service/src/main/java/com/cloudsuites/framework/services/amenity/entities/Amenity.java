@@ -5,7 +5,6 @@ import com.cloudsuites.framework.services.amenity.entities.booking.BookingLimitP
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.math.BigDecimal;
 import java.time.LocalTime;
 import java.util.Set;
 
@@ -61,9 +60,6 @@ public abstract class Amenity {
 
     @Column(name = "is_paid_service", nullable = false)
     private Boolean isPaidService = false; // Indicates if the amenity requires a fee to use
-
-    @Column(name = "hourly_rate", precision = 10, scale = 2)
-    private BigDecimal hourlyRate; // Hourly rate for using the amenity
 
     @Column(name = "rules")
     private String rules; // Rules and regulations for the amenity
