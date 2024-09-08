@@ -75,7 +75,7 @@ public class BuildingDto {
 	private LocalDateTime lastModifiedAt;
 
 	@JsonView(Views.BuildingView.class)
-	@Schema(description = "List of amenities in the building")
+    @Schema(hidden = true)
 	private List<AmenityDto> amenities;
 
 }
