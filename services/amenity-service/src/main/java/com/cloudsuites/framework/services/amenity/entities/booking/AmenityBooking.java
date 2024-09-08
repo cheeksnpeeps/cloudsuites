@@ -9,10 +9,7 @@ import java.time.LocalDateTime;
 
 @Data
 @Entity
-@Table(name = "amenity_booking",
-        indexes = {
-                @Index(name = "idx_amenity_user_booking", columnList = "amenity_id, user_id, start_time, end_time")
-        })
+@Table(name = "amenity_booking")
 public class AmenityBooking {
 
     @Id
@@ -20,7 +17,9 @@ public class AmenityBooking {
     private String bookingId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "amenity_id", nullable = false)
+    @JoinColumn(name = "amenity_id", nullable = false, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    // If flyway is disabled, you can use the following line instead of the above line
+    // @JoinColumn(name = "amenity_id", nullable = false)
     private Amenity amenity;
 
     @Column(name = "user_id", nullable = false)
