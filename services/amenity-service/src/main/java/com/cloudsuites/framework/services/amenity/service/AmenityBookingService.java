@@ -29,4 +29,8 @@ public interface AmenityBookingService {
 
     @Transactional
     AmenityBooking getAmenityBooking(String bookingId);
+
+    @Transactional
+    AmenityBooking updateBooking(String bookingId, LocalDateTime newStartTime, LocalDateTime newEndTime) throws BookingException;
+
 }
