@@ -37,7 +37,33 @@ To get started with the project, you need to install the dependencies and start 
 Please note that the React application is built and served by the Spring Boot application, so you don't need to start it
 separately in production.
 
-# Partition Management Migration
+---
+
+Amenity Management System
+=========================
+
+The **Amenity Management System** is a comprehensive platform designed to streamline the management, scheduling, and
+utilization of property amenities. It provides both tenants and staff with an efficient way to handle bookings, optimize
+resource allocation, and ensure seamless amenity use.
+
+### Key Features:
+
+- **[Amenity Management Service](#)**: Offers a central hub for managing property amenities, allowing staff to configure
+  and control access, availability, and usage rules for shared resources like pools, gyms, or event spaces.
+
+- **[Amenity Booking Management](#)**: A robust booking engine that ensures smooth scheduling of amenities by validating
+  availability, enforcing usage constraints, and supporting both tenant and staff needs.
+
+- **[Amenity Booking Calendar Management](#)**: A user-friendly calendar system that displays both booked and available
+  slots, allowing tenants to self-manage bookings and staff to oversee and optimize amenity use.
+
+This system fosters convenience for tenants and operational efficiency for property managers, leading to better overall
+property management.
+
+---
+
+Partition Management Migration
+=============================
 
 ## Overview
 
@@ -66,15 +92,6 @@ For a detailed guide on how to implement and manage partitioning for the `Amenit
 
 7. **Version Control:**
    - Track migration and partition changes across development, staging, and production environments, with proper auditing mechanisms.
-
-## Setup
-
-1. **Run the Migration Script:**
-
-   Execute the `V1__create_or_manage_partitions.sql` script to apply partition management logic to your database.
-
-   ```sql
-   \i V1__create_or_manage_partitions.sql
 
 ## Contributing
 
