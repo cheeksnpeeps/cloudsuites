@@ -1,3 +1,35 @@
+Amenity Management System
+=========================
+
+The **Amenity Management System** is a comprehensive platform designed to streamline the management, scheduling, and
+utilization of property amenities. It provides both tenants and staff with an efficient way to handle bookings, optimize
+resource allocation, and ensure seamless amenity use.
+
+### Key Features:
+
+- **[Amenity Management Service](https://github.com/cheeksnpeeps/cloudsuites/blob/main/modules/amenity-module/Amenity%20Management.md)**: Offers a central hub for managing property amenities, allowing staff to configure
+  and control access, availability, and usage rules for shared resources like pools, gyms, or event spaces.
+
+- **[Amenity Booking Management](https://github.com/cheeksnpeeps/cloudsuites/blob/main/modules/amenity-module/Amenity%20Booking%20Management.md)**: A robust booking engine that ensures smooth scheduling of amenities by validating
+  availability, enforcing usage constraints, and supporting both tenant and staff needs.
+
+- **[Amenity Booking Calendar Management](https://github.com/cheeksnpeeps/cloudsuites/blob/main/modules/amenity-module/Amenity%20Booking%20Calendar%20Management.md)**: A user-friendly calendar system that displays both booked and available
+  slots, allowing tenants to self-manage bookings and staff to oversee and optimize amenity use.
+
+This system fosters convenience for tenants and operational efficiency for property managers, leading to better overall
+property management.
+
+---
+
+Partition Management Migration
+=============================
+
+## Overview
+
+Our Property Management System deals with a large volume of bookings daily, making efficient data management critical. To optimize query performance and maintain system efficiency, we partition the `Amenity Bookings` table based on time intervals. This approach divides the data into smaller, more manageable segments, which improves performance and simplifies maintenance.
+For a detailed guide on how to implement and manage partitioning for the `Amenity Bookings` table, including how to handle changes in partitioning intervals and manage partitions effectively, please refer to the ([Partition Management Migration](https://github.com/cheeksnpeeps/cloudsuites/blob/74a49c302733bf8d68847d2af89f20701ca453bf/modules/common-module/src/main/resources/db/migration/Partition%20Management%20Migration.md)).
+
+---
 # Cloudsuites
 
 Cloudsuites is a web application built with Java, Spring Boot, JavaScript, and React. It uses Maven and npm for
@@ -38,60 +70,6 @@ Please note that the React application is built and served by the Spring Boot ap
 separately in production.
 
 ---
-
-Amenity Management System
-=========================
-
-The **Amenity Management System** is a comprehensive platform designed to streamline the management, scheduling, and
-utilization of property amenities. It provides both tenants and staff with an efficient way to handle bookings, optimize
-resource allocation, and ensure seamless amenity use.
-
-### Key Features:
-
-- **[Amenity Management Service](https://github.com/cheeksnpeeps/cloudsuites/blob/main/modules/amenity-module/Amenity%20Management.md)**: Offers a central hub for managing property amenities, allowing staff to configure
-  and control access, availability, and usage rules for shared resources like pools, gyms, or event spaces.
-
-- **[Amenity Booking Management](https://github.com/cheeksnpeeps/cloudsuites/blob/main/modules/amenity-module/Amenity%20Booking%20Management.md)**: A robust booking engine that ensures smooth scheduling of amenities by validating
-  availability, enforcing usage constraints, and supporting both tenant and staff needs.
-
-- **[Amenity Booking Calendar Management](https://github.com/cheeksnpeeps/cloudsuites/blob/main/modules/amenity-module/Amenity%20Booking%20Calendar%20Management.md)**: A user-friendly calendar system that displays both booked and available
-  slots, allowing tenants to self-manage bookings and staff to oversee and optimize amenity use.
-
-This system fosters convenience for tenants and operational efficiency for property managers, leading to better overall
-property management.
-
----
-
-Partition Management Migration
-=============================
-
-## Overview
-
-Our Property Management System deals with a large volume of bookings daily, making efficient data management critical. To optimize query performance and maintain system efficiency, we partition the `Amenity Bookings` table based on time intervals. This approach divides the data into smaller, more manageable segments, which improves performance and simplifies maintenance.
-For a detailed guide on how to implement and manage partitioning for the `Amenity Bookings` table, including how to handle changes in partitioning intervals and manage partitions effectively, please refer to the ([Partition Management Migration](https://github.com/cheeksnpeeps/cloudsuites/blob/74a49c302733bf8d68847d2af89f20701ca453bf/modules/common-module/src/main/resources/db/migration/Partition%20Management%20Migration.md)).
-
-## Requirements Breakdown
-
-1. **Table Creation:**
-   - Ensure the partitioning table `${partitioning.prefix}` and `partition_log` are created.
-
-2. **Data Safety:**
-   - Implement a check to prevent dropping partitions with existing data.
-
-3. **Interval Change Handling:**
-   - Drop and recreate future partitions if the partitioning interval changes, ensuring no data loss.
-
-4. **Partition Creation:**
-   - Automatically create partitions for the current and next year based on the defined frequency.
-
-5. **Concurrency Control:**
-   - Use `pg_advisory_lock` and `pg_advisory_unlock` to manage concurrent partition modifications.
-
-6. **Performance Consideration:**
-   - Execute partition management operations during off-hours or maintenance windows.
-
-7. **Version Control:**
-   - Track migration and partition changes across development, staging, and production environments, with proper auditing mechanisms.
 
 ## Contributing
 
