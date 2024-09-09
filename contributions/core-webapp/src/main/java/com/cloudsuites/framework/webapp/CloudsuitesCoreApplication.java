@@ -1,5 +1,10 @@
 package com.cloudsuites.framework.webapp;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import org.modelmapper.ModelMapper;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -24,4 +29,16 @@ public class CloudsuitesCoreApplication {
 	public ModelMapper modelMapper() {
 		return new ModelMapper();
 	}
+
+	@Bean
+	public ObjectMapper objectMapper() {
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.registerModule(new JavaTimeModule());
+		mapper.registerModule(new ParameterNamesModule());
+		mapper.registerModule(new SimpleModule());
+		mapper.configure(DeserializationFeature.READ_ENUMS_USING_TO_STRING, true);
+
+		return mapper;
+	}
+
 }
