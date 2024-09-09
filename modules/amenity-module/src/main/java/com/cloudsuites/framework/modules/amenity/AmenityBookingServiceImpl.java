@@ -37,12 +37,16 @@ public class AmenityBookingServiceImpl implements AmenityBookingService {
     public CompletableFuture<AmenityBooking> asyncBookAmenity(Amenity amenity, String userId, LocalDateTime startTime, LocalDateTime endTime) throws BookingException {
         return CompletableFuture.supplyAsync(() -> {
             logger.debug("Booking amenity: {}", amenity.getAmenityId());
+
+            // Lock the amenity to handle concurrency issues
+            Amenity lockedAmenity = amenityRepository.lockAmenityForBooking(amenity.getAmenityId());
+
             // Validate booking constraints
-            bookingValidator.validateBookingConstraints(amenity, userId, startTime, endTime);
+            bookingValidator.validateBookingConstraints(lockedAmenity, userId, startTime, endTime);
 
             // Create and save the booking
             AmenityBooking booking = new AmenityBooking();
-            booking.setAmenity(amenity);
+            booking.setAmenity(lockedAmenity);
             booking.setUserId(userId);
             booking.setStartTime(startTime);
             booking.setEndTime(endTime);
@@ -54,7 +58,6 @@ public class AmenityBookingServiceImpl implements AmenityBookingService {
             return savedBooking;
         });
     }
-
 
     @Override
     public AmenityBooking bookAmenity(Amenity amenity, String userId, LocalDateTime startTime, LocalDateTime endTime) throws BookingException {
@@ -102,5 +105,35 @@ public class AmenityBookingServiceImpl implements AmenityBookingService {
                     logger.debug("Booking not found.");
                     return new BookingException("Booking not found.");
                 });
+    }
+
+    @Override
+    @Transactional
+    public AmenityBooking updateBooking(String bookingId, LocalDateTime newStartTime, LocalDateTime newEndTime) throws BookingException {
+        logger.debug("Updating booking: {}", bookingId);
+
+        // Fetch existing booking
+        AmenityBooking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> {
+                    logger.debug("Booking not found.");
+                    return new BookingException("Booking not found.");
+                });
+
+        // Lock the amenity to handle concurrency issues
+        Amenity amenity = booking.getAmenity();
+        Amenity lockedAmenity = amenityRepository.lockAmenityForBooking(amenity.getAmenityId());
+
+        // Validate booking constraints for the updated times
+        bookingValidator.validateBookingConstraints(lockedAmenity, booking.getUserId(), newStartTime, newEndTime);
+
+        // Update booking details
+        booking.setStartTime(newStartTime);
+        booking.setEndTime(newEndTime);
+
+        // Save the updated booking
+        AmenityBooking updatedBooking = bookingRepository.save(booking);
+        logger.debug("Booking updated successfully: {}", updatedBooking);
+
+        return updatedBooking;
     }
 }
