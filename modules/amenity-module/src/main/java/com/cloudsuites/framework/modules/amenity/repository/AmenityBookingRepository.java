@@ -52,5 +52,12 @@ public interface AmenityBookingRepository extends JpaRepository<AmenityBooking, 
 
     @Transactional
     List<AmenityBooking> findByAmenity_AmenityIdAndBookingId(String amenityId, String bookingId);
+
+    @Query("SELECT COUNT(b) FROM AmenityBooking b WHERE b.amenity.amenityId = :amenityId " +
+            "AND b.startTime < :endTime AND b.endTime > :startTime")
+    int countOverlappingBookings(@Param("amenityId") String amenityId,
+                                 @Param("startTime") LocalDateTime startTime,
+                                 @Param("endTime") LocalDateTime endTime);
+
 }
 
