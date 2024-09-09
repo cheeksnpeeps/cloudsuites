@@ -2,7 +2,8 @@ package com.cloudsuites.framework.webapp.rest.amenity.dto;
 
 import com.cloudsuites.framework.services.amenity.entities.MaintenanceStatus;
 import com.cloudsuites.framework.services.amenity.entities.booking.BookingLimitPeriod;
-import com.cloudsuites.framework.webapp.rest.amenity.dto.features.*;
+import com.cloudsuites.framework.webapp.rest.amenity.dto.features.SwimmingPoolDto;
+import com.cloudsuites.framework.webapp.rest.amenity.dto.features.TennisCourtDto;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
 import com.fasterxml.jackson.annotation.*;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -14,7 +15,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalTime;
 import java.util.List;
 
 @Getter
@@ -31,22 +31,7 @@ import java.util.List;
 @JsonSubTypes({
         @JsonSubTypes.Type(value = SwimmingPoolDto.class, name = "SWIMMING_POOL"),
         @JsonSubTypes.Type(value = TennisCourtDto.class, name = "TENNIS_COURT"),
-        @JsonSubTypes.Type(value = AerobicsRoomDto.class, name = "AEROBICS_ROOM"),
-        @JsonSubTypes.Type(value = PartyRoomDto.class, name = "PARTY_ROOM"),
-        @JsonSubTypes.Type(value = BarbequeAreaDto.class, name = "BARBEQUE_AREA"),
-        @JsonSubTypes.Type(value = GymDto.class, name = "GYM"),
-        @JsonSubTypes.Type(value = TheaterDto.class, name = "THEATER"),
-        @JsonSubTypes.Type(value = MassageRoomDto.class, name = "MASSAGE_ROOM"),
-        @JsonSubTypes.Type(value = WineTastingRoomDto.class, name = "WINE_TASTING_ROOM"),
-        @JsonSubTypes.Type(value = GuestSuiteDto.class, name = "GUEST_SUITE"),
-        @JsonSubTypes.Type(value = BilliardRoomDto.class, name = "BILLIARD_ROOM"),
-        @JsonSubTypes.Type(value = GamesRoomDto.class, name = "GAMES_ROOM"),
-        @JsonSubTypes.Type(value = GolfSimulatorDto.class, name = "GOLF_SIMULATOR"),
-        @JsonSubTypes.Type(value = BowlingAlleyDto.class, name = "BOWLING_ALLEY"),
-        @JsonSubTypes.Type(value = LibraryDto.class, name = "LIBRARY"),
-        @JsonSubTypes.Type(value = YogaStudioDto.class, name = "YOGA_STUDIO"),
-        @JsonSubTypes.Type(value = ElevatorDto.class, name = "ELEVATOR"),
-        @JsonSubTypes.Type(value = OtherDto.class, name = "OTHER")
+        // Other subtypes...
 })
 @Schema(description = "Amenity details")
 public class AmenityDto {
@@ -54,6 +39,11 @@ public class AmenityDto {
     @JsonView({Views.AmenityView.class, Views.BuildingView.class})
     @Schema(hidden = true)
     private String amenityId;
+
+    @JsonView(Views.AmenityView.class)
+    @Schema(description = "List of daily availabilities for each day of the week")
+    private List<DailyAvailabilityDto> dailyAvailabilities; // Updated field for weekly availability
+
 
     @JsonView({Views.AmenityView.class, Views.BuildingView.class})
     @Schema(description = "Name of the amenity", example = "Swimming Pool")
@@ -64,24 +54,10 @@ public class AmenityDto {
     @Schema(description = "Indicates if the amenity is currently active", example = "true")
     private Boolean isActive = false;
 
-    @JsonView({Views.AmenityView.class, Views.BuildingView.class})
-    @Schema(description = "Image URL for the amenity", example = "http://example.com/image.jpg")
-    private String imageUrl;
-
     @JsonView(Views.AmenityView.class)
     @Schema(description = "Description of the amenity", example = "A large swimming pool with a diving board")
     @Size(max = 500, message = "Description can have a maximum of 500 characters")
     private String description;
-
-    @JsonView(Views.AmenityView.class)
-    @Schema(description = "Opening time of the amenity", example = "08:00:00")
-    @JsonFormat(pattern = "HH:mm:ss", shape = JsonFormat.Shape.STRING)
-    private LocalTime openTime = LocalTime.of(8, 0);
-
-    @JsonView(Views.AmenityView.class)
-    @Schema(description = "Closing time of the amenity", example = "20:00:00")
-    @JsonFormat(pattern = "HH:mm:ss", shape = JsonFormat.Shape.STRING)
-    private LocalTime closeTime = LocalTime.of(20, 0);
 
     @JsonView(Views.AmenityView.class)
     @Schema(description = "Location or address of the amenity", example = "Rooftop, Building A")
@@ -141,4 +117,6 @@ public class AmenityDto {
     @JsonView(Views.AmenityView.class)
     @Schema(description = "Building IDs associated with the amenity", example = "[\"BLD-01J3C5A90XWRP7PW8TVT0E4C9K\", \"BLD-01J4N193J5R963HANH7D36JJ7Y\"]")
     private List<String> buildingIds;
+
+
 }
