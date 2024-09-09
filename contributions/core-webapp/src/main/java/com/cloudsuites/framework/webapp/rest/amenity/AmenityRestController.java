@@ -74,13 +74,14 @@ public class AmenityRestController {
     @JsonView(Views.AmenityView.class)
     @PostMapping("/amenities")
     public ResponseEntity<AmenityDto> createAmenity(
-            @Valid @RequestBody @Parameter(description = "Amenity payload") AmenityDto amenityDto) {
+            @RequestBody @Parameter(description = "Amenity payload") AmenityDto amenityDto) {
         Amenity amenity = mapper.convertToEntity(amenityDto);
         logger.debug("Creating new amenity: {}", amenity.getName());
         amenity = amenityService.createAmenity(amenity, amenityDto.getBuildingIds());
         logger.debug("Amenity created successfully: {}", amenity.getAmenityId());
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.convertToDTO(amenity));
     }
+
 
     @PreAuthorize("hasAuthority('ALL_STAFF')")
     @Operation(summary = "Delete an Amenity by ID", description = "Delete an amenity based on its ID")

@@ -156,7 +156,7 @@ class AmenityRestControllerTest {
         AmenityDto newAmenity = new AmenityDto();
         newAmenity.setName("Pool");
         newAmenity.setDescription("Well-equipped pool");
-        newAmenity.setType(AmenityType.SWIMMING_POOL);
+        // newAmenity.setAmenityType(AmenityType.SWIMMING_POOL);
         newAmenity.setBuildingIds(List.of(validBuildingId)); // Associate the amenity with the building
         mockMvc.perform(withAuth(post("/api/v1/amenities", validBuildingId))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -189,7 +189,7 @@ class AmenityRestControllerTest {
         AmenityDto updatedAmenityDto = new AmenityDto();
         updatedAmenityDto.setAmenityId(validAmenityId);
         updatedAmenityDto.setName("Updated Pool");
-        updatedAmenityDto.setType(AmenityType.SWIMMING_POOL);
+//        updatedAmenityDto.setAmenityType(AmenityType.SWIMMING_POOL);
         mockMvc.perform(withAuth(put("/api/v1/buildings/{buildingId}/amenities/{amenityId}", validBuildingId, validAmenityId))
                         .content(objectMapper.writeValueAsString(updatedAmenityDto))
                         .contentType(MediaType.APPLICATION_JSON))
@@ -207,7 +207,7 @@ class AmenityRestControllerTest {
         AmenityDto updatedAmenityDto = new AmenityDto();
         updatedAmenityDto.setAmenityId("invalidAmenityId");
         updatedAmenityDto.setName("Updated Pool");
-        updatedAmenityDto.setType(AmenityType.SWIMMING_POOL);
+        //       updatedAmenityDto.setAmenityType(AmenityType.SWIMMING_POOL);
         mockMvc.perform(withAuth(put("/api/v1/buildings/{buildingId}/amenities/{amenityId}", validBuildingId, "invalidAmenityId"))
                         .content(objectMapper.writeValueAsString(updatedAmenityDto))
                         .contentType(MediaType.APPLICATION_JSON))
@@ -231,7 +231,7 @@ class AmenityRestControllerTest {
         AmenityDto newAmenity = new AmenityDto();
         newAmenity.setName("First Pool"); // Existing name
         newAmenity.setDescription("Another pool");
-        newAmenity.setType(AmenityType.SWIMMING_POOL);
+        //    newAmenity.setAmenityType(AmenityType.SWIMMING_POOL);
         newAmenity.setBuildingIds(List.of(validBuildingId));
 
         mockMvc.perform(withAuth(post("/api/v1/amenities", validBuildingId))
@@ -247,7 +247,7 @@ class AmenityRestControllerTest {
         AmenityDto newAmenity = new AmenityDto();
         newAmenity.setName("Unauthorized Pool");
         newAmenity.setDescription("Pool without authorization");
-        newAmenity.setType(AmenityType.SWIMMING_POOL);
+        //    newAmenity.setAmenityType(AmenityType.SWIMMING_POOL);
         newAmenity.setBuildingIds(List.of(validBuildingId));
 
         mockMvc.perform(post("/api/v1/amenities", validBuildingId)
