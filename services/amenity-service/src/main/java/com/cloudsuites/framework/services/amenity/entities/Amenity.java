@@ -5,7 +5,9 @@ import com.cloudsuites.framework.services.amenity.entities.booking.BookingLimitP
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.DayOfWeek;
 import java.time.LocalTime;
+import java.util.List;
 import java.util.Set;
 
 
@@ -43,11 +45,8 @@ public abstract class Amenity {
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true; // Indicates if the amenity is currently active
 
-    @Column(name = "open_time")
-    private LocalTime openTime = LocalTime.of(8, 0); // Opening time of the amenity
-
-    @Column(name = "close_time")
-    private LocalTime closeTime = LocalTime.of(20, 0); // Closing time of the amenity
+    @OneToMany(mappedBy = "amenity", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<DailyAvailability> dailyAvailabilities; // List of availabilities for each day of the week
 
     @Column(name = "location")
     private String location; // Location or address of the amenity
@@ -74,8 +73,14 @@ public abstract class Amenity {
     @Column(name = "booking_duration_limit")
     private Integer bookingDurationLimit = 360; // Maximum duration for which the amenity can be booked
 
-    @Column(name = "minimum_booking_duration")
-    private Integer minimumBookingDuration = 60; // Minimum duration for which the amenity can be booked
+    @Column(name = "max_booking_overlap")
+    private Integer maxBookingOverlap = 2; // Maximum number of bookings that can overlap
+
+    @Column(name = "min_booking_duration")
+    private Integer minBookingDuration = 60; // Minimum duration for which the amenity can be booked
+
+    @Column(name = "maximum_booking_duration")
+    private Integer maxBookingDuration = 60; // Minimum duration for which the amenity can be booked
 
     @Column(name = "max_bookings_per_tenant")
     private Integer maxBookingsPerTenant = 1; // Maximum number of bookings allowed per tenant
@@ -90,5 +95,20 @@ public abstract class Amenity {
     @PrePersist
     public void onCreate() {
         this.amenityId = IdGenerator.generateULID("AMN-");
+        // initializeDailyAvailability();
+    }
+
+    private void initializeDailyAvailability() {
+        // Initialize daily availability for all days of the week
+        DayOfWeek[] days = DayOfWeek.values();
+        for (DayOfWeek day : days) {
+            DailyAvailability availability = new DailyAvailability();
+            availability.setDayOfWeek(day);
+            availability.setOpenTime(LocalTime.of(8, 0)); // Default opening time
+            availability.setCloseTime(LocalTime.of(20, 0)); // Default closing time
+            availability.setAmenity(this); // Link to current amenity
+
+            this.dailyAvailabilities.add(availability);
+        }
     }
 }
