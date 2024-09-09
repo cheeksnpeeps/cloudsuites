@@ -1,3 +1,82 @@
+Cloudsuites
+===========
+
+Cloudsuites is a comprehensive property management system that offers a suite of tools to streamline property
+management. It includes modules for managing amenities, bookings, maintenance, and more.
+
+## Features
+
+### Identity Management
+
+Manages user identities, roles, and permissions, ensuring secure access to the system.
+
+- **User Management**: Manages user details, roles, and permissions, enabling secure access to the system.
+- **Tenant Management**: Manages tenant details, leases, and communication, ensuring smooth tenant interactions and
+  property operations.
+- **Staff Management**: Manages staff details, roles, and responsibilities, ensuring efficient property management.
+- **Owner Management**: Manages property owner details, contracts, and communication, facilitating owner interactions
+  and property operations.
+- **Role-based Access Control**: Enforces access control based on user roles, ensuring data security and privacy.
+- **User Authentication and Authorization**: Provides secure user authentication and authorization mechanisms,
+  protecting sensitive data and operations.
+
+### Property Management
+
+Manages property assets, leases, and maintenance, enabling efficient property operations.
+
+- **Management Companies**: Manages company details, contacts, and settings, providing a centralized view of the
+  organization.
+- **Building Management**: Manages building details, units, and amenities, providing a comprehensive view of property
+  assets.
+- **Unit Management**: Manages unit details, leases, and maintenance, ensuring efficient occupancy and upkeep of units.
+- **Lease Management**: Manages lease agreements, renewals, and terminations, ensuring compliance and transparency in
+  tenant relationships.
+
+### Amenity Management
+
+Manages property amenities, bookings, and availability, optimizing amenity use and tenant satisfaction.
+
+- **Amenity Management Service**: Offers a central hub for managing property amenities, allowing staff to configure and
+  control access, availability, and usage rules for shared resources like pools, gyms, or event spaces.
+- **Amenity Booking Management**: A robust booking engine that ensures smooth scheduling of amenities by validating
+  availability, enforcing usage constraints, and supporting both tenant and staff needs.
+- **Amenity Booking Calendar Management**: A user-friendly calendar system that displays both booked and available
+  slots, allowing tenants to self-manage bookings and staff to oversee and optimize amenity use.
+
+### Parking Management
+
+Manages parking spaces, permits, and enforcement, ensuring efficient parking operations and compliance.
+
+- **Manage Parking Spaces**: Tracks parking space details, availability, and assignments, ensuring efficient parking
+  management.
+- **Parking Permit Management**: Manages parking permits, renewals, and enforcement, ensuring compliance and fair
+  allocation of parking resources.
+- **Visitor Parking Management**: Manages visitor parking requests, approvals, and restrictions, ensuring smooth visitor
+  access and parking availability.
+- **Parking Violation Management**: Tracks parking violations, fines, and enforcement actions, ensuring compliance with
+  parking rules and regulations.
+- **Parking Analytics**: Provides insights into parking usage, availability, and trends, enabling data-driven decisions
+  for parking management.
+- **Parking Reservation System**: Allows tenants to reserve parking spaces in advance, ensuring convenient and secure
+  parking arrangements.
+- **Parking Access Control**: Enforces access control for parking facilities, ensuring authorized use and security of
+  parking resources.
+
+### Notification Service
+
+Manages notifications, templates, and delivery channels, enabling automated communication with users.
+
+- **Notification Management**: Manages notifications, templates, and delivery channels, enabling automated communication
+  with users.
+- **Event-based Notifications**: Sends notifications based on predefined events, such as lease expirations, maintenance
+  requests, or booking confirmations.
+- **Customizable Templates**: Allows customization of notification content and formatting, ensuring personalized and
+  informative messages.
+- **Multi-channel Delivery**: Supports delivery of notifications through various channels, such as email, SMS, or in-app
+  messages, ensuring timely and reliable communication.
+
+---
+
 Amenity Management System
 =========================
 
@@ -30,7 +109,8 @@ Our Property Management System deals with a large volume of bookings daily, maki
 For a detailed guide on how to implement and manage partitioning for the `Amenity Bookings` table, including how to handle changes in partitioning intervals and manage partitions effectively, please refer to the ([Partition Management Migration](https://github.com/cheeksnpeeps/cloudsuites/blob/74a49c302733bf8d68847d2af89f20701ca453bf/modules/common-module/src/main/resources/db/migration/Partition%20Management%20Migration.md)).
 
 ---
-# Cloudsuites
+
+# Getting Started
 
 Cloudsuites is a web application built with Java, Spring Boot, JavaScript, and React. It uses Maven and npm for
 dependency management.
