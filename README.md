@@ -147,7 +147,7 @@ performance and simplify long-term data maintenance.
 
 For a step-by-step guide on implementing and managing partitioning for the `Amenity Bookings` table, including
 instructions on changing partition intervals, managing old partitions, and more advanced partitioning techniques, please
-refer to the [Partition Management Migration Guide](#).
+refer to the [Partition Management Migration Guide](https://github.com/cheeksnpeeps/cloudsuites/blob/main/modules/common-module/src/main/resources/db/migration/Partition%20Management%20Migration.md).
 
 ### **Key Features**
 
