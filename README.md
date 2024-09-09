@@ -100,14 +100,59 @@ property management.
 
 ---
 
-Partition Management Migration
-=============================
+Here's an improved version of the documentation, with key features highlighted for better readability and emphasis:
 
-## Overview
+---
 
-Our Property Management System deals with a large volume of bookings daily, making efficient data management critical. To optimize query performance and maintain system efficiency, we partition the `Amenity Bookings` table based on time intervals. This approach divides the data into smaller, more manageable segments, which improves performance and simplifies maintenance.
-For a detailed guide on how to implement and manage partitioning for the `Amenity Bookings` table, including how to handle changes in partitioning intervals and manage partitions effectively, please refer to the ([Partition Management Migration](https://github.com/cheeksnpeeps/cloudsuites/blob/74a49c302733bf8d68847d2af89f20701ca453bf/modules/common-module/src/main/resources/db/migration/Partition%20Management%20Migration.md)).
+## **Partition Management Migration**
 
+The Property Management System processes a significant number of bookings daily, making efficient data management
+crucial. To optimize the system's performance and streamline maintenance, we partition the `Amenity Bookings` table
+based on time intervals. Partitioning breaks the data into smaller, more manageable segments that enhance query
+performance and simplify long-term data maintenance.
+
+For a step-by-step guide on implementing and managing partitioning for the `Amenity Bookings` table, including
+instructions on changing partition intervals, managing old partitions, and more advanced partitioning techniques, please
+refer to the [Partition Management Migration Guide](#).
+
+### **Key Features**
+
+1. **Time-Based Partitioning for Amenity Bookings**  
+   Efficiently handle large volumes of booking data by partitioning the `Amenity Bookings` table based on time
+   intervals, such as quarters or months. This ensures that the database can process smaller chunks of data,
+   significantly improving query performance.
+
+2. **Improved Query Performance**  
+   By dividing data into smaller, more manageable partitions, we reduce the amount of data scanned for queries, leading
+   to faster response times for frequently accessed records like recent bookings.
+
+3. **Automated Partition Creation**  
+   New partitions are automatically created as time progresses, ensuring seamless scalability without manual
+   intervention. This keeps the system adaptable as data grows over time.
+
+4. **Historical Data Archiving**  
+   Older data, such as bookings that are no longer actively needed, can be archived or dropped. This ensures that only
+   active data is kept in high-performance storage, reducing overall storage costs and query overhead.
+
+5. **Partition Dropping and Maintenance**  
+   Old partitions that exceed the retention period can be automatically dropped or moved to archive storage, ensuring
+   the database remains lean and performs optimally over time.
+
+6. **Retention Policies for Active Data**  
+   Retain only the data required for ongoing operations while safely archiving older records. This ensures that
+   operational data remains fast to access and reduces the strain on storage.
+
+7. **Customizable Partition Intervals**  
+   The system supports customizable partitioning frequencies (e.g., quarterly, monthly), enabling you to tune the
+   partitioning strategy based on specific business needs and data volume.
+
+8. **Dynamic Partition Adjustments**  
+   As the data grows or business requirements change, partition intervals and strategies can be adjusted dynamically
+   without affecting the system's integrity or performance.
+
+---
+
+This version emphasizes the key features while retaining the overview, making it easier to grasp the core benefits of the system.
 ---
 
 # Getting Started
