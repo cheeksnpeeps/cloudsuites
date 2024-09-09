@@ -48,13 +48,13 @@ resource allocation, and ensure seamless amenity use.
 
 ### Key Features:
 
-- **[Amenity Management Service](#)**: Offers a central hub for managing property amenities, allowing staff to configure
+- **[Amenity Management Service](https://github.com/cheeksnpeeps/cloudsuites/blob/main/modules/amenity-module/Amenity%20Management.md)**: Offers a central hub for managing property amenities, allowing staff to configure
   and control access, availability, and usage rules for shared resources like pools, gyms, or event spaces.
 
-- **[Amenity Booking Management](#)**: A robust booking engine that ensures smooth scheduling of amenities by validating
+- **[Amenity Booking Management](https://github.com/cheeksnpeeps/cloudsuites/blob/main/modules/amenity-module/Amenity%20Booking%20Management.md)**: A robust booking engine that ensures smooth scheduling of amenities by validating
   availability, enforcing usage constraints, and supporting both tenant and staff needs.
 
-- **[Amenity Booking Calendar Management](#)**: A user-friendly calendar system that displays both booked and available
+- **[Amenity Booking Calendar Management](https://github.com/cheeksnpeeps/cloudsuites/blob/main/modules/amenity-module/Amenity%20Booking%20Calendar%20Management.md)**: A user-friendly calendar system that displays both booked and available
   slots, allowing tenants to self-manage bookings and staff to oversee and optimize amenity use.
 
 This system fosters convenience for tenants and operational efficiency for property managers, leading to better overall
