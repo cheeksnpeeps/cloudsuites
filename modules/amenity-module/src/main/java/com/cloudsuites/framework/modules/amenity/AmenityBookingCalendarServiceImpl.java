@@ -4,6 +4,7 @@ import com.cloudsuites.framework.modules.amenity.repository.AmenityBookingReposi
 import com.cloudsuites.framework.modules.amenity.repository.AmenityRepository;
 import com.cloudsuites.framework.services.amenity.entities.Amenity;
 import com.cloudsuites.framework.services.amenity.entities.AmenityType;
+import com.cloudsuites.framework.services.amenity.entities.DailyAvailability;
 import com.cloudsuites.framework.services.amenity.entities.booking.AmenityBooking;
 import com.cloudsuites.framework.services.amenity.entities.booking.AmenityNotFoundException;
 import com.cloudsuites.framework.services.amenity.service.AmenityBookingCalendarService;
@@ -11,13 +12,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Component
 public class AmenityBookingCalendarServiceImpl implements AmenityBookingCalendarService {
@@ -32,16 +31,19 @@ public class AmenityBookingCalendarServiceImpl implements AmenityBookingCalendar
         this.amenityRepository = amenityRepository;
     }
 
-    private static Set<LocalDateTime> getLocalDateTimes(List<AmenityBooking> bookings) {
+    private Set<LocalDateTime> getLocalDateTimes(Amenity amenity, List<AmenityBooking> bookings) {
         Set<LocalDateTime> bookedSlots = new HashSet<>();
         logger.debug("Calculating booked slots from {} bookings.", bookings.size());
 
-        // Mark all booked slots
         for (AmenityBooking booking : bookings) {
-            LocalDateTime slotTime = booking.getStartTime().truncatedTo(ChronoUnit.HOURS);
+            LocalDateTime slotTime = booking.getStartTime().truncatedTo(ChronoUnit.MINUTES);
+            logger.debug("Processing booking from {} to {}.", booking.getStartTime(), booking.getEndTime());
+
             while (!slotTime.isAfter(booking.getEndTime().minusMinutes(1))) { // Exclude end time itself
+                logger.debug("Adding booked slot: {}", slotTime);
                 bookedSlots.add(slotTime);
-                slotTime = slotTime.plusHours(1);
+                slotTime = slotTime.plusMinutes(amenity.getMinBookingDuration()); // Use minBookingDuration here
+                logger.debug("Next slot time: {}", slotTime);
             }
         }
         logger.debug("Found {} booked slots.", bookedSlots.size());
@@ -66,7 +68,6 @@ public class AmenityBookingCalendarServiceImpl implements AmenityBookingCalendar
         return bookings;
     }
 
-
     @Override
     public List<LocalDateTime> getAvailableSlotsForAmenity(String amenityId, LocalDateTime start, LocalDateTime end) {
         logger.info("Calculating available slots for amenityId: {}, start: {}, end: {}", amenityId, start, end);
@@ -81,32 +82,63 @@ public class AmenityBookingCalendarServiceImpl implements AmenityBookingCalendar
         return availableSlots;
     }
 
-    List<LocalDateTime> calculateAvailableSlots(Amenity amenity, List<AmenityBooking> bookings, LocalDateTime start, LocalDateTime end) {
+    private List<LocalDateTime> calculateAvailableSlots(Amenity amenity, List<AmenityBooking> bookings, LocalDateTime start, LocalDateTime end) {
         List<LocalDateTime> availableSlots = new ArrayList<>();
         logger.debug("Calculating available slots based on {} bookings.", bookings.size());
 
-        // Get opening and closing hours from the amenity entity
-        LocalTime openingHour = amenity.getOpenTime();
-        LocalTime closingHour = amenity.getCloseTime();
+        // Get daily availability for the given date
+        DailyAvailability dailyAvailability = getDailyAvailability(amenity, start);
+        logger.debug("Daily availability for {}: Open Time: {}, Close Time: {}", start.toLocalDate(), dailyAvailability.getOpenTime(), dailyAvailability.getCloseTime());
 
         // Create a set to hold all booked slots for quick lookup
-        Set<LocalDateTime> bookedSlots = getLocalDateTimes(bookings);
+        Set<LocalDateTime> bookedSlots = getLocalDateTimes(amenity, bookings);
+        logger.debug("Total booked slots: {}", bookedSlots);
 
-        // Generate all possible hourly slots within the start and end time
-        LocalDateTime slotStartTime = start.truncatedTo(ChronoUnit.HOURS);
-        while (!slotStartTime.isAfter(end.minusHours(1))) {
-            LocalTime localTime = slotStartTime.toLocalTime();
+        // Generate all possible slots based on minBookingDuration
+        LocalDateTime slotStartTime = start.withMinute(0).withSecond(0).withNano(0);
+        logger.debug("Starting slot calculation from: {}", slotStartTime);
 
-            // Check if the slot is within the amenity's opening hours and not booked
-            if (!localTime.isBefore(openingHour) && !localTime.isAfter(closingHour.minusHours(1))
-                    && !bookedSlots.contains(slotStartTime)) {
-                availableSlots.add(slotStartTime);
+        while (!slotStartTime.isAfter(end.minusMinutes(amenity.getMinBookingDuration()))) {
+            LocalTime slotTime = slotStartTime.toLocalTime();
+            logger.debug("Evaluating slot: {}", slotStartTime);
+
+            if (isWithinOpeningHours(amenity, slotTime, dailyAvailability)) {
+                if (!bookedSlots.contains(slotStartTime)) {
+                    logger.debug("Slot is available: {}", slotStartTime);
+                    availableSlots.add(slotStartTime);
+                } else {
+                    logger.debug("Slot is booked: {}", slotStartTime);
+                }
+            } else {
+                logger.debug("Slot is outside of opening hours: {}", slotStartTime);
             }
 
-            slotStartTime = slotStartTime.plusHours(1);
+            slotStartTime = slotStartTime.plusMinutes(amenity.getMinBookingDuration()); // Use minBookingDuration here
         }
 
         logger.debug("Calculated {} available slots.", availableSlots.size());
         return availableSlots;
+    }
+
+    private DailyAvailability getDailyAvailability(Amenity amenity, LocalDateTime date) {
+        DayOfWeek dayOfWeek = date.getDayOfWeek();
+        Optional<DailyAvailability> availabilityOpt = amenity.getDailyAvailabilities().stream()
+                .filter(avail -> avail.getDayOfWeek().equals(dayOfWeek))
+                .findFirst();
+
+        if (availabilityOpt.isEmpty()) {
+            logger.error("Daily availability for {} not found.", dayOfWeek);
+            throw new IllegalArgumentException("Daily availability not found for " + dayOfWeek);
+        }
+
+        return availabilityOpt.get();
+    }
+
+    private boolean isWithinOpeningHours(Amenity amenity, LocalTime slotTime, DailyAvailability dailyAvailability) {
+        boolean withinHours = !slotTime.isBefore(dailyAvailability.getOpenTime()) &&
+                !slotTime.isAfter(dailyAvailability.getCloseTime().minusMinutes(amenity.getMinBookingDuration()));
+        logger.debug("Slot Time: {}, Open Time: {}, Close Time: {}, Within Opening Hours: {}",
+                slotTime, dailyAvailability.getOpenTime(), dailyAvailability.getCloseTime(), withinHours);
+        return withinHours;
     }
 }
