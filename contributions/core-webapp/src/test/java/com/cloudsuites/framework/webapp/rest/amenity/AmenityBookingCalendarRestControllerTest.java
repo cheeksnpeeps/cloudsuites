@@ -91,8 +91,6 @@ class AmenityBookingCalendarRestControllerTest {
     @Test
     void testGetBookingCalendar_ValidRequest() throws Exception {
 
-        bookingRepository.findAll().forEach(System.out::println);
-
         mockMvc.perform(withAuth(get("/api/v1/amenities/{amenityId}/bookings/calendar", amenityId))
                         .param("startTime", startTime.toString())
                         .param("endTime", endTime.toString())
