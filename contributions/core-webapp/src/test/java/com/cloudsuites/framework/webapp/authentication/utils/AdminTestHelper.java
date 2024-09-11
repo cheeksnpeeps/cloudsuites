@@ -1,10 +1,9 @@
 package com.cloudsuites.framework.webapp.authentication.utils;
 
-import com.cloudsuites.framework.services.user.entities.Admin;
 import com.cloudsuites.framework.services.user.entities.AdminRole;
 import com.cloudsuites.framework.services.user.entities.AdminStatus;
-import com.cloudsuites.framework.services.user.entities.Identity;
 import com.cloudsuites.framework.webapp.rest.user.dto.AdminDto;
+import com.cloudsuites.framework.webapp.rest.user.dto.IdentityDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -18,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Map;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -45,19 +43,20 @@ public class AdminTestHelper {
 
     public String registerAdminAndGetToken(String username, String phoneNumber) throws Exception {
         // Register the admin
-        Admin admin = new Admin();
+        AdminDto admin = new AdminDto();
         admin.setRole(AdminRole.SUPER_ADMIN);
         admin.setStatus(AdminStatus.ACTIVE);
-        Identity identity = new Identity();
+        IdentityDto identity = new IdentityDto();
         identity.setEmail(username + "@gmail.com");
         identity.setPhoneNumber(phoneNumber);
         admin.setIdentity(identity);
 
-        MockHttpServletResponse response = mockMvc.perform(post("/api/v1/auth/admins/register", validBuildingId, validUnitId)
+        MockHttpServletResponse response;
+
+        response = mockMvc.perform(post("/api/v1/auth/admins/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(admin)))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
 
         // Assuming the response contains the admin ID for OTP verification
@@ -66,9 +65,9 @@ public class AdminTestHelper {
         // Verify OTP
         String otp = "123456"; // Assume this OTP is valid
         response = mockMvc.perform(post("/api/v1/auth/admins/{adminId}/verify-otp", adminId)
+                        .contentType(MediaType.APPLICATION_JSON)
                         .param("otp", otp))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON)).andReturn().getResponse();
+                .andExpect(status().isOk()).andReturn().getResponse();
 
         ObjectMapper objectMapper = new ObjectMapper();
         Map<String, String> data = objectMapper.readValue(response.getContentAsString(), Map.class);
