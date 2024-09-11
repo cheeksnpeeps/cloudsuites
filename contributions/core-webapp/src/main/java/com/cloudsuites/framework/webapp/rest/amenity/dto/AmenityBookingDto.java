@@ -28,39 +28,41 @@ public class AmenityBookingDto {
     private String bookingId;
 
     @NotBlank
-    @Schema(description = "Amenity ID")
+    @Schema(hidden = true)
     @JsonView({Views.AmenityBooking.class})
     private String amenityId;
 
     @NotBlank
-    @Schema(description = "User ID")
+    @Schema(hidden = true)
     @JsonView({Views.AmenityBooking.class})
     private String userId;
 
     @NotNull
     @FutureOrPresent
-    @Schema(description = "Start time of the booking", example = "2021-12-31T23:59:59")
+    @Schema(description = "Start time of the booking", example = "2021-12-23T08:00:00")
     @JsonView({Views.AmenityBooking.class})
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
     private LocalDateTime startTime;
 
     @NotNull
     @Future
-    @Schema(description = "End time of the booking", example = "2022-01-01T00:00:00")
+    @Schema(description = "End time of the booking", example = "2021-12-23T10:00:00")
     @JsonView({Views.AmenityBooking.class})
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
     private LocalDateTime endTime;
 
-    @Schema(description = "Booking status")
+    @Schema(hidden = true)
     @JsonView({Views.AmenityBooking.class})
     private BookingStatus status;
 
     @JsonView({Views.AmenityBooking.class})
     @Schema(hidden = true)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
     private LocalDateTime createdAt;
 
     @JsonView({Views.AmenityBooking.class})
     @Schema(hidden = true)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
     private LocalDateTime updatedAt;
 
     @PrePersist

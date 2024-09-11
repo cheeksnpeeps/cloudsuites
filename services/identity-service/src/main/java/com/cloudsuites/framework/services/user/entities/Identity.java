@@ -1,6 +1,7 @@
 package com.cloudsuites.framework.services.user.entities;
 
 import com.cloudsuites.framework.modules.common.utils.IdGenerator;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
@@ -48,9 +49,11 @@ public class Identity {
 	private Identity lastModifiedBy;
 
 	@Column(name = "created_at", nullable = false, updatable = false)
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
 	private LocalDateTime createdAt;
 
 	@Column(name = "last_modified_at")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
 	private LocalDateTime lastModifiedAt;
 
 	@PrePersist

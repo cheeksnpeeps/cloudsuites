@@ -47,10 +47,6 @@ public class AmenityBooking {
         this.bookingId = IdGenerator.generateULID("BK-");
     }
 
-    @Version
-    private Long version; // For optimistic locking
-
-
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
