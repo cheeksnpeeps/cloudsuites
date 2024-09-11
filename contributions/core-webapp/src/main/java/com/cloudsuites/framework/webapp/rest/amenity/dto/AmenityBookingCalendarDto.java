@@ -1,6 +1,7 @@
 package com.cloudsuites.framework.webapp.rest.amenity.dto;
 
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -29,5 +30,6 @@ public class AmenityBookingCalendarDto {
 
     @JsonView({Views.AmenityBooking.class})
     @Schema(description = "Available slots")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private List<LocalDateTime> availableSlots;
 }
