@@ -2,8 +2,10 @@ package com.cloudsuites.framework.modules.amenity;
 
 import com.cloudsuites.framework.modules.amenity.repository.AmenityBuildingRepository;
 import com.cloudsuites.framework.modules.amenity.repository.AmenityRepository;
+import com.cloudsuites.framework.modules.amenity.repository.AvailabilityRepository;
 import com.cloudsuites.framework.services.amenity.entities.Amenity;
 import com.cloudsuites.framework.services.amenity.entities.AmenityBuilding;
+import com.cloudsuites.framework.services.amenity.entities.DailyAvailability;
 import com.cloudsuites.framework.services.amenity.entities.MaintenanceStatus;
 import com.cloudsuites.framework.services.amenity.entities.booking.AmenityAlreadyExistsException;
 import com.cloudsuites.framework.services.amenity.entities.booking.AmenityNotFoundException;
@@ -25,10 +27,12 @@ public class AmenityServiceImpl implements AmenityService {
 
     private final AmenityRepository amenityRepository;
     private final AmenityBuildingRepository amenityBuildingRepository;
+    private final AvailabilityRepository availabilityRepository;
 
-    public AmenityServiceImpl(AmenityRepository amenityRepository, AmenityBuildingRepository amenityBuildingRepository) {
+    public AmenityServiceImpl(AmenityRepository amenityRepository, AmenityBuildingRepository amenityBuildingRepository, AvailabilityRepository availabilityRepository) {
         this.amenityRepository = amenityRepository;
         this.amenityBuildingRepository = amenityBuildingRepository;
+        this.availabilityRepository = availabilityRepository;
     }
 
     @Override
@@ -46,30 +50,68 @@ public class AmenityServiceImpl implements AmenityService {
     @Override
     public Amenity createAmenity(Amenity amenity, List<String> buildingIds) {
         logger.debug("Creating a new amenity: {}", amenity);
-        // check if amenity already exists
+
+        // Check if amenity already exists
         if (amenityRepository.existsByName(amenity.getName())) {
+            logger.warn("Amenity already exists with name: {}", amenity.getName());
             throw new AmenityAlreadyExistsException("Amenity already exists with name: " + amenity.getName());
         }
+
+        List<DailyAvailability> dailyAvailabilities = amenity.getDailyAvailabilities();
+        if (dailyAvailabilities != null) {
+            dailyAvailabilities.forEach(dailyAvailability -> dailyAvailability.setAmenity(amenity));
+        }
+
         Amenity savedAmenity = amenityRepository.save(amenity);
+        logger.debug("Saved amenity with ID: {}", savedAmenity.getAmenityId());
+
+        if (dailyAvailabilities != null) {
+            logger.debug("Saving daily availabilities for amenity ID: {}", savedAmenity.getAmenityId());
+            availabilityRepository.saveAll(dailyAvailabilities);
+            logger.debug("Saved daily availabilities: {}", dailyAvailabilities);
+        }
+
         if (buildingIds != null) {
             List<AmenityBuilding> amenityBuildings = buildingIds.stream()
                     .map(buildingId -> new AmenityBuilding(savedAmenity.getAmenityId(), buildingId))
                     .collect(Collectors.toList());
+            logger.debug("Creating building associations for amenity ID: {}", savedAmenity.getAmenityId());
+            logger.debug("Building associations: {}", amenityBuildings);
+
             amenityBuildingRepository.saveAll(amenityBuildings);
             logger.debug("Building associations created for amenity ID: {}", savedAmenity.getAmenityId());
         }
+
         return savedAmenity;
     }
+
 
     @Override
     public Amenity updateAmenity(Amenity amenity, List<String> buildingIds) {
         logger.debug("Updating amenity with ID: {}", amenity.getAmenityId());
+
+        // Retrieve existing amenity
         Optional<Amenity> existingAmenityOpt = amenityRepository.findById(amenity.getAmenityId());
         if (existingAmenityOpt.isEmpty()) {
+            logger.error("Amenity not found with ID: {}", amenity.getAmenityId());
             throw new AmenityNotFoundException("Amenity not found with ID: " + amenity.getAmenityId());
+        }
+        List<DailyAvailability> dailyAvailabilities = null;
+        if (amenity.getDailyAvailabilities() != null) {
+            dailyAvailabilities = amenity.getDailyAvailabilities();
+            dailyAvailabilities.forEach(dailyAvailability -> dailyAvailability.setAmenity(amenity));
+            amenity.setDailyAvailabilities(null);
         }
 
         Amenity updatedAmenity = amenityRepository.save(amenity);
+        logger.debug("Saved updated amenity with ID: {}", updatedAmenity.getAmenityId());
+
+        if (dailyAvailabilities != null) {
+            logger.debug("Saving daily availabilities for amenity ID: {}", updatedAmenity.getAmenityId());
+            availabilityRepository.saveAll(dailyAvailabilities);
+        }
+
+        // Handle building associations
         if (buildingIds != null) {
             Set<String> currentBuildingIds = amenityBuildingRepository.findByAmenityId(amenity.getAmenityId())
                     .stream()
@@ -81,16 +123,20 @@ public class AmenityServiceImpl implements AmenityService {
             // Determine which associations to remove
             Set<String> toRemove = new HashSet<>(currentBuildingIds);
             toRemove.removeAll(newBuildingIds);
-            amenityBuildingRepository.deleteByAmenityIdAndBuildingIdIn(amenity.getAmenityId(), toRemove);
-            logger.debug("Removed building associations for amenity ID: {} -> {}", amenity.getAmenityId(), toRemove);
+            if (!toRemove.isEmpty()) {
+                logger.debug("Removing building associations for amenity ID: {} -> {}", updatedAmenity.getAmenityId(), toRemove);
+                amenityBuildingRepository.deleteByAmenityIdAndBuildingIdIn(amenity.getAmenityId(), toRemove);
+            }
 
             // Determine which associations to add
             newBuildingIds.removeAll(currentBuildingIds);
             List<AmenityBuilding> newAssociations = newBuildingIds.stream()
                     .map(buildingId -> new AmenityBuilding(updatedAmenity.getAmenityId(), buildingId))
                     .collect(Collectors.toList());
-            amenityBuildingRepository.saveAll(newAssociations);
-            logger.debug("Added building associations for amenity ID: {} -> {}", amenity.getAmenityId(), newBuildingIds);
+            if (!newAssociations.isEmpty()) {
+                logger.debug("Adding building associations for amenity ID: {} -> {}", updatedAmenity.getAmenityId(), newBuildingIds);
+                amenityBuildingRepository.saveAll(newAssociations);
+            }
         }
 
         return updatedAmenity;
