@@ -17,6 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tags;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -48,8 +49,8 @@ public class AmenityBookingCalendarRestController {
     public ResponseEntity<AmenityBookingCalendarDto> getBookingCalendar(
             @PathVariable String tenantId,
             @PathVariable String amenityId,
-            @RequestParam("startTime") @Parameter(description = "Start time of the range") LocalDateTime startTime,
-            @RequestParam("endTime") @Parameter(description = "End time of the range") LocalDateTime endTime) throws InvalidOperationException {
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) @RequestParam("startTime") @Parameter(description = "Start time of the range") LocalDateTime startTime,
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) @RequestParam("endTime") @Parameter(description = "End time of the range") LocalDateTime endTime) throws InvalidOperationException {
 
         if (startTime.isAfter(endTime)) {
             throw new InvalidOperationException("Start time cannot be after end time");
