@@ -7,6 +7,7 @@ import lombok.Data;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -95,20 +96,22 @@ public abstract class Amenity {
     @PrePersist
     public void onCreate() {
         this.amenityId = IdGenerator.generateULID("AMN-");
-        // initializeDailyAvailability();
+        initializeDailyAvailability();
     }
 
     private void initializeDailyAvailability() {
-        // Initialize daily availability for all days of the week
-        DayOfWeek[] days = DayOfWeek.values();
-        for (DayOfWeek day : days) {
-            DailyAvailability availability = new DailyAvailability();
-            availability.setDayOfWeek(day);
-            availability.setOpenTime(LocalTime.of(8, 0)); // Default opening time
-            availability.setCloseTime(LocalTime.of(20, 0)); // Default closing time
-            availability.setAmenity(this); // Link to current amenity
-
-            this.dailyAvailabilities.add(availability);
+        if (dailyAvailabilities == null) {
+            dailyAvailabilities = new ArrayList<>();
+            dailyAvailabilities.add(new DailyAvailability(this, DayOfWeek.MONDAY, LocalTime.of(8, 0), LocalTime.of(20, 0)));
+            dailyAvailabilities.add(new DailyAvailability(this, DayOfWeek.TUESDAY, LocalTime.of(8, 0), LocalTime.of(20, 0)));
+            dailyAvailabilities.add(new DailyAvailability(this, DayOfWeek.WEDNESDAY, LocalTime.of(8, 0), LocalTime.of(20, 0)));
+            dailyAvailabilities.add(new DailyAvailability(this, DayOfWeek.THURSDAY, LocalTime.of(8, 0), LocalTime.of(20, 0)));
+            dailyAvailabilities.add(new DailyAvailability(this, DayOfWeek.FRIDAY, LocalTime.of(8, 0), LocalTime.of(20, 0)));
+            dailyAvailabilities.add(new DailyAvailability(this, DayOfWeek.SATURDAY, LocalTime.of(8, 0), LocalTime.of(20, 0)));
+            dailyAvailabilities.add(new DailyAvailability(this, DayOfWeek.SUNDAY, LocalTime.of(8, 0), LocalTime.of(20, 0)));
+        } else {
+            dailyAvailabilities.forEach(dailyAvailability -> dailyAvailability.setAmenity(this));
         }
+
     }
 }
