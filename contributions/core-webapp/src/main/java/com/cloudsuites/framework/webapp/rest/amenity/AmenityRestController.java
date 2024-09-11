@@ -123,7 +123,7 @@ public class AmenityRestController {
     public ResponseEntity<AmenityDto> updateAmenity(
             @Parameter(description = "ID of the amenity to be updated")
             @PathVariable String amenityId,
-            @Valid @RequestBody @Parameter(description = "Amenity payload") AmenityDto amenityDto,
+            @RequestBody @Parameter(description = "Amenity payload") AmenityDto amenityDto,
             @PathVariable String buildingId) {
         if (!amenityId.equals(amenityDto.getAmenityId())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();

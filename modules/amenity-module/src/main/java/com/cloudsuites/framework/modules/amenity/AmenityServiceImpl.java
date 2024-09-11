@@ -100,7 +100,6 @@ public class AmenityServiceImpl implements AmenityService {
         if (amenity.getDailyAvailabilities() != null) {
             dailyAvailabilities = amenity.getDailyAvailabilities();
             dailyAvailabilities.forEach(dailyAvailability -> dailyAvailability.setAmenity(amenity));
-            amenity.setDailyAvailabilities(null);
         }
 
         Amenity updatedAmenity = amenityRepository.save(amenity);
