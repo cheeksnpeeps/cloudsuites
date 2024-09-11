@@ -3,10 +3,7 @@ package com.cloudsuites.framework.webapp.rest.property.dto;
 import com.cloudsuites.framework.webapp.rest.amenity.dto.AmenityDto;
 import com.cloudsuites.framework.webapp.rest.user.dto.AddressDto;
 import com.cloudsuites.framework.webapp.rest.user.dto.IdentityDto;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.annotation.*;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -67,11 +64,13 @@ public class BuildingDto {
 	@Schema(hidden = true)
 	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
 	@JsonView(Views.BuildingView.class)
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
 	private LocalDateTime createdAt;
 
 	@Schema(hidden = true)
 	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
 	@JsonView(Views.BuildingView.class)
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
 	private LocalDateTime lastModifiedAt;
 
 	@JsonView(Views.BuildingView.class)
