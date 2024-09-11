@@ -1,14 +1,15 @@
 package com.cloudsuites.framework.webapp.rest.amenity.dto;
 
+import com.cloudsuites.framework.services.amenity.entities.AmenityType;
 import com.cloudsuites.framework.services.amenity.entities.MaintenanceStatus;
 import com.cloudsuites.framework.services.amenity.entities.booking.BookingLimitPeriod;
-import com.cloudsuites.framework.webapp.rest.amenity.dto.features.SwimmingPoolDto;
-import com.cloudsuites.framework.webapp.rest.amenity.dto.features.TennisCourtDto;
+import com.cloudsuites.framework.webapp.rest.amenity.dto.features.*;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
 import com.fasterxml.jackson.annotation.*;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -26,15 +27,36 @@ import java.util.List;
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
         include = JsonTypeInfo.As.PROPERTY,
-        property = "amenityType"
+        property = "type"
 )
 @JsonSubTypes({
         @JsonSubTypes.Type(value = SwimmingPoolDto.class, name = "SWIMMING_POOL"),
         @JsonSubTypes.Type(value = TennisCourtDto.class, name = "TENNIS_COURT"),
-        // Other subtypes...
+        @JsonSubTypes.Type(value = AerobicsRoomDto.class, name = "AEROBICS_ROOM"),
+        @JsonSubTypes.Type(value = PartyRoomDto.class, name = "PARTY_ROOM"),
+        @JsonSubTypes.Type(value = BarbequeAreaDto.class, name = "BARBEQUE_AREA"),
+        @JsonSubTypes.Type(value = GymDto.class, name = "GYM"),
+        @JsonSubTypes.Type(value = TheaterDto.class, name = "THEATER"),
+        @JsonSubTypes.Type(value = MassageRoomDto.class, name = "MASSAGE_ROOM"),
+        @JsonSubTypes.Type(value = WineTastingRoomDto.class, name = "WINE_TASTING_ROOM"),
+        @JsonSubTypes.Type(value = GuestSuiteDto.class, name = "GUEST_SUITE"),
+        @JsonSubTypes.Type(value = BilliardRoomDto.class, name = "BILLIARD_ROOM"),
+        @JsonSubTypes.Type(value = GamesRoomDto.class, name = "GAMES_ROOM"),
+        @JsonSubTypes.Type(value = GolfSimulatorDto.class, name = "GOLF_SIMULATOR"),
+        @JsonSubTypes.Type(value = BowlingAlleyDto.class, name = "BOWLING_ALLEY"),
+        @JsonSubTypes.Type(value = LibraryDto.class, name = "LIBRARY"),
+        @JsonSubTypes.Type(value = YogaStudioDto.class, name = "YOGA_STUDIO"),
+        @JsonSubTypes.Type(value = ElevatorDto.class, name = "ELEVATOR"),
+        @JsonSubTypes.Type(value = OtherDto.class, name = "OTHER")
+
 })
 @Schema(description = "Amenity details")
 public class AmenityDto {
+
+    @JsonView({Views.AmenityView.class, Views.BuildingView.class})
+    @Schema(description = "Type of the amenity", example = "SWIMMING_POOL")
+    @NotNull(message = "Type is mandatory")
+    private AmenityType type;
 
     @JsonView({Views.AmenityView.class, Views.BuildingView.class})
     @Schema(hidden = true)
@@ -117,6 +139,5 @@ public class AmenityDto {
     @JsonView(Views.AmenityView.class)
     @Schema(description = "Building IDs associated with the amenity", example = "[\"BLD-01J3C5A90XWRP7PW8TVT0E4C9K\", \"BLD-01J4N193J5R963HANH7D36JJ7Y\"]")
     private List<String> buildingIds;
-
 
 }
