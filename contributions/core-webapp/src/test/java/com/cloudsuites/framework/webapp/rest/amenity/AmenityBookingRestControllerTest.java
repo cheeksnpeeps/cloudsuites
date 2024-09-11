@@ -2,15 +2,19 @@ package com.cloudsuites.framework.webapp.rest.amenity;
 
 import com.cloudsuites.framework.modules.amenity.repository.AmenityBookingRepository;
 import com.cloudsuites.framework.modules.amenity.repository.AmenityRepository;
+import com.cloudsuites.framework.modules.amenity.repository.AvailabilityRepository;
 import com.cloudsuites.framework.modules.property.features.repository.BuildingRepository;
+import com.cloudsuites.framework.modules.property.features.repository.UnitRepository;
 import com.cloudsuites.framework.modules.property.personas.repository.TenantRepository;
 import com.cloudsuites.framework.modules.user.repository.AdminRepository;
 import com.cloudsuites.framework.modules.user.repository.UserRepository;
 import com.cloudsuites.framework.services.amenity.entities.Amenity;
 import com.cloudsuites.framework.services.amenity.entities.AmenityType;
+import com.cloudsuites.framework.services.amenity.entities.DailyAvailability;
 import com.cloudsuites.framework.services.amenity.entities.booking.AmenityBooking;
 import com.cloudsuites.framework.services.amenity.entities.features.SwimmingPool;
 import com.cloudsuites.framework.services.property.features.entities.Building;
+import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.property.personas.entities.Tenant;
 import com.cloudsuites.framework.services.property.personas.entities.TenantStatus;
 import com.cloudsuites.framework.services.user.entities.Identity;
@@ -32,14 +36,17 @@ import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfig
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -93,17 +100,23 @@ class AmenityBookingRestControllerTest {
     Logger logger = LoggerFactory.getLogger(AmenityBookingRestControllerTest.class);
     private String validBookingId;
 
+
+    @Autowired
+    private UnitRepository unitRepository;
+    @Autowired
+    private AvailabilityRepository availabilityRepository;
+
     @BeforeEach
     void setUp() throws Exception {
         clearDatabase();
-        // Initialize AdminTestHelper for admin access
-        adminTestHelper = new AdminTestHelper(mockMvc, objectMapper, null, null);
-        accessToken = adminTestHelper.registerAdminAndGetToken("testRegisterAdmin", "+14166024668");
 
         Building building = createBuilding("BuildingA");
+        String validBuildingId = building.getBuildingId();
         amenity = createAmenity(building.getBuildingId());
         validAmenityId = amenity.getAmenityId();
 
+        Unit unit = createUnit(validBuildingId);
+        String validUnitId = unit.getUnitId();
 
         // Create a user and get the userId (not shown: implement user creation)
         Tenant tenant = createUser("testUser", "+14165557777");
@@ -113,6 +126,11 @@ class AmenityBookingRestControllerTest {
                 .apply(SecurityMockMvcConfigurers.springSecurity()) // Ensure this is imported
                 .addFilters(new CharacterEncodingFilter("UTF-8", true)) // Optional: Set request/response encoding
                 .build();
+
+        // Initialize AdminTestHelper for admin access
+        adminTestHelper = new AdminTestHelper(mockMvc, objectMapper, validBuildingId, validUnitId);
+        accessToken = adminTestHelper.registerAdminAndGetToken("testRegisterAdmin", "+14166024668");
+
 
     }
 
@@ -134,9 +152,27 @@ class AmenityBookingRestControllerTest {
         Amenity amenity = new SwimmingPool();
         amenity.setName("First Pool");
         amenity.setType(AmenityType.SWIMMING_POOL);
-        amenity = amenityRepository.save(amenity);
 
-        // Logic to associate Amenity with Building if needed
+        List<DailyAvailability> dailyAvailabilities = new ArrayList<>();
+        dailyAvailabilities.add(new DailyAvailability(amenity, DayOfWeek.MONDAY, LocalTime.of(8, 0), LocalTime.of(20, 0)));
+        dailyAvailabilities.add(new DailyAvailability(amenity, DayOfWeek.TUESDAY, LocalTime.of(8, 0), LocalTime.of(20, 0)));
+        dailyAvailabilities.add(new DailyAvailability(amenity, DayOfWeek.WEDNESDAY, LocalTime.of(8, 0), LocalTime.of(20, 0)));
+        dailyAvailabilities.add(new DailyAvailability(amenity, DayOfWeek.THURSDAY, LocalTime.of(8, 0), LocalTime.of(20, 0)));
+        dailyAvailabilities.add(new DailyAvailability(amenity, DayOfWeek.FRIDAY, LocalTime.of(8, 0), LocalTime.of(20, 0)));
+        dailyAvailabilities.add(new DailyAvailability(amenity, DayOfWeek.SATURDAY, LocalTime.of(8, 0), LocalTime.of(20, 0)));
+        dailyAvailabilities.add(new DailyAvailability(amenity, DayOfWeek.SUNDAY, LocalTime.of(8, 0), LocalTime.of(20, 0)));
+
+        // Save the amenity
+        Amenity savedAmenity = amenityRepository.save(amenity);
+        logger.debug("Saved amenity with ID: {}", savedAmenity.getAmenityId());
+
+        // Save daily availabilities if they exist
+        logger.debug("Saving daily availabilities for amenity ID: {}", savedAmenity.getAmenityId());
+        availabilityRepository.saveAll(dailyAvailabilities);
+        logger.debug("Saved daily availabilities: {}", dailyAvailabilities);
+
+        amenity.setDailyAvailabilities(dailyAvailabilities);
+        amenity = amenityRepository.save(amenity);
         return amenity;
     }
 
@@ -165,21 +201,14 @@ class AmenityBookingRestControllerTest {
         // Use @WithMockUser to mock authentication
     void bookAmenity_shouldReturnCreatedBooking() throws Exception {
         AmenityBookingDto bookingDto = new AmenityBookingDto();
-        bookingDto.setAmenityId(validAmenityId);
-        bookingDto.setUserId(validUserId);
         // start time to the next day at 12:00 pm
         bookingDto.setStartTime(LocalDateTime.now().plusDays(1).withHour(12).withMinute(0).withSecond(0).withNano(0));
         bookingDto.setEndTime(LocalDateTime.now().plusDays(1).withHour(13).withMinute(0).withSecond(0).withNano(0));
-
+        logger.debug("Booking object {}", objectMapper.writeValueAsString(bookingDto));
         // Perform the request and capture the MvcResult
-        MvcResult result = mockMvc.perform(withAuth(post("/api/v1/amenities/{amenityId}/bookings", validAmenityId))
+        mockMvc.perform(withAuth(post("/api/v1/amenities/{amenityId}/tenants/{tenantId}/bookings", validAmenityId, validUserId))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(bookingDto)))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        // Wait for async result processing
-        mockMvc.perform(asyncDispatch(result))
                 .andExpect(status().isCreated())
                 .andExpect(resultAfterAsync -> {
                     String jsonResponse = resultAfterAsync.getResponse().getContentAsString();
@@ -194,14 +223,14 @@ class AmenityBookingRestControllerTest {
         AmenityBookingDto bookingDto = new AmenityBookingDto();
         bookingDto.setAmenityId(validAmenityId);
         bookingDto.setUserId(validUserId);
-        bookingDto.setStartTime(LocalDateTime.now().minusDays(1));
-        bookingDto.setEndTime(LocalDateTime.now().plusHours(1));
+        bookingDto.setStartTime(LocalDateTime.now().withHour(0));
+        bookingDto.setEndTime(LocalDateTime.now().withHour(0));
 
-        mockMvc.perform(withAuth(post("/api/v1/amenities/{amenityId}/bookings", validAmenityId))
+        mockMvc.perform(withAuth(post("/api/v1/amenities/{amenityId}/tenants/{tenantId}/bookings", validAmenityId, validUserId))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(bookingDto)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(containsString("startTime=must be a date in the present or in the future")));
+                .andExpect(content().string(containsString("Booking period is less than the minimum allowed")));
     }
 
     @Test
@@ -232,20 +261,33 @@ class AmenityBookingRestControllerTest {
         // Assuming we have a method to create a booking and return the booking ID
         String newBooking = createBooking(amenity, validUserId);
 
-        mockMvc.perform(withAuth(delete("/api/v1/amenities/bookings/{bookingId}", newBooking)))
+
+        mockMvc.perform(withAuth(delete("/api/v1/amenities/tenants/{tenantId}/bookings/{bookingId}", validUserId, newBooking))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
 
         // Verify that the booking is no longer found after deletion
-        mockMvc.perform(withAuth(get("/api/v1/amenities/bookings/{bookingId}", newBooking)))
+        mockMvc.perform(withAuth(get("/api/v1/amenities/bookings/{bookingId}", newBooking))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void cancelBooking_invalidId_shouldReturnNotFound() throws Exception {
-        mockMvc.perform(withAuth(delete("/api/v1/amenities/bookings/{bookingId}", "invalidBookingId")))
+        mockMvc.perform(withAuth(delete("/api/v1/amenities/tenants/{tenantId}/bookings/{bookingId}", validUserId, "invalidBookingId"))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }
 
+    private Unit createUnit(String buildingId) {
+        Unit unit = new Unit();
+        unit.setBuilding(buildingRepository.findById(buildingId).orElseThrow());
+        unit.setUnitNumber(101);
+        unit.setNumberOfBedrooms(3);
+        return unitRepository.save(unit);
+    }
+
+    
     // -------------------- Helper Methods --------------------
 
     private String createBooking(Amenity amenity, String userId) {
