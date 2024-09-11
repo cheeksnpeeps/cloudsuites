@@ -29,20 +29,60 @@ public class AmenityBookingValidator {
     }
 
     public void validateBookingConstraints(Amenity amenity, String userId, LocalDateTime startTime, LocalDateTime endTime) throws BookingException {
-        if (!isAvailable(amenity, startTime, endTime)) {
-            throw new BookingException("Amenity is not available during the requested time.");
+        logger.debug("Validating booking constraints for Amenity ID: {} from {} to {}", amenity.getAmenityId(), startTime, endTime);
+        if (startTime.toLocalDate().equals(endTime.toLocalDate())) {
+            // Single-day booking
+            logger.debug("Single-day booking detected.");
+            if (!isAvailable(amenity, startTime, endTime)) {
+                throw new BookingException("Amenity is not available during the requested time.");
+            }
+
+            if (!isWithinDailyAvailability(amenity, startTime, endTime)) {
+                throw new BookingException("Booking time is outside of amenity's operating hours.");
+            }
+
+            checkBookingRequirements(amenity, startTime, endTime);
+            checkBookingLimits(amenity, userId, startTime, endTime);
+        } else {
+            // Multi-day booking
+            logger.debug("Multi-day booking detected.");
+            validateMultiDayBooking(amenity, userId, startTime, endTime);
+        }
+    }
+
+    private void validateMultiDayBooking(Amenity amenity, String userId, LocalDateTime startTime, LocalDateTime endTime) throws BookingException {
+        logger.debug("Validating multi-day booking from {} to {}", startTime, endTime);
+
+        LocalDateTime currentStartTime = startTime;
+        LocalDateTime currentEndTime;
+
+        while (!currentStartTime.toLocalDate().isAfter(endTime.toLocalDate())) {
+            // Define end of the current day or endTime, whichever is earlier
+            currentEndTime = currentStartTime.toLocalDate().atTime(LocalTime.MAX).isAfter(endTime) ? endTime : currentStartTime.toLocalDate().atTime(LocalTime.MAX);
+
+            logger.debug("Validating day from {} to {}", currentStartTime, currentEndTime);
+
+            // Validate each day
+            if (!isAvailable(amenity, currentStartTime, currentEndTime)) {
+                throw new BookingException("Amenity is not available during the requested time.");
+            }
+
+            if (!isWithinDailyAvailability(amenity, currentStartTime, currentEndTime)) {
+                throw new BookingException("Booking time is outside of amenity's operating hours.");
+            }
+
+            currentStartTime = currentStartTime.toLocalDate().plusDays(1).atStartOfDay(); // Move to next day
         }
 
-        if (!isWithinDailyAvailability(amenity, startTime, endTime)) {
-            throw new BookingException("Booking time is outside of amenity's operating hours.");
-        }
-
+        // Check overall booking constraints
         checkBookingRequirements(amenity, startTime, endTime);
         checkBookingLimits(amenity, userId, startTime, endTime);
     }
 
     private void checkBookingRequirements(Amenity amenity, LocalDateTime startTime, LocalDateTime endTime) throws BookingException {
-        if (!amenity.getIsBookingRequired()) {
+        logger.debug("Checking booking requirements for Amenity ID: {} from {} to {}", amenity.getAmenityId(), startTime, endTime);
+
+        if (Boolean.FALSE.equals(amenity.getIsBookingRequired())) {
             throw new BookingException("Booking is not required for this amenity.");
         }
 
@@ -59,6 +99,8 @@ public class AmenityBookingValidator {
     }
 
     private void checkBookingLimits(Amenity amenity, String userId, LocalDateTime startTime, LocalDateTime endTime) throws BookingException {
+        logger.debug("Checking booking limits for Amenity ID: {} for user ID: {} from {} to {}", amenity.getAmenityId(), userId, startTime, endTime);
+
         if (amenity.getMaxBookingsPerTenant() != null) {
             LocalDateTime periodStart = calculateBookingLimitStartTime(amenity.getBookingLimitPeriod());
             int currentBookingCount = bookingRepository.countBookingsForUser(userId, amenity.getAmenityId(), periodStart, endTime);
@@ -77,6 +119,8 @@ public class AmenityBookingValidator {
     }
 
     private boolean isWithinDailyAvailability(Amenity amenity, LocalDateTime startTime, LocalDateTime endTime) {
+        logger.debug("Checking daily availability for Amenity ID: {} on {}", amenity.getAmenityId(), startTime.toLocalDate());
+
         List<DailyAvailability> dailyAvailabilities = amenity.getDailyAvailabilities();
         DayOfWeek dayOfWeek = startTime.getDayOfWeek();
 
@@ -103,19 +147,29 @@ public class AmenityBookingValidator {
 
     private LocalDateTime calculateBookingLimitStartTime(BookingLimitPeriod period) {
         LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startTime;
         switch (period) {
             case DAILY:
-                return now.truncatedTo(ChronoUnit.DAYS);
+                startTime = now.truncatedTo(ChronoUnit.DAYS);
+                logger.debug("Calculated DAILY booking limit start time: {}", startTime);
+                break;
             case WEEKLY:
-                return now.minusDays(now.getDayOfWeek().getValue() - 1).truncatedTo(ChronoUnit.DAYS);
+                startTime = now.minusDays(now.getDayOfWeek().getValue() - 1).truncatedTo(ChronoUnit.DAYS);
+                logger.debug("Calculated WEEKLY booking limit start time: {}", startTime);
+                break;
             case MONTHLY:
-                return now.withDayOfMonth(1).truncatedTo(ChronoUnit.DAYS);
+                startTime = now.withDayOfMonth(1).truncatedTo(ChronoUnit.DAYS);
+                logger.debug("Calculated MONTHLY booking limit start time: {}", startTime);
+                break;
             default:
                 throw new IllegalArgumentException("Unsupported booking limit period: " + period);
         }
+        return startTime;
     }
 
     public boolean isAvailable(Amenity amenity, LocalDateTime startTime, LocalDateTime endTime) {
+        logger.debug("Checking availability for Amenity ID: {} from {} to {}", amenity.getAmenityId(), startTime, endTime);
+
         List<AmenityBooking> overlappingBookings = bookingRepository.findOverlappingBookings(
                 amenity.getAmenityId(), startTime, endTime
         );
