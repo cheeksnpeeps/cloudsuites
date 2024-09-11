@@ -1,6 +1,7 @@
 package com.cloudsuites.framework.modules.amenity;
 
 import com.cloudsuites.framework.modules.amenity.repository.AmenityBookingRepository;
+import com.cloudsuites.framework.modules.amenity.repository.CustomBookingCalendarRepositoryImpl;
 import com.cloudsuites.framework.services.amenity.entities.Amenity;
 import com.cloudsuites.framework.services.amenity.entities.DailyAvailability;
 import com.cloudsuites.framework.services.amenity.entities.MaintenanceStatus;
@@ -23,9 +24,11 @@ public class AmenityBookingValidator {
 
     private static final Logger logger = LoggerFactory.getLogger(AmenityBookingValidator.class);
     private final AmenityBookingRepository bookingRepository;
+    private final CustomBookingCalendarRepositoryImpl customBookingCalendarRepository;
 
-    public AmenityBookingValidator(AmenityBookingRepository bookingRepository) {
+    public AmenityBookingValidator(AmenityBookingRepository bookingRepository, CustomBookingCalendarRepositoryImpl customBookingCalendarRepository) {
         this.bookingRepository = bookingRepository;
+        this.customBookingCalendarRepository = customBookingCalendarRepository;
     }
 
     public void validateBookingConstraints(Amenity amenity, String userId, LocalDateTime startTime, LocalDateTime endTime) throws BookingException {
@@ -103,7 +106,7 @@ public class AmenityBookingValidator {
 
         if (amenity.getMaxBookingsPerTenant() != null) {
             LocalDateTime periodStart = calculateBookingLimitStartTime(amenity.getBookingLimitPeriod());
-            int currentBookingCount = bookingRepository.countBookingsForUser(userId, amenity.getAmenityId(), periodStart, endTime);
+            int currentBookingCount = customBookingCalendarRepository.countBookingsForUser(userId, amenity.getAmenityId(), periodStart, endTime);
 
             if (currentBookingCount >= amenity.getMaxBookingsPerTenant()) {
                 throw new BookingException("Booking limit reached for this amenity.");
@@ -111,7 +114,7 @@ public class AmenityBookingValidator {
         }
 
         if (amenity.getMaxBookingOverlap() != null) {
-            int overlappingCount = bookingRepository.countOverlappingBookings(amenity.getAmenityId(), startTime, endTime);
+            int overlappingCount = customBookingCalendarRepository.countOverlappingBookings(amenity.getAmenityId(), startTime, endTime);
             if (overlappingCount >= amenity.getMaxBookingOverlap()) {
                 throw new BookingException("Maximum booking overlap reached.");
             }
@@ -170,7 +173,7 @@ public class AmenityBookingValidator {
     public boolean isAvailable(Amenity amenity, LocalDateTime startTime, LocalDateTime endTime) {
         logger.debug("Checking availability for Amenity ID: {} from {} to {}", amenity.getAmenityId(), startTime, endTime);
 
-        List<AmenityBooking> overlappingBookings = bookingRepository.findOverlappingBookings(
+        List<AmenityBooking> overlappingBookings = customBookingCalendarRepository.findOverlappingBookings(
                 amenity.getAmenityId(), startTime, endTime
         );
 

@@ -2,6 +2,7 @@ package com.cloudsuites.framework.modules.amenity;
 
 import com.cloudsuites.framework.modules.amenity.repository.AmenityBookingRepository;
 import com.cloudsuites.framework.modules.amenity.repository.AmenityRepository;
+import com.cloudsuites.framework.modules.amenity.repository.CustomBookingCalendarRepository;
 import com.cloudsuites.framework.services.amenity.entities.Amenity;
 import com.cloudsuites.framework.services.amenity.entities.DailyAvailability;
 import com.cloudsuites.framework.services.amenity.entities.booking.AmenityBooking;
@@ -34,6 +35,9 @@ class AmenityBookingCalendarServiceImplTest {
     @InjectMocks
     private AmenityBookingCalendarServiceImpl amenityBookingCalendarService;
 
+    @Mock
+    private CustomBookingCalendarRepository customBookingCalendarRepository;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
@@ -50,7 +54,7 @@ class AmenityBookingCalendarServiceImplTest {
         booking.setStartTime(startDate);
         booking.setEndTime(endDate);
 
-        when(bookingRepository.findByUserIdAndFilters(userId, null, null, startDate, endDate))
+        when(customBookingCalendarRepository.findByUserIdAndFilters(userId, null, null, startDate, endDate))
                 .thenReturn(List.of(booking));
 
         // Act
@@ -59,7 +63,7 @@ class AmenityBookingCalendarServiceImplTest {
         // Assert
         assertEquals(1, bookings.size());
         assertEquals(userId, bookings.get(0).getUserId());
-        verify(bookingRepository, Mockito.times(1)).findByUserIdAndFilters(userId, null, null, startDate, endDate);
+        verify(customBookingCalendarRepository, Mockito.times(1)).findByUserIdAndFilters(userId, null, null, startDate, endDate);
     }
 
     @Test
@@ -87,7 +91,7 @@ class AmenityBookingCalendarServiceImplTest {
 
         // Mock repository calls
         when(amenityRepository.findById("amenityId")).thenReturn(Optional.of(amenity));
-        when(bookingRepository.findByAmenityIdAndTimeRange("amenityId", LocalDateTime.of(2024, 8, 1, 8, 0), LocalDateTime.of(2024, 8, 1, 23, 0)))
+        when(customBookingCalendarRepository.findByAmenityIdAndTimeRange("amenityId", LocalDateTime.of(2024, 8, 1, 8, 0), LocalDateTime.of(2024, 8, 1, 23, 0)))
                 .thenReturn(bookings);
 
         // Available slots are from 8 to 10 on the same day
@@ -124,7 +128,7 @@ class AmenityBookingCalendarServiceImplTest {
 
         // Mock repository calls
         when(amenityRepository.findById("amenityId")).thenReturn(Optional.of(amenity));
-        when(bookingRepository.findByAmenityIdAndTimeRange("amenityId", LocalDateTime.of(2024, 8, 1, 8, 0), LocalDateTime.of(2024, 8, 1, 23, 0)))
+        when(customBookingCalendarRepository.findByAmenityIdAndTimeRange("amenityId", LocalDateTime.of(2024, 8, 1, 8, 0), LocalDateTime.of(2024, 8, 1, 23, 0)))
                 .thenReturn(bookings);
 
         // Available slots should be empty

@@ -2,6 +2,7 @@ package com.cloudsuites.framework.modules.amenity;
 
 import com.cloudsuites.framework.modules.amenity.repository.AmenityBookingRepository;
 import com.cloudsuites.framework.modules.amenity.repository.AmenityRepository;
+import com.cloudsuites.framework.modules.amenity.repository.CustomBookingCalendarRepositoryImpl;
 import com.cloudsuites.framework.services.amenity.entities.Amenity;
 import com.cloudsuites.framework.services.amenity.entities.booking.AmenityBooking;
 import com.cloudsuites.framework.services.amenity.entities.booking.BookingException;
@@ -25,11 +26,13 @@ public class AmenityBookingServiceImpl implements AmenityBookingService {
     // Self injection
 
     private static final Logger logger = LoggerFactory.getLogger(AmenityBookingServiceImpl.class);
+    private final CustomBookingCalendarRepositoryImpl customBookingCalendarRepository;
 
-    public AmenityBookingServiceImpl(AmenityRepository amenityRepository, AmenityBookingRepository bookingRepository, AmenityBookingValidator bookingValidator) {
+    public AmenityBookingServiceImpl(AmenityRepository amenityRepository, AmenityBookingRepository bookingRepository, AmenityBookingValidator bookingValidator, CustomBookingCalendarRepositoryImpl customBookingCalendarRepository) {
         this.amenityRepository = amenityRepository;
         this.bookingRepository = bookingRepository;
         this.bookingValidator = bookingValidator;
+        this.customBookingCalendarRepository = customBookingCalendarRepository;
     }
 
     @Override
@@ -93,7 +96,7 @@ public class AmenityBookingServiceImpl implements AmenityBookingService {
     @Override
     public List<AmenityBooking> getAllBookingsForAmenity(String amenityId) {
         logger.debug("Retrieving all bookings for amenity with ID: {}", amenityId);
-        List<AmenityBooking> bookings = bookingRepository.findByAmenity_AmenityId(amenityId);
+        List<AmenityBooking> bookings = customBookingCalendarRepository.findByAmenity_AmenityId(amenityId);
         logger.debug("Found {} bookings for amenity with ID: {}", bookings.size(), amenityId);
         return bookings;
     }
