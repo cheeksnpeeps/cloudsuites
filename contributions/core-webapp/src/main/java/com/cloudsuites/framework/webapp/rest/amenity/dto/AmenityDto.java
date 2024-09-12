@@ -53,21 +53,20 @@ import java.util.List;
 @Schema(description = "Amenity details")
 public class AmenityDto {
 
-    @JsonView({Views.AmenityView.class, Views.BuildingView.class})
+    @JsonView(Views.BookingCalendarView.class)
+    @Schema(hidden = true)
+    DailyAvailabilityDto availability;
+    @JsonView({Views.AmenityView.class, Views.BuildingView.class, Views.BookingCalendarView.class})
     @Schema(description = "Type of the amenity", example = "SWIMMING_POOL")
     @NotNull(message = "Type is mandatory")
     private AmenityType type;
-
-    @JsonView({Views.AmenityView.class, Views.BuildingView.class})
+    @JsonView({Views.AmenityView.class, Views.BuildingView.class, Views.BookingCalendarView.class})
     @Schema(hidden = true)
     private String amenityId;
-
     @JsonView(Views.AmenityView.class)
     @Schema(description = "List of daily availabilities for each day of the week")
-    private List<DailyAvailabilityDto> dailyAvailabilities; // Updated field for weekly availability
-
-
-    @JsonView({Views.AmenityView.class, Views.BuildingView.class})
+    private List<DailyAvailabilityDto> dailyAvailabilities;
+    @JsonView({Views.AmenityView.class, Views.BuildingView.class, Views.BookingCalendarView.class})
     @Schema(description = "Name of the amenity", example = "Swimming Pool")
     @NotBlank(message = "Name is mandatory")
     private String name;
@@ -109,17 +108,17 @@ public class AmenityDto {
     @Schema(description = "Number of days in advance the amenity can be booked", example = "7")
     private Integer advanceBookingPeriod = 0;
 
-    @JsonView(Views.AmenityView.class)
+    @JsonView({Views.AmenityView.class, Views.BookingCalendarView.class})
     @Schema(description = "Maximum duration for which the amenity can be booked", example = "120")
     @Min(value = 1, message = "Booking duration limit must be at least 1 minute")
     private Integer bookingDurationLimit = 180;
 
-    @JsonView(Views.AmenityView.class)
+    @JsonView({Views.AmenityView.class, Views.BookingCalendarView.class})
     @Schema(description = "Minimum duration for which the amenity can be booked", example = "30")
     @Min(value = 1, message = "Minimum booking duration must be at least 1 minute")
     private Integer minimumBookingDuration = 60;
 
-    @JsonView(Views.AmenityView.class)
+    @JsonView({Views.AmenityView.class, Views.BookingCalendarView.class})
     @Schema(description = "Maximum number of bookings a tenant can make for this amenity", example = "5")
     @Min(value = 1, message = "Max bookings per tenant must be at least 1")
     private Integer maxBookingsPerTenant = 2;
@@ -128,7 +127,7 @@ public class AmenityDto {
     @Schema(description = "The period for which the booking limit applies (e.g., DAILY, WEEKLY, MONTHLY)", example = "DAILY")
     private BookingLimitPeriod bookingLimitPeriod = BookingLimitPeriod.DAILY;
 
-    @JsonView(Views.AmenityView.class)
+    @JsonView({Views.AmenityView.class, Views.BookingCalendarView.class})
     @Schema(description = "Image gallery URLs for the amenity", example = "[\"http://example.com/image1.jpg\", \"http://example.com/image2.jpg\"]")
     private List<String> imageGallery;
 
