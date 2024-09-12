@@ -34,6 +34,9 @@ public class Views {
     public class AmenityView {
     }
 
+    public class BookingCalendarView {
+    }
+
     public class AmenityBooking {
     }
 }
