@@ -3,10 +3,7 @@ package com.cloudsuites.framework.modules.amenity;
 import com.cloudsuites.framework.modules.amenity.repository.AmenityBuildingRepository;
 import com.cloudsuites.framework.modules.amenity.repository.AmenityRepository;
 import com.cloudsuites.framework.modules.amenity.repository.AvailabilityRepository;
-import com.cloudsuites.framework.services.amenity.entities.Amenity;
-import com.cloudsuites.framework.services.amenity.entities.AmenityBuilding;
-import com.cloudsuites.framework.services.amenity.entities.DailyAvailability;
-import com.cloudsuites.framework.services.amenity.entities.MaintenanceStatus;
+import com.cloudsuites.framework.services.amenity.entities.*;
 import com.cloudsuites.framework.services.amenity.entities.booking.AmenityAlreadyExistsException;
 import com.cloudsuites.framework.services.amenity.entities.booking.AmenityNotFoundException;
 import com.cloudsuites.framework.services.amenity.service.AmenityService;
@@ -14,10 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -223,4 +217,44 @@ public class AmenityServiceImpl implements AmenityService {
 
         return amenityOpt.get();
     }
+
+    @Override
+    public List<Amenity> getAmenitiesByBuildingAndTypes(String buildingId, List<AmenityType> byAmenityTypes) {
+        logger.debug("Fetching amenities for building ID: {} and types: {}", buildingId, byAmenityTypes);
+
+        if (buildingId == null || buildingId.isEmpty()) {
+            logger.warn("Building ID is null or empty");
+            throw new IllegalArgumentException("Building ID cannot be null or empty");
+        }
+
+        if (byAmenityTypes == null || byAmenityTypes.isEmpty()) {
+            logger.warn("Amenity types list is null or empty for building ID: {}", buildingId);
+            return Collections.emptyList();
+        }
+
+        List<AmenityBuilding> associations = amenityBuildingRepository.findByBuildingId(buildingId);
+
+        if (associations == null || associations.isEmpty()) {
+            logger.debug("No amenities found for building ID: {}", buildingId);
+            return Collections.emptyList();
+        }
+
+        List<String> amenityIds = associations.stream()
+                .map(AmenityBuilding::getAmenityId)
+                .collect(Collectors.toList());
+
+        if (amenityIds.isEmpty()) {
+            logger.debug("No amenity associations found for building ID: {}", buildingId);
+            return Collections.emptyList();
+        }
+
+        return amenityRepository.findByAmenityIdInAndTypeIn(amenityIds, byAmenityTypes);
+    }
+
+    @Override
+    public List<Amenity> getAmenitiesByIds(List<String> amenityIds) {
+        logger.debug("Fetching amenities by IDs: {}", amenityIds);
+        return amenityRepository.findAllById(amenityIds);
+    }
+
 }

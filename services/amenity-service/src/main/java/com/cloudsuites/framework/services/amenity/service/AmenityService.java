@@ -1,6 +1,7 @@
 package com.cloudsuites.framework.services.amenity.service;
 
 import com.cloudsuites.framework.services.amenity.entities.Amenity;
+import com.cloudsuites.framework.services.amenity.entities.AmenityType;
 import com.cloudsuites.framework.services.amenity.entities.MaintenanceStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,5 +41,10 @@ public interface AmenityService {
 
     @Transactional
     Amenity removeBuildingFromAmenity(String amenityId, String buildingId);
+
+    @Transactional
+    List<Amenity> getAmenitiesByBuildingAndTypes(String buildingId, List<AmenityType> byAmenityTypes);
+
+    List<Amenity> getAmenitiesByIds(List<String> amenityIds);
 }
 
