@@ -1,7 +1,7 @@
 package com.cloudsuites.framework.services.amenity.service;
 
-import com.cloudsuites.framework.services.amenity.entities.AmenityType;
 import com.cloudsuites.framework.services.amenity.entities.booking.AmenityBooking;
+import com.cloudsuites.framework.services.amenity.entities.booking.BookingStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,11 +11,10 @@ import java.util.List;
 @Service
 public interface AmenityBookingCalendarService {
 
-    @Transactional(readOnly = true)
-    List<AmenityBooking> getBookingsForUser(String userId, AmenityType amenityType, LocalDateTime startDate, LocalDateTime endDate);
+    List<AmenityBooking> getBookingsForUser(List<String> userIds, List<String> amenityIds, List<BookingStatus> bookingStatuses, LocalDateTime startDate, LocalDateTime endDate);
 
     @Transactional(readOnly = true)
-    List<AmenityBooking> getBookingsForAmenity(String amenityId, AmenityType amenityType, LocalDateTime startTime, LocalDateTime endTime);
+    List<AmenityBooking> getBookingsForAmenity(List<String> amenityIds, LocalDateTime startDate, LocalDateTime endDate);
 
     @Transactional(readOnly = true)
     List<LocalDateTime> getAvailableSlotsForAmenity(String amenityId, LocalDateTime start, LocalDateTime end);
