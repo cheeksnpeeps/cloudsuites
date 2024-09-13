@@ -141,7 +141,7 @@ public class AmenityBookingValidator {
         LocalTime endLocalTime = endTime.toLocalTime();
 
         if (startLocalTime.isBefore(availability.getOpenTime()) || endLocalTime.isAfter(availability.getCloseTime())) {
-            logger.debug("Booking time from {} to {} is outside of operating hours on {}", startLocalTime, endLocalTime, dayOfWeek);
+            logger.debug("Booking time from {} to {} is outside of operating hours on {} - Open {} CLose {}", startLocalTime, endLocalTime, dayOfWeek, availability.getOpenTime(), availability.getCloseTime());
             return false;
         }
 
