@@ -18,7 +18,7 @@ public class AmenityScheduleDto {
 
     @Schema(description = "The amenity details")
     @JsonView(Views.BookingCalendarView.class)
-    private AmenityDto amenity;
+    private List<AmenityDto> amenities;
 
     @Schema(description = "List of booked slots for the amenity")
     @JsonView(Views.BookingCalendarView.class)
