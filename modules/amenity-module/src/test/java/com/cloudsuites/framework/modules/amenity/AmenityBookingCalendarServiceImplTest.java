@@ -6,6 +6,7 @@ import com.cloudsuites.framework.modules.amenity.repository.CustomBookingCalenda
 import com.cloudsuites.framework.services.amenity.entities.Amenity;
 import com.cloudsuites.framework.services.amenity.entities.DailyAvailability;
 import com.cloudsuites.framework.services.amenity.entities.booking.AmenityBooking;
+import com.cloudsuites.framework.services.amenity.entities.booking.BookingStatus;
 import com.cloudsuites.framework.services.amenity.entities.features.SwimmingPool;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -54,16 +55,14 @@ class AmenityBookingCalendarServiceImplTest {
         booking.setStartTime(startDate);
         booking.setEndTime(endDate);
 
-        when(customBookingCalendarRepository.findByUserIdAndFilters(userId, null, null, startDate, endDate))
+        when(customBookingCalendarRepository.findByUserIdAndFilters(List.of(userId), null, null, startDate, endDate))
                 .thenReturn(List.of(booking));
 
-        // Act
-        List<AmenityBooking> bookings = amenityBookingCalendarService.getBookingsForUser(userId, null, startDate, endDate);
+        List<AmenityBooking> bookings = amenityBookingCalendarService.getBookingsForUser(List.of(userId), null, List.of(BookingStatus.PENDING), startDate, endDate);
 
-        // Assert
         assertEquals(1, bookings.size());
         assertEquals(userId, bookings.get(0).getUserId());
-        verify(customBookingCalendarRepository, Mockito.times(1)).findByUserIdAndFilters(userId, null, null, startDate, endDate);
+        verify(customBookingCalendarRepository, Mockito.times(1)).findByUserIdAndFilters(List.of(userId), null, null, startDate, endDate);
     }
 
     @Test
