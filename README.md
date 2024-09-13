@@ -141,8 +141,8 @@ property management.
 ## **Partition Management Migration**
 
 The Property Management System processes a significant number of bookings daily, making efficient data management
-crucial. To optimize the system's performance and streamline maintenance, we partition the `Amenity Bookings` table
-based on time intervals. Partitioning breaks the data into smaller, more manageable segments that enhance query
+crucial. We partition the `Amenity Bookings` table
+based on time intervals to optimize the system's performance and streamline maintenance. Partitioning breaks the data into smaller, more manageable segments that enhance query
 performance and simplify long-term data maintenance.
 
 For a step-by-step guide on implementing and managing partitioning for the `Amenity Bookings` table, including
@@ -171,6 +171,8 @@ refer to the [Partition Management Migration Guide](https://github.com/cheeksnpe
 6. **Retention Policies for Active Data**  
    Retain only the data required for ongoing operations while safely archiving older records. This ensures that
    operational data remains fast to access and reduces the strain on storage.
+
+<img width="658" alt="image" src="https://github.com/user-attachments/assets/3431e29d-53be-4da5-8741-7a4d8b2bafdb">
 
 ---
 
