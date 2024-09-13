@@ -1,13 +1,12 @@
 package com.cloudsuites.framework.modules.amenity;
 
-import com.cloudsuites.framework.modules.amenity.repository.AmenityBookingRepository;
 import com.cloudsuites.framework.modules.amenity.repository.AmenityRepository;
 import com.cloudsuites.framework.modules.amenity.repository.CustomBookingCalendarRepository;
 import com.cloudsuites.framework.services.amenity.entities.Amenity;
-import com.cloudsuites.framework.services.amenity.entities.AmenityType;
 import com.cloudsuites.framework.services.amenity.entities.DailyAvailability;
 import com.cloudsuites.framework.services.amenity.entities.booking.AmenityBooking;
 import com.cloudsuites.framework.services.amenity.entities.booking.AmenityNotFoundException;
+import com.cloudsuites.framework.services.amenity.entities.booking.BookingStatus;
 import com.cloudsuites.framework.services.amenity.service.AmenityBookingCalendarService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,13 +21,11 @@ import java.util.*;
 @Component
 public class AmenityBookingCalendarServiceImpl implements AmenityBookingCalendarService {
 
-    private final AmenityBookingRepository bookingRepository;
     private final AmenityRepository amenityRepository;
     private final CustomBookingCalendarRepository customBookingCalendarRepository;
     private static final Logger logger = LoggerFactory.getLogger(AmenityBookingCalendarServiceImpl.class);
 
-    public AmenityBookingCalendarServiceImpl(AmenityBookingRepository bookingRepository, AmenityRepository amenityRepository, CustomBookingCalendarRepository customBookingCalendarRepository) {
-        this.bookingRepository = bookingRepository;
+    public AmenityBookingCalendarServiceImpl(AmenityRepository amenityRepository, CustomBookingCalendarRepository customBookingCalendarRepository) {
         this.amenityRepository = amenityRepository;
         this.customBookingCalendarRepository = customBookingCalendarRepository;
     }
@@ -53,20 +50,20 @@ public class AmenityBookingCalendarServiceImpl implements AmenityBookingCalendar
     }
 
     @Override
-    public List<AmenityBooking> getBookingsForUser(String userId, AmenityType amenityType, LocalDateTime startDate, LocalDateTime endDate) {
-        logger.info("Fetching bookings for userId: {}, amenityType: {}, startDate: {}, endDate: {}",
-                userId, amenityType, startDate, endDate);
-        List<AmenityBooking> bookings = customBookingCalendarRepository.findByUserIdAndFilters(userId, null, amenityType, startDate, endDate);
-        logger.debug("Found {} bookings for userId: {}, amenityType: {}", bookings.size(), userId, amenityType);
+    public List<AmenityBooking> getBookingsForUser(List<String> userIds, List<String> amenityIds, List<BookingStatus> bookingStatuses, LocalDateTime startDate, LocalDateTime endDate) {
+        logger.info("Fetching bookings for userId: {}, amenityIds: {}, startDate: {}, endDate: {}",
+                userIds, amenityIds, startDate, endDate);
+        List<AmenityBooking> bookings = customBookingCalendarRepository.findByUserIdAndFilters(userIds, amenityIds, bookingStatuses, startDate, endDate);
+        logger.debug("Found {} bookings for userId: {}, amenityIds: {}", bookings.size(), userIds, amenityIds);
         return bookings;
     }
 
     @Override
-    public List<AmenityBooking> getBookingsForAmenity(String amenityId, AmenityType amenityType, LocalDateTime startDate, LocalDateTime endDate) {
-        logger.info("Fetching bookings for amenityId: {}, amenityType: {}, startDate: {}, endDate: {}",
-                amenityId, amenityType, startDate, endDate);
-        List<AmenityBooking> bookings = customBookingCalendarRepository.findByUserIdAndFilters(null, amenityId, amenityType, startDate, endDate);
-        logger.debug("Found {} bookings for amenityId: {}, amenityType: {}", bookings.size(), amenityId, amenityType);
+    public List<AmenityBooking> getBookingsForAmenity(List<String> amenityIds, LocalDateTime startDate, LocalDateTime endDate) {
+        logger.info("Fetching bookings for amenityIds: {}, startDate: {}, endDate: {}",
+                amenityIds, startDate, endDate);
+        List<AmenityBooking> bookings = customBookingCalendarRepository.findByUserIdAndFilters(null, amenityIds, null, startDate, endDate);
+        logger.debug("Found {} bookings for amenityIds: {}", bookings.size(), amenityIds);
         return bookings;
     }
 
