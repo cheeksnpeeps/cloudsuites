@@ -1,7 +1,7 @@
 package com.cloudsuites.framework.modules.amenity.repository;
 
-import com.cloudsuites.framework.services.amenity.entities.AmenityType;
 import com.cloudsuites.framework.services.amenity.entities.booking.AmenityBooking;
+import com.cloudsuites.framework.services.amenity.entities.booking.BookingStatus;
 import jakarta.transaction.Transactional;
 import org.springframework.data.repository.query.Param;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -26,11 +26,7 @@ public interface CustomBookingCalendarRepository {
     int deleteByEndTimeBefore(LocalDateTime cutoffDate);
 
     @Transactional
-    List<AmenityBooking> findByUserIdAndFilters(@Param("userId") String userId,
-                                                @Param("amenityId") String amenityId,
-                                                @Param("type") AmenityType type,
-                                                @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) @Param("startDate") LocalDateTime startDate,
-                                                @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) @Param("endDate") LocalDateTime endDate);
+    List<AmenityBooking> findByUserIdAndFilters(List<String> userIds, List<String> amenityIds, List<BookingStatus> bookingStatuses, LocalDateTime startDate, LocalDateTime endDate);
 
     @Transactional
     List<AmenityBooking> findByAmenityIdAndTimeRange(@Param("amenityId") String amenityId,
