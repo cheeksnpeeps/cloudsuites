@@ -3,6 +3,7 @@ package com.cloudsuites.framework.services.amenity.service;
 import com.cloudsuites.framework.services.amenity.entities.Amenity;
 import com.cloudsuites.framework.services.amenity.entities.booking.AmenityBooking;
 import com.cloudsuites.framework.services.amenity.entities.booking.BookingException;
+import com.cloudsuites.framework.services.amenity.entities.booking.BookingStatus;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +28,8 @@ public interface AmenityBookingService {
     AmenityBooking getAmenityBooking(String bookingId);
 
     @Transactional
-    AmenityBooking updateBooking(String bookingId, LocalDateTime newStartTime, LocalDateTime newEndTime) throws BookingException;
+    AmenityBooking updateBooking(AmenityBooking booking, LocalDateTime newStartTime, LocalDateTime newEndTime) throws BookingException;
 
+    @Transactional
+    AmenityBooking updateBookingStatus(String bookingId, BookingStatus status);
 }
