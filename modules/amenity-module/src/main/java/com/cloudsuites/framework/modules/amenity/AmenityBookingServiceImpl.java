@@ -6,6 +6,7 @@ import com.cloudsuites.framework.modules.amenity.repository.CustomBookingCalenda
 import com.cloudsuites.framework.services.amenity.entities.Amenity;
 import com.cloudsuites.framework.services.amenity.entities.booking.AmenityBooking;
 import com.cloudsuites.framework.services.amenity.entities.booking.BookingException;
+import com.cloudsuites.framework.services.amenity.entities.booking.BookingStatus;
 import com.cloudsuites.framework.services.amenity.service.AmenityBookingService;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import org.slf4j.Logger;
@@ -115,15 +116,8 @@ public class AmenityBookingServiceImpl implements AmenityBookingService {
 
     @Override
     @Transactional
-    public AmenityBooking updateBooking(String bookingId, LocalDateTime newStartTime, LocalDateTime newEndTime) throws BookingException {
-        logger.debug("Attempting to update booking with ID: {} to new times from {} to {}", bookingId, newStartTime, newEndTime);
-
-        // Fetch existing booking
-        AmenityBooking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> {
-                    logger.debug("Booking with ID: {} not found.", bookingId);
-                    return new BookingException("Booking not found.");
-                });
+    public AmenityBooking updateBooking(AmenityBooking booking, LocalDateTime newStartTime, LocalDateTime newEndTime) throws BookingException {
+        logger.debug("Attempting to update booking with ID: {} to new times from {} to {}", booking.getBookingId(), newStartTime, newEndTime);
 
         // Lock the amenity to handle concurrency issues
         Amenity amenity = booking.getAmenity();
@@ -143,5 +137,19 @@ public class AmenityBookingServiceImpl implements AmenityBookingService {
         logger.debug("Booking updated successfully: {}", updatedBooking);
 
         return updatedBooking;
+    }
+
+    @Override
+    public AmenityBooking updateBookingStatus(String bookingId, BookingStatus status) {
+        logger.debug("Approving booking with ID: {}", bookingId);
+        AmenityBooking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> {
+                    logger.debug("Booking with ID: {} not found.", bookingId);
+                    return new BookingException("Booking not found.");
+                });
+        booking.setStatus(status);
+        AmenityBooking savedBooking = bookingRepository.save(booking);
+        logger.debug("Booking with ID: {} approved successfully.", bookingId);
+        return savedBooking;
     }
 }
