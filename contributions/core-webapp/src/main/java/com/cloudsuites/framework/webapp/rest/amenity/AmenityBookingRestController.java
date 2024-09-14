@@ -176,14 +176,13 @@ public class AmenityBookingRestController {
     @ApiResponse(responseCode = "200", description = "Booking status updated successfully", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "400", description = "Bad Request")
     @ApiResponse(responseCode = "404", description = "Booking not found")
-    @PutMapping("/amenities/tenants/{tenantId}/bookings/{bookingId}/status")
-    @JsonView(Views.AmenityBooking.class)
+    @PutMapping("/amenities/bookings/{bookingId}/status")
+    @JsonView(Views.AmenityBookingStaff.class)
     public ResponseEntity<AmenityBookingDto> updateBookingStatus(
             @PathVariable String bookingId,
-            @PathVariable String tenantId,
             @RequestBody @Parameter(description = "Amenity booking status") AmenityBookingDto amenityBookingDto) {
 
-        logger.debug("Updating booking status {} for user {}", bookingId, tenantId);
+        logger.debug("Updating booking status {}", bookingId);
         AmenityBooking booking = amenitybookingService.getAmenityBooking(bookingId);
         if (booking == null) {
             logger.error("Booking {} not found", bookingId);
