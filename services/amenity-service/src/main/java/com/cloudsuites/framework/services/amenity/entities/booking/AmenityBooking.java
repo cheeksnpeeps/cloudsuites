@@ -33,7 +33,7 @@ public class AmenityBooking {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private BookingStatus status = BookingStatus.PENDING;
+    private BookingStatus status = BookingStatus.REQUESTED;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
