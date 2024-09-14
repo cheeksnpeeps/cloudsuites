@@ -145,5 +145,55 @@ public class AmenityBookingRestController {
         logger.debug("Amenity {} is available: {}", amenityId, isAvailable);
         return ResponseEntity.ok(isAvailable);
     }
+
+    @PreAuthorize("hasAuthority('ALL_STAFF') or hasAuthority('TENANT') or hasAuthority('OWNER')")
+    @Operation(summary = "Update an Amenity Booking", description = "Update an existing booking")
+    @ApiResponse(responseCode = "200", description = "Booking updated successfully", content = @Content(mediaType = "application/json"))
+    @ApiResponse(responseCode = "400", description = "Bad Request")
+    @ApiResponse(responseCode = "404", description = "Booking not found")
+    @PutMapping("/amenities/tenants/{tenantId}/bookings/{bookingId}")
+    @JsonView(Views.AmenityBooking.class)
+    public ResponseEntity<AmenityBookingDto> updateBooking(
+            @PathVariable String bookingId,
+            @PathVariable String tenantId,
+            @RequestBody @Parameter(description = "Amenity booking details") AmenityBookingDto amenityBookingDto) {
+
+        logger.debug("Updating booking {} for user {} from {} to {}", bookingId, tenantId,
+                amenityBookingDto.getStartTime(), amenityBookingDto.getEndTime());
+        AmenityBooking booking = amenitybookingService.getAmenityBooking(bookingId);
+        if (booking == null) {
+            logger.error("Booking {} not found", bookingId);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        validateBookingTime(booking.getAmenity(), amenityBookingDto.getStartTime(), amenityBookingDto.getEndTime());
+        logger.debug("Booking constraints validated for booking {}", bookingId);
+        AmenityBooking updatedBooking = amenitybookingService.updateBooking(booking, amenityBookingDto.getStartTime(), amenityBookingDto.getEndTime());
+        return ResponseEntity.ok(mapper.convertToDTO(updatedBooking));
+    }
+
+    @PreAuthorize("hasAuthority('ALL_STAFF')")
+    @Operation(summary = "Update an Amenity Booking Status", description = "Update an existing booking status")
+    @ApiResponse(responseCode = "200", description = "Booking status updated successfully", content = @Content(mediaType = "application/json"))
+    @ApiResponse(responseCode = "400", description = "Bad Request")
+    @ApiResponse(responseCode = "404", description = "Booking not found")
+    @PutMapping("/amenities/tenants/{tenantId}/bookings/{bookingId}/status")
+    @JsonView(Views.AmenityBooking.class)
+    public ResponseEntity<AmenityBookingDto> updateBookingStatus(
+            @PathVariable String bookingId,
+            @PathVariable String tenantId,
+            @RequestBody @Parameter(description = "Amenity booking status") AmenityBookingDto amenityBookingDto) {
+
+        logger.debug("Updating booking status {} for user {}", bookingId, tenantId);
+        AmenityBooking booking = amenitybookingService.getAmenityBooking(bookingId);
+        if (booking == null) {
+            logger.error("Booking {} not found", bookingId);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        booking.setStatus(amenityBookingDto.getStatus());
+        AmenityBooking updatedBooking = amenitybookingService.updateBookingStatus(booking.getBookingId(), amenityBookingDto.getStatus());
+        return ResponseEntity.ok(mapper.convertToDTO(updatedBooking));
+    }
+
+
 }
 
