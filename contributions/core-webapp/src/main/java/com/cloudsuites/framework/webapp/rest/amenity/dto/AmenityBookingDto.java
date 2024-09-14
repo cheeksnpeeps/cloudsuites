@@ -60,8 +60,8 @@ public class AmenityBookingDto {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
     private LocalDateTime endTime;
 
-    @Schema(hidden = true)
-    @JsonView({Views.AmenityBooking.class, Views.BookingCalendarView.class})
+    @Schema(description = "Status of the booking", example = "APPROVED")
+    @JsonView({Views.AmenityBooking.class, Views.BookingCalendarView.class, Views.AmenityBookingStaff.class})
     private BookingStatus status;
 
     @JsonView({Views.AmenityBooking.class, Views.BookingCalendarView.class})
