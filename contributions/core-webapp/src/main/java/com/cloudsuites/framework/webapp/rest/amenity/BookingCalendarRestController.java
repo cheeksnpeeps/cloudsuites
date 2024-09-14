@@ -78,7 +78,7 @@ public class BookingCalendarRestController {
 
         logger.debug("Fetching bookings for tenantId: {} for amenityIds: {} between {} and {}", tenantId, amenityIds, calendarBookingFiltersDto.getStartDate(), calendarBookingFiltersDto.getEndDate());
         List<AmenityBooking> bookedSlots = amenityBookingCalendarService.getBookingsForUser(
-                null, amenityIds, List.of(BookingStatus.PENDING), calendarBookingFiltersDto.getStartDate(), calendarBookingFiltersDto.getEndDate());
+                null, amenityIds, List.of(BookingStatus.REQUESTED), calendarBookingFiltersDto.getStartDate(), calendarBookingFiltersDto.getEndDate());
 
         logger.debug("Building response DTO for tenant booking calendar");
         AmenityBookingCalendarDto calendarDto = buildCalendarDto(tenant, amenities, bookedSlots, calendarBookingFiltersDto);
@@ -130,7 +130,7 @@ public class BookingCalendarRestController {
         }
         if (calendarBookingFiltersDto.getByBookingStatus() == null) {
             logger.debug("No booking status provided, defaulting to PENDING");
-            calendarBookingFiltersDto.setByBookingStatus(List.of(BookingStatus.PENDING));
+            calendarBookingFiltersDto.setByBookingStatus(List.of(BookingStatus.REQUESTED));
         }
     }
 

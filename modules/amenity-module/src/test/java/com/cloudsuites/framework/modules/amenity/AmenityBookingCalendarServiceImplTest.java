@@ -58,7 +58,7 @@ class AmenityBookingCalendarServiceImplTest {
         when(customBookingCalendarRepository.findByUserIdAndFilters(List.of(userId), null, null, startDate, endDate))
                 .thenReturn(List.of(booking));
 
-        List<AmenityBooking> bookings = amenityBookingCalendarService.getBookingsForUser(List.of(userId), null, List.of(BookingStatus.PENDING), startDate, endDate);
+        List<AmenityBooking> bookings = amenityBookingCalendarService.getBookingsForUser(List.of(userId), null, List.of(BookingStatus.REQUESTED), startDate, endDate);
 
         assertEquals(1, bookings.size());
         assertEquals(userId, bookings.get(0).getUserId());
