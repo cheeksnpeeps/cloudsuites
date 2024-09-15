@@ -39,6 +39,7 @@ public class OpenApiConfig {
                         .contact(new io.swagger.v3.oas.models.info.Contact()
                                 .email("chmomar@gmail.com")
                                 .name("Cheikh Lo")
+                                .url("https://cloudsuites.ca")
                         )
                 )
                 .addSecurityItem(securityRequirement);
