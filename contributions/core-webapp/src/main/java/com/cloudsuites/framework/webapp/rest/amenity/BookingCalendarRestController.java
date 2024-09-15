@@ -32,7 +32,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/building/{buildingId}")
-@Tags(value = {@Tag(name = "TenantAmenityBookingCalendar", description = "Operations related to Tenants amenity booking calendar")})
+@Tags(value = {@Tag(name = "AmenityBookingCalendar", description = "Operations related amenity booking calendar")})
 public class BookingCalendarRestController {
 
     private static final Logger logger = LoggerFactory.getLogger(BookingCalendarRestController.class);
