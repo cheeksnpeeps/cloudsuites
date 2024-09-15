@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
+import org.springdoc.core.properties.SwaggerUiConfigParameters;
+import org.springdoc.core.properties.SwaggerUiConfigProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -40,6 +42,14 @@ public class OpenApiConfig {
                         )
                 )
                 .addSecurityItem(securityRequirement);
+    }
+
+    @Bean
+    public SwaggerUiConfigParameters swaggerUiConfigParameters(SwaggerUiConfigProperties swaggerUiConfigProperties) {
+        SwaggerUiConfigParameters config = new SwaggerUiConfigParameters(swaggerUiConfigProperties);
+        config.setDocExpansion("none"); // Collapse all sections by default
+        config.setDeepLinking(true);  // Enable deep linking to specific tags or operations
+        return config;
     }
 
     @Bean
