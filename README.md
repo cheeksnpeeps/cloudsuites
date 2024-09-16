@@ -116,6 +116,22 @@ refer to the [Partition Management Migration Guide](https://github.com/cheeksnpe
 
 ---
 
+### CONCEPT - LATE Partition Management Migration
+
+This diagram illustrates a multi-phase data migration or partitioning process for the `Amenity Bookings` table, the assumption in this scenario is that the `Amenity Bookings` table was never partitioned and now hold a large amount of data (billions of rows).
+
+Summary of the Process:
+Phase I: Initial partitioning of the database to store historical data.
+Phase II: Decommissioning the old database, making it inactive.
+Phase III: Auto-partitioning as new data is added each fiscal quarter.
+Phase IV: Archiving old data into Parquet files and removing it from the main system.
+
+For more details, see the CONCEPT: [CONCEPT - LATE Partition Management Migration](https://github.com/cheeksnpeeps/cloudsuites/blob/main/modules/common-module/src/main/resources/db/migration/CONCEPT%20-%20LATE%20Partition%20Management%20Migration.md)
+
+<img width="994" alt="image" src="https://github.com/user-attachments/assets/5b780740-c458-43da-a903-016f7f95b506">
+
+
+
 ## Getting Started with Cloud Suites
 
 Cloud Suites is built using **Java**, **Spring Boot**, **JavaScript**, and **React**, with **Maven** and **npm** managing dependencies. Follow the instructions below to get started:
