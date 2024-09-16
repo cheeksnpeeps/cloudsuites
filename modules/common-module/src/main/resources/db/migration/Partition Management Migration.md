@@ -8,6 +8,16 @@ Here’s the updated documentation reflecting the revised script:
 
 This repository contains SQL migration scripts for managing table partitions in a PostgreSQL database. The primary goal is to handle partitioning changes, such as modifying the partitioning interval (e.g., from quarterly to monthly), ensuring that no data is lost and the partitioning scheme remains efficient.
 
+## Partition Management Migration
+
+Optimize data management by partitioning the `Amenity Bookings` table for improved system performance. Key features include:
+1. **Time-Based Partitioning**: Organize large booking datasets by time intervals, boosting query performance.
+2. **Automated Partition Creation**: Seamless scalability with automatic partition creation.
+3. **Historical Data Archiving**: Archive or drop outdated booking data to optimize storage.
+4. **Retention Policies**: Retain only necessary data for active operations, reducing storage strain.
+
+<img width="658" alt="image" src="https://github.com/user-attachments/assets/3431e29d-53be-4da5-8741-7a4d8b2bafdb">
+
 ## Requirements Summary
 
 - **Create Parent Table for Partitioning:**
