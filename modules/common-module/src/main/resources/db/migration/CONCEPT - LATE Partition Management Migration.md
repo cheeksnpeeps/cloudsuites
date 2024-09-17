@@ -3,10 +3,10 @@
 This diagram illustrates a multi-phase data migration or partitioning process for the `Amenity Bookings` table, the assumption in this scenario is that the `Amenity Bookings` table was never partitioned and now hold a large amount of data (billions of rows).
 
 Summary of the Process:
-Phase I: Initial partitioning of the database to store historical data.
-Phase II: Decommissioning the old database, making it inactive.
-Phase III: Auto-partitioning as new data is added each fiscal quarter.
-Phase IV: Archiving old data into Parquet files and removing it from the main system.
+   - **Phase I:** Initial partitioning of the database to store historical data.
+   - **Phase II:** Decommissioning the old database, making it inactive.
+   - **Phase III:** Auto-partitioning as new data is added each fiscal quarter.
+   - **Phase IV:** Archiving old data into Parquet files and removing it from the main system.
 
 <img width="994" alt="image" src="https://github.com/user-attachments/assets/5b780740-c458-43da-a903-016f7f95b506">
 
