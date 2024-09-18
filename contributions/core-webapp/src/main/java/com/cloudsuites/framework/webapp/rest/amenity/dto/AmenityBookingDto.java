@@ -61,7 +61,7 @@ public class AmenityBookingDto {
     private LocalDateTime endTime;
 
     @Schema(description = "Status of the booking", example = "APPROVED")
-    @JsonView({Views.AmenityBooking.class, Views.BookingCalendarView.class, Views.AmenityBookingStaff.class})
+    @JsonView({Views.BookingCalendarView.class, Views.AmenityBookingStaff.class})
     private BookingStatus status;
 
     @JsonView({Views.AmenityBooking.class, Views.BookingCalendarView.class})
