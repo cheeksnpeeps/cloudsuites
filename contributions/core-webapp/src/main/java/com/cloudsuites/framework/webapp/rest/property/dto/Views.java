@@ -40,6 +40,6 @@ public class Views {
     public class AmenityBooking {
     }
 
-    public class AmenityBookingStaff extends AmenityBooking {
+    public class AmenityBookingStaff {
     }
 }
