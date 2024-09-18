@@ -56,22 +56,26 @@ public class AmenityDto {
     @JsonView(Views.BookingCalendarView.class)
     @Schema(hidden = true)
     DailyAvailabilityDto availability;
-    @JsonView({Views.AmenityView.class, Views.BuildingView.class, Views.BookingCalendarView.class})
+
+    @JsonView({Views.BuildingView.class, Views.AmenityView.class, Views.BuildingView.class, Views.BookingCalendarView.class})
     @Schema(description = "Type of the amenity", example = "SWIMMING_POOL")
     @NotNull(message = "Type is mandatory")
     private AmenityType type;
-    @JsonView({Views.AmenityView.class, Views.BuildingView.class, Views.BookingCalendarView.class})
+
+    @JsonView({Views.BuildingView.class, Views.AmenityView.class, Views.BuildingView.class, Views.BookingCalendarView.class})
     @Schema(hidden = true)
     private String amenityId;
+
     @JsonView(Views.AmenityView.class)
     @Schema(description = "List of daily availabilities for each day of the week")
     private List<DailyAvailabilityDto> dailyAvailabilities;
-    @JsonView({Views.AmenityView.class, Views.BuildingView.class, Views.BookingCalendarView.class})
+
+    @JsonView({Views.BuildingView.class, Views.AmenityView.class, Views.BuildingView.class, Views.BookingCalendarView.class})
     @Schema(description = "Name of the amenity", example = "Swimming Pool")
     @NotBlank(message = "Name is mandatory")
     private String name;
 
-    @JsonView({Views.AmenityView.class, Views.BuildingView.class})
+    @JsonView({Views.BuildingView.class, Views.AmenityView.class, Views.BuildingView.class})
     @Schema(description = "Indicates if the amenity is currently active", example = "true")
     private Boolean isActive = false;
 
