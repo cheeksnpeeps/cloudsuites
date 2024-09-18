@@ -2,7 +2,6 @@
 package com.cloudsuites.framework.services.property.features.entities;
 
 import com.cloudsuites.framework.modules.common.utils.IdGenerator;
-import com.cloudsuites.framework.services.amenity.entities.Amenity;
 import com.cloudsuites.framework.services.user.entities.Address;
 import com.cloudsuites.framework.services.user.entities.Identity;
 import jakarta.persistence.*;
@@ -30,9 +29,6 @@ public class Building {
 	@ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	@JoinColumn(name = "management_company_id")
 	private Company company;
-
-	@OneToMany(mappedBy = "building", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	private List<Amenity> amenities;
 
 	@OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "address_id")

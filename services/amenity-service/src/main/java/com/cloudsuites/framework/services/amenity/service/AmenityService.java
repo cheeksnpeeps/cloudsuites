@@ -42,9 +42,10 @@ public interface AmenityService {
     @Transactional
     Amenity removeBuildingFromAmenity(String amenityId, String buildingId);
 
-    @Transactional
+    @Transactional(readOnly = true)
     List<Amenity> getAmenitiesByBuildingAndTypes(String buildingId, List<AmenityType> byAmenityTypes);
 
+    @Transactional(readOnly = true)
     List<Amenity> getAmenitiesByIds(List<String> amenityIds);
 }
 
