@@ -37,7 +37,7 @@ spring:
       hibernate:
         enable_lazy_load_no_trans: true
         use_sql_comments: true
-        show_sql: true
+        #        show_sql: true
         hbm2ddl:
           auto: update
   sql:
