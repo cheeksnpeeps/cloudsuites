@@ -1,10 +1,13 @@
 package com.cloudsuites.framework.webapp.rest.property;
 
+import com.cloudsuites.framework.services.amenity.entities.Amenity;
+import com.cloudsuites.framework.services.amenity.service.AmenityService;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import com.cloudsuites.framework.services.property.features.entities.Building;
 import com.cloudsuites.framework.services.property.features.entities.Company;
 import com.cloudsuites.framework.services.property.features.service.BuildingService;
 import com.cloudsuites.framework.services.property.features.service.CompanyService;
+import com.cloudsuites.framework.webapp.rest.amenity.mapper.AmenityMapper;
 import com.cloudsuites.framework.webapp.rest.property.dto.BuildingDto;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
 import com.cloudsuites.framework.webapp.rest.property.mapper.BuildingMapper;
@@ -35,12 +38,15 @@ public class BuildingRestController {
     private final BuildingService buildingService;
     private final BuildingMapper mapper;
     private final CompanyService companyService;
-
+    private final AmenityService amenityService;
+    private final AmenityMapper amenityMapper;
     @Autowired
-    public BuildingRestController(BuildingService buildingService, BuildingMapper mapper, CompanyService companyService) {
+    public BuildingRestController(BuildingService buildingService, BuildingMapper mapper, CompanyService companyService, AmenityService amenityService, AmenityMapper amenityMapper) {
         this.buildingService = buildingService;
         this.mapper = mapper;
         this.companyService = companyService;
+        this.amenityService = amenityService;
+        this.amenityMapper = amenityMapper;
     }
 
     @PreAuthorize("hasAuthority('ALL_ADMIN')")
@@ -98,12 +104,20 @@ public class BuildingRestController {
     @JsonView(Views.BuildingView.class)
     @GetMapping("/{buildingId}")
     public ResponseEntity<BuildingDto>  getBuildingById(
+            @RequestParam(value = "includeAmenities", required = false, defaultValue = "false") boolean includeAmenities, // Optional parameter
             @Parameter(description = "ID of the building to be retrieved") @PathVariable String buildingId, @PathVariable String companyId)
             throws NotFoundResponseException {
         logger.debug("Getting building {}", buildingId);
         Building building = buildingService.getBuildingById(buildingId);
         logger.debug("Found building {}", buildingId);
-        return ResponseEntity.ok().body(mapper.convertToDTO(building));
+        BuildingDto buildingDto = mapper.convertToDTO(building);
+        if (!includeAmenities) {
+            return ResponseEntity.ok().body(buildingDto);
+        }
+        logger.debug("Getting amenities for building {}", buildingId);
+        List<Amenity> amenities = amenityService.getAmenitiesByBuildingId(buildingId);
+        buildingDto.setAmenities(amenityMapper.convertToDTOList(amenities));
+        return ResponseEntity.ok().body(buildingDto);
     }
 
 }
