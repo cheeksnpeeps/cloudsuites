@@ -1,7 +1,7 @@
 Cloudsuites
 ==========
 
-### Revolutionizing Condominium Management with a Cloud-First Approach  (This is just a playground project for self Learning and POCs :) )
+Revolutionizing Condominium Management with a Cloud-First Approach  (This is just a playground project for self Learning and POCs :) )
 
 **Cloud Suites** is an innovative, cloud-based property management system tailored specifically for the dynamic needs of condominium communities. It enhances operational efficiency, streamlines communication, and elevates the resident experience by providing a centralized platform for managing everything from amenity bookings to parking.
 
