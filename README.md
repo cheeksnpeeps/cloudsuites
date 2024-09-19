@@ -21,18 +21,17 @@ As condominium living evolves, Cloud Suites ensures all stakeholders—from resi
 
 ### Mobile-First Experience for Residents and Staff
 
-Cloud Suites’ dedicated mobile app offers both residents and staff full control from their smartphones. Residents can:
-- Book amenities
-- Access the marketplace
-- Submit service requests
+Cloud Suites’ dedicated mobile app offers both residents and staff full control from their smartphones. Residents can: Book amenities, Access the marketplace, Submit service requests, and many more...
 
-Staff can manage tasks, communicate with residents, and receive instant alerts for urgent issues, all on the go.
+Staff can manage tasks, communicate with residents, and receive instant alerts for urgent issues, all on the go...
 
 ---
 
 ## Cost Savings Through Efficiency
 
-Cloud Suites helps property managers minimize operational costs by automating key processes and reducing manual oversight. Here's how:
+CloudSuites helps property managers minimize operational costs by automating key processes and reducing manual oversight. 
+
+Here's how:
 
 - **Reduced Staffing Needs**: Automation of notifications, amenity bookings, and lease management means fewer administrative tasks, reducing the need for a large staff.
   
