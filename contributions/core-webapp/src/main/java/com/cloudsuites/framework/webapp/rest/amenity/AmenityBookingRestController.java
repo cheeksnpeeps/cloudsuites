@@ -1,7 +1,6 @@
 package com.cloudsuites.framework.webapp.rest.amenity;
 
 import com.cloudsuites.framework.services.amenity.entities.Amenity;
-import com.cloudsuites.framework.services.amenity.entities.booking.AmenityBooking;
 import com.cloudsuites.framework.services.amenity.entities.booking.BookingException;
 import com.cloudsuites.framework.services.amenity.service.AmenityBookingService;
 import com.cloudsuites.framework.services.amenity.service.AmenityService;
@@ -26,11 +25,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/")
@@ -58,23 +58,24 @@ public class AmenityBookingRestController {
     @ApiResponse(responseCode = "404", description = "Amenity not found")
     @PostMapping("/amenities/{amenityId}/tenants/{tenantId}/bookings")
     @JsonView(Views.AmenityBooking.class)
-    public ResponseEntity<AmenityBookingDto> bookAmenity(
+    public Mono<ResponseEntity<AmenityBookingDto>> bookAmenity(
             @PathVariable @NotBlank String amenityId,
             @PathVariable @NotBlank String tenantId,
             @RequestBody @Parameter(description = "Amenity booking details") AmenityBookingDto amenityBookingDto) {
 
         logger.debug("Booking amenity {} for user {} from {} to {}", amenityId, amenityBookingDto.getUserId(),
                 amenityBookingDto.getStartTime(), amenityBookingDto.getEndTime());
-        Optional<Amenity> amenityOptional = amenityService.getAmenityById(amenityId);
-        if (amenityOptional.isEmpty()) {
-            logger.error("Amenity {} not found", amenityId);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-        Amenity amenity = amenityOptional.get();
-        validateBookingTime(amenity, amenityBookingDto.getStartTime(), amenityBookingDto.getEndTime());
-        logger.debug("Booking constraints validated for amenity {}", amenityId);
-        AmenityBooking amenityBooking = amenitybookingService.bookAmenity(amenity, tenantId, amenityBookingDto.getStartTime(), amenityBookingDto.getEndTime());
-        return ResponseEntity.status(HttpStatus.CREATED).body(mapper.convertToDTO(amenityBooking));
+
+        return Mono.fromCallable(() -> amenityService.getAmenityById(amenityId))
+                .subscribeOn(Schedulers.boundedElastic())
+                .flatMap(amenity -> {
+                    validateBookingTime(amenity.get(), amenityBookingDto.getStartTime(), amenityBookingDto.getEndTime());
+                    logger.debug("Booking constraints validated for amenity {}", amenityId);
+                    return amenitybookingService.bookAmenity(amenity.get(), tenantId, amenityBookingDto.getStartTime(), amenityBookingDto.getEndTime())
+                            .map(booking -> ResponseEntity.status(HttpStatus.CREATED).body(mapper.convertToDTO(booking)));
+                })
+                .onErrorResume(BookingException.class, e -> Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).build()))
+                .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).build()));
     }
 
     private void validateBookingTime(Amenity amenity, LocalDateTime startTime, LocalDateTime endTime) {
@@ -92,12 +93,14 @@ public class AmenityBookingRestController {
     @ApiResponse(responseCode = "404", description = "Booking not found")
     @DeleteMapping("/amenities/tenants/{tenantId}/bookings/{bookingId}")
     @JsonView(Views.AmenityBooking.class)
-    public ResponseEntity<Void> cancelBooking(@PathVariable String bookingId, @PathVariable String tenantId) throws NotFoundResponseException {
+    public Mono<ResponseEntity<Void>> cancelBooking(@PathVariable String bookingId, @PathVariable String tenantId) {
         logger.debug("Cancelling booking {}", bookingId);
-        amenitybookingService.cancelBooking(bookingId, tenantId);
-        logger.debug("Booking {} cancelled successfully for {}", bookingId, tenantId);
-        return ResponseEntity.noContent().build();
+        return Mono.fromCallable(() -> amenitybookingService.cancelBooking(bookingId, tenantId))
+                .subscribeOn(Schedulers.boundedElastic())
+                .map(booking -> ResponseEntity.noContent().<Void>build())
+                .onErrorResume(NotFoundResponseException.class, e -> Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).build()));
     }
+
 
     @PreAuthorize("hasAuthority('ALL_STAFF')")
     @Operation(summary = "Get all bookings for an Amenity", description = "Retrieve all bookings for a specific amenity")
@@ -105,30 +108,26 @@ public class AmenityBookingRestController {
     @ApiResponse(responseCode = "404", description = "Amenity not found")
     @GetMapping("/amenities/{amenityId}/bookings")
     @JsonView(Views.AmenityBooking.class)
-    public ResponseEntity<List<AmenityBookingDto>> getAllBookingsForAmenity(@PathVariable String amenityId) {
+    public Flux<ResponseEntity<AmenityBookingDto>> getAllBookingsForAmenity(@PathVariable String amenityId) {
         logger.debug("Retrieving all bookings for amenity {}", amenityId);
-        List<AmenityBooking> bookings = amenitybookingService.getAllBookingsForAmenity(amenityId);
-        logger.debug("Found {} bookings for amenity {}", bookings.size(), amenityId);
-        return ResponseEntity.ok(mapper.convertToDTOList(bookings));
+        return Flux.fromStream(() -> amenitybookingService.getAllBookingsForAmenity(amenityId).toStream())
+                .subscribeOn(Schedulers.boundedElastic())
+                .map(booking -> ResponseEntity.ok(mapper.convertToDTO(booking)))
+                .onErrorResume(NotFoundResponseException.class, e -> Flux.just(ResponseEntity.status(HttpStatus.NOT_FOUND).build()));
     }
 
     @PreAuthorize("hasAuthority('ALL_STAFF') or hasAuthority('TENANT') or hasAuthority('OWNER')")
-    @Operation(summary = "Get booking for an Amenity", description = "Retrieve a bookings for a specific amenity")
+    @Operation(summary = "Get booking for an Amenity", description = "Retrieve a booking for a specific amenity")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Amenity not found")
     @GetMapping("/amenities/bookings/{bookingId}")
     @JsonView(Views.AmenityBooking.class)
-    public ResponseEntity<AmenityBookingDto> getBookingForAmenity(
+    public Mono<ResponseEntity<AmenityBookingDto>> getBookingForAmenity(
             @PathVariable String bookingId) {
         logger.debug("Retrieving booking ID {}", bookingId);
-        try {
-            AmenityBooking amenityBooking = amenitybookingService.getAmenityBooking(bookingId);
-            logger.debug("Found booking {} - start time {} ", bookingId, amenityBooking.getStartTime());
-            return ResponseEntity.ok(mapper.convertToDTO(amenityBooking));
-        } catch (BookingException e) {
-            logger.error("Error retrieving booking {}: {}", bookingId, e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
+        return amenitybookingService.getAmenityBooking(bookingId)
+                .map(booking -> ResponseEntity.ok(mapper.convertToDTO(booking)))
+                .onErrorResume(BookingException.class, e -> Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).build()));
     }
 
     @PreAuthorize("hasAuthority('ALL_STAFF') or hasAuthority('TENANT') or hasAuthority('OWNER')")
@@ -136,14 +135,14 @@ public class AmenityBookingRestController {
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @GetMapping("/amenities/{amenityId}/availability")
     @JsonView(Views.AmenityBooking.class)
-    public ResponseEntity<Boolean> checkAvailability(
+    public Mono<ResponseEntity<Boolean>> checkAvailability(
             @PathVariable String amenityId,
             @RequestParam @NotBlank @FutureOrPresent LocalDateTime startTime,
             @RequestParam @NotBlank @Future LocalDateTime endTime) {
         logger.debug("Checking availability for amenity {} from {} to {}", amenityId, startTime, endTime);
-        boolean isAvailable = amenitybookingService.isAvailable(amenityId, startTime, endTime);
-        logger.debug("Amenity {} is available: {}", amenityId, isAvailable);
-        return ResponseEntity.ok(isAvailable);
+        return amenitybookingService.isAvailable(amenityId, startTime, endTime)
+                .map(isAvailable -> ResponseEntity.ok(isAvailable))
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()));
     }
 
     @PreAuthorize("hasAuthority('ALL_STAFF') or hasAuthority('TENANT') or hasAuthority('OWNER')")
@@ -153,22 +152,22 @@ public class AmenityBookingRestController {
     @ApiResponse(responseCode = "404", description = "Booking not found")
     @PutMapping("/amenities/tenants/{tenantId}/bookings/{bookingId}")
     @JsonView(Views.AmenityBooking.class)
-    public ResponseEntity<AmenityBookingDto> updateBooking(
+    public Mono<ResponseEntity<AmenityBookingDto>> updateBooking(
             @PathVariable String bookingId,
             @PathVariable String tenantId,
             @RequestBody @Parameter(description = "Amenity booking details") AmenityBookingDto amenityBookingDto) {
 
         logger.debug("Updating booking {} for user {} from {} to {}", bookingId, tenantId,
                 amenityBookingDto.getStartTime(), amenityBookingDto.getEndTime());
-        AmenityBooking booking = amenitybookingService.getAmenityBooking(bookingId);
-        if (booking == null) {
-            logger.error("Booking {} not found", bookingId);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-        validateBookingTime(booking.getAmenity(), amenityBookingDto.getStartTime(), amenityBookingDto.getEndTime());
-        logger.debug("Booking constraints validated for booking {}", bookingId);
-        AmenityBooking updatedBooking = amenitybookingService.updateBooking(booking, amenityBookingDto.getStartTime(), amenityBookingDto.getEndTime());
-        return ResponseEntity.ok(mapper.convertToDTO(updatedBooking));
+        return amenitybookingService.getAmenityBooking(bookingId)
+                .flatMap(booking -> {
+                    validateBookingTime(booking.getAmenity(), amenityBookingDto.getStartTime(), amenityBookingDto.getEndTime());
+                    logger.debug("Booking constraints validated for booking {}", bookingId);
+                    return amenitybookingService.updateBooking(booking, amenityBookingDto.getStartTime(), amenityBookingDto.getEndTime())
+                            .map(updatedBooking -> ResponseEntity.ok(mapper.convertToDTO(updatedBooking)));
+                })
+                .onErrorResume(BookingException.class, e -> Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).build()))
+                .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).build()));
     }
 
     @PreAuthorize("hasAuthority('ALL_STAFF')")
@@ -178,21 +177,18 @@ public class AmenityBookingRestController {
     @ApiResponse(responseCode = "404", description = "Booking not found")
     @PutMapping("/amenities/bookings/{bookingId}/status")
     @JsonView(Views.AmenityBookingStaff.class)
-    public ResponseEntity<AmenityBookingDto> updateBookingStatus(
+    public Mono<ResponseEntity<AmenityBookingDto>> updateBookingStatus(
             @PathVariable String bookingId,
             @RequestBody @Parameter(description = "Amenity booking status") AmenityBookingDto amenityBookingDto) {
 
         logger.debug("Updating booking status {}", bookingId);
-        AmenityBooking booking = amenitybookingService.getAmenityBooking(bookingId);
-        if (booking == null) {
-            logger.error("Booking {} not found", bookingId);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-        booking.setStatus(amenityBookingDto.getStatus());
-        AmenityBooking updatedBooking = amenitybookingService.updateBookingStatus(booking.getBookingId(), amenityBookingDto.getStatus());
-        return ResponseEntity.ok(mapper.convertToDTO(updatedBooking));
+        return amenitybookingService.getAmenityBooking(bookingId)
+                .flatMap(booking -> {
+                    booking.setStatus(amenityBookingDto.getStatus());
+                    return amenitybookingService.updateBookingStatus(booking.getBookingId(), amenityBookingDto.getStatus())
+                            .map(updatedBooking -> ResponseEntity.ok(mapper.convertToDTO(updatedBooking)));
+                })
+                .onErrorResume(BookingException.class, e -> Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).build()))
+                .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).build()));
     }
-
-
 }
-
