@@ -78,7 +78,8 @@ public class BookingCalendarRestController {
 
         logger.debug("Fetching bookings for tenantId: {} for amenityIds: {} between {} and {}", tenantId, amenityIds, calendarBookingFiltersDto.getStartDate(), calendarBookingFiltersDto.getEndDate());
         List<AmenityBooking> bookedSlots = amenityBookingCalendarService.getBookingsForUser(
-                null, amenityIds, List.of(BookingStatus.REQUESTED), calendarBookingFiltersDto.getStartDate(), calendarBookingFiltersDto.getEndDate());
+                        null, amenityIds, List.of(BookingStatus.REQUESTED), calendarBookingFiltersDto.getStartDate(), calendarBookingFiltersDto.getEndDate())
+                .collectList().block();
 
         logger.debug("Building response DTO for tenant booking calendar");
         AmenityBookingCalendarDto calendarDto = buildCalendarDto(tenant, amenities, bookedSlots, calendarBookingFiltersDto);
@@ -113,7 +114,8 @@ public class BookingCalendarRestController {
 
         logger.debug("Fetching bookings for staffId: {} with amenityIds: {}, bookingStatuses: {}, tenantIds: {}", staffId, amenityIds, bookingStatuses, tenantIds);
         List<AmenityBooking> bookedSlots = amenityBookingCalendarService.getBookingsForUser(
-                tenantIds, amenityIds, bookingStatuses, calendarBookingFiltersDto.getStartDate(), calendarBookingFiltersDto.getEndDate());
+                        tenantIds, amenityIds, bookingStatuses, calendarBookingFiltersDto.getStartDate(), calendarBookingFiltersDto.getEndDate())
+                .collectList().block();
 
         logger.debug("Building response DTO for staff booking calendar");
         AmenityBookingCalendarDto calendarDto = buildCalendarDto(null, amenities, bookedSlots, calendarBookingFiltersDto);
