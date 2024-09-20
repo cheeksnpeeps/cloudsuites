@@ -13,10 +13,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 
 @Service
 public class AmenityBookingServiceImpl implements AmenityBookingService {
@@ -24,12 +25,14 @@ public class AmenityBookingServiceImpl implements AmenityBookingService {
     private final AmenityRepository amenityRepository;
     private final AmenityBookingRepository bookingRepository;
     private final AmenityBookingValidator bookingValidator;
-    // Self injection
-
-    private static final Logger logger = LoggerFactory.getLogger(AmenityBookingServiceImpl.class);
     private final CustomBookingCalendarRepositoryImpl customBookingCalendarRepository;
 
-    public AmenityBookingServiceImpl(AmenityRepository amenityRepository, AmenityBookingRepository bookingRepository, AmenityBookingValidator bookingValidator, CustomBookingCalendarRepositoryImpl customBookingCalendarRepository) {
+    private static final Logger logger = LoggerFactory.getLogger(AmenityBookingServiceImpl.class);
+
+    public AmenityBookingServiceImpl(AmenityRepository amenityRepository,
+                                     AmenityBookingRepository bookingRepository,
+                                     AmenityBookingValidator bookingValidator,
+                                     CustomBookingCalendarRepositoryImpl customBookingCalendarRepository) {
         this.amenityRepository = amenityRepository;
         this.bookingRepository = bookingRepository;
         this.bookingValidator = bookingValidator;
@@ -37,119 +40,109 @@ public class AmenityBookingServiceImpl implements AmenityBookingService {
     }
 
     @Override
-    public AmenityBooking bookAmenity(Amenity amenity, String userId, LocalDateTime startTime, LocalDateTime endTime) throws BookingException {
+    public Mono<AmenityBooking> bookAmenity(Amenity amenity, String userId, LocalDateTime startTime, LocalDateTime endTime) {
         logger.debug("Attempting to lock amenity with ID: {}", amenity.getAmenityId());
-        // Lock the amenity to handle concurrency issues
-        Amenity lockedAmenity = amenityRepository.lockAmenityForBooking(amenity.getAmenityId());
-        if (lockedAmenity == null) {
-            logger.error("No amenity found for ID: {}", amenity.getAmenityId());
-            throw new BookingException("Amenity not found for locking.");
-        }
-        logger.debug("Amenity with ID: {} locked for booking.", lockedAmenity.getAmenityId());
-        logger.debug("Attempting to book amenity with ID: {} for user: {} from {} to {}", amenity.getAmenityId(), userId, startTime, endTime);
-        // Validate booking constraints
-        bookingValidator.validateBookingConstraints(amenity, userId, startTime, endTime);
-        logger.debug("Booking constraints validated for amenity with ID: {}.", amenity.getAmenityId());
+        return Mono.fromCallable(() -> amenityRepository.lockAmenityForBooking(amenity.getAmenityId()))
+                .switchIfEmpty(Mono.error(new BookingException("Amenity not found for locking.")))
+                .doOnNext(lockedAmenity -> logger.debug("Amenity with ID: {} locked for booking.", lockedAmenity.getAmenityId()))
+                .flatMap(lockedAmenity -> {
+                    bookingValidator.validateBookingConstraints(lockedAmenity, userId, startTime, endTime);
+                    logger.debug("Booking constraints validated for amenity with ID: {}.", lockedAmenity.getAmenityId());
 
-        // Create and save the booking
-        AmenityBooking booking = new AmenityBooking();
-        booking.setAmenity(amenity);
-        booking.setUserId(userId);
-        booking.setStartTime(startTime);
-        booking.setEndTime(endTime);
+                    AmenityBooking booking = new AmenityBooking();
+                    booking.setAmenity(lockedAmenity);
+                    booking.setUserId(userId);
+                    booking.setStartTime(startTime);
+                    booking.setEndTime(endTime);
 
-        // Save the booking
-        AmenityBooking savedBooking = bookingRepository.save(booking);
-        logger.debug("Booking with ID: {} saved successfully.", savedBooking.getBookingId());
-        return savedBooking;
+                    return Mono.fromCallable(() -> bookingRepository.save(booking)).subscribeOn(Schedulers.boundedElastic())
+                            .doOnSuccess(savedBooking -> logger.debug("Booking with ID: {} saved successfully.", savedBooking.getBookingId()));
+
+                });
     }
 
     @Override
-    public void cancelBooking(String bookingId, String tenantId) throws BookingException, NotFoundResponseException {
+    public Mono<Void> cancelBooking(String bookingId, String tenantId) {
         logger.debug("Attempting to cancel booking with ID: {} for tenant: {}", bookingId, tenantId);
 
-        AmenityBooking booking = bookingRepository.findByBookingIdAndUserId(bookingId, tenantId)
-                .orElseThrow(() -> {
-                    logger.debug("Booking with ID: {} not found for tenant: {}", bookingId, tenantId);
-                    return new NotFoundResponseException("Booking " + bookingId + " not found for tenant " + tenantId);
-                });
-
-        bookingRepository.delete(booking);
-        logger.debug("Booking with ID: {} cancelled successfully.", bookingId);
+        // Use Mono.fromCallable to execute blocking repository methods on a separate thread
+        return Mono.fromCallable(() -> bookingRepository.findByBookingIdAndUserId(bookingId, tenantId))
+                .subscribeOn(Schedulers.boundedElastic())  // Offload blocking operations to boundedElastic thread pool
+                .switchIfEmpty(Mono.error(new NotFoundResponseException("Booking " + bookingId + " not found for tenant " + tenantId)))
+                .flatMap(booking ->
+                        Mono.fromRunnable(() -> bookingRepository.delete(booking))  // Run blocking delete operation
+                                .subscribeOn(Schedulers.boundedElastic())  // Ensure delete is also on a separate thread
+                                .then()  // Complete the Mono<Void> after the delete
+                                .doOnSuccess(aVoid -> logger.debug("Booking with ID: {} cancelled successfully.", bookingId))
+                );
     }
 
+
+
     @Override
-    public boolean isAvailable(String amenityId, LocalDateTime startTime, LocalDateTime endTime) {
+    public Mono<Boolean> isAvailable(String amenityId, LocalDateTime startTime, LocalDateTime endTime) {
         logger.debug("Checking availability for amenity with ID: {} from {} to {}", amenityId, startTime, endTime);
-
-        Optional<Amenity> amenityOpt = amenityRepository.findById(amenityId);
-        if (amenityOpt.isEmpty()) {
-            logger.debug("Amenity with ID: {} not found.", amenityId);
-            throw new BookingException("Amenity not found.");
-        }
-
-        Amenity amenity = amenityOpt.get();
-        boolean available = bookingValidator.isAvailable(amenity, startTime, endTime);
-        logger.debug("Amenity with ID: {} availability check result: {}", amenityId, available);
-        return available;
+        return Mono.fromCallable(() -> amenityRepository.findById(amenityId))
+                .doOnNext(amenity -> logger.debug("Found amenity with ID: {}", amenityId))
+                .flatMap(amenity -> bookingValidator.isAvailable(amenity.get(), startTime, endTime).flatMap(available -> {
+                            logger.debug("Amenity with ID: {} availability check result: {}", amenityId, available);
+                            return Mono.just(available);
+                        })
+                );
     }
 
     @Override
-    public List<AmenityBooking> getAllBookingsForAmenity(String amenityId) {
+    public Flux<AmenityBooking> getAllBookingsForAmenity(String amenityId) {
         logger.debug("Retrieving all bookings for amenity with ID: {}", amenityId);
-        List<AmenityBooking> bookings = customBookingCalendarRepository.findByAmenity_AmenityId(amenityId);
-        logger.debug("Found {} bookings for amenity with ID: {}", bookings.size(), amenityId);
-        return bookings;
+        return customBookingCalendarRepository.findByAmenity_AmenityId(amenityId)
+                .doOnNext(bookings -> logger.debug("Found {} bookings for amenity with ID: {}", bookings.getBookingId(), amenityId));
     }
 
     @Override
-    public AmenityBooking getAmenityBooking(String bookingId) {
+    public Mono<AmenityBooking> getAmenityBooking(String bookingId) {
         logger.debug("Retrieving booking with ID: {}", bookingId);
-        AmenityBooking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> {
-                    logger.debug("Booking with ID: {} not found.", bookingId);
-                    return new BookingException("Booking not found.");
-                });
-        logger.debug("Retrieved booking: {}", booking);
-        return booking;
+        return Mono.fromCallable(() -> bookingRepository.findById(bookingId))
+                .flatMap(optionalBooking ->
+                        optionalBooking.map(Mono::just)
+                                .orElseGet(() -> Mono.error(new BookingException("Booking not found.")))
+                )
+                .doOnNext(booking -> logger.debug("Retrieved booking: {}", booking));
     }
 
     @Override
     @Transactional
-    public AmenityBooking updateBooking(AmenityBooking booking, LocalDateTime newStartTime, LocalDateTime newEndTime) throws BookingException {
+    public Mono<AmenityBooking> updateBooking(AmenityBooking booking, LocalDateTime newStartTime, LocalDateTime newEndTime) {
         logger.debug("Attempting to update booking with ID: {} to new times from {} to {}", booking.getBookingId(), newStartTime, newEndTime);
-
-        // Lock the amenity to handle concurrency issues
-        Amenity amenity = booking.getAmenity();
-        Amenity lockedAmenity = amenityRepository.lockAmenityForBooking(amenity.getAmenityId());
-        logger.debug("Amenity with ID: {} locked for booking update.", lockedAmenity.getAmenityId());
-
-        // Validate booking constraints for the updated times
-        bookingValidator.validateBookingConstraints(lockedAmenity, booking.getUserId(), newStartTime, newEndTime);
-        logger.debug("Booking constraints validated for updated times.");
-
-        // Update booking details
-        booking.setStartTime(newStartTime);
-        booking.setEndTime(newEndTime);
-
-        // Save the updated booking
-        AmenityBooking updatedBooking = bookingRepository.save(booking);
-        logger.debug("Booking updated successfully: {}", updatedBooking);
-
-        return updatedBooking;
+        return Mono.fromCallable(() -> amenityRepository.lockAmenityForBooking(booking.getAmenity().getAmenityId()))
+                .switchIfEmpty(Mono.error(new BookingException("Amenity not found for locking.")))
+                .doOnNext(lockedAmenity -> logger.debug("Amenity with ID: {} locked for booking update.", lockedAmenity.getAmenityId()))
+                .flatMap(lockedAmenity ->
+                        bookingValidator.validateBookingConstraints(lockedAmenity, booking.getUserId(), newStartTime, newEndTime)
+                                .then(Mono.defer(() -> {
+                                    booking.setStartTime(newStartTime);
+                                    booking.setEndTime(newEndTime);
+                                    return Mono.fromCallable(() -> bookingRepository.save(booking))
+                                            .doOnSuccess(savedBooking -> logger.debug("Booking with ID: {} updated successfully.", savedBooking.getBookingId()));
+                                }))
+                );
     }
-
     @Override
-    public AmenityBooking updateBookingStatus(String bookingId, BookingStatus status) {
-        logger.debug("Approving booking with ID: {}", bookingId);
-        AmenityBooking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> {
-                    logger.debug("Booking with ID: {} not found.", bookingId);
-                    return new BookingException("Booking not found.");
+    public Mono<AmenityBooking> updateBookingStatus(String bookingId, BookingStatus status) {
+        logger.debug("Updating booking status with ID: {}", bookingId);
+
+        return Mono.fromCallable(() -> bookingRepository.findById(bookingId))
+                .subscribeOn(Schedulers.boundedElastic())
+                .flatMap(optionalBooking ->
+                        optionalBooking.map(Mono::just)
+                                .orElseGet(() -> Mono.error(new BookingException("Booking not found.")))
+                )
+                .flatMap(booking -> {
+                    booking.setStatus(status);
+
+                    return Mono.fromCallable(() -> bookingRepository.save(booking))
+                            .doOnSuccess(savedBooking -> logger.debug("Booking with ID: {} updated successfully.", bookingId));
                 });
-        booking.setStatus(status);
-        AmenityBooking savedBooking = bookingRepository.save(booking);
-        logger.debug("Booking with ID: {} approved successfully.", bookingId);
-        return savedBooking;
     }
+
+
 }

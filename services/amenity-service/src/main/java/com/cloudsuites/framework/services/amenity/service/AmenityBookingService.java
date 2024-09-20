@@ -2,34 +2,34 @@ package com.cloudsuites.framework.services.amenity.service;
 
 import com.cloudsuites.framework.services.amenity.entities.Amenity;
 import com.cloudsuites.framework.services.amenity.entities.booking.AmenityBooking;
-import com.cloudsuites.framework.services.amenity.entities.booking.BookingException;
 import com.cloudsuites.framework.services.amenity.entities.booking.BookingStatus;
-import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 public interface AmenityBookingService {
 
-    @Transactional
-    AmenityBooking bookAmenity(Amenity amenity, String userId, LocalDateTime startTime, LocalDateTime endTime) throws BookingException;
 
     @Transactional
-    void cancelBooking(String bookingId, String tenantId) throws BookingException, NotFoundResponseException;
+    Mono<AmenityBooking> bookAmenity(Amenity amenity, String userId, LocalDateTime startTime, LocalDateTime endTime);
 
     @Transactional
-    boolean isAvailable(String amenityId, LocalDateTime startTime, LocalDateTime endTime);
+    Mono<Void> cancelBooking(String bookingId, String tenantId);
 
     @Transactional
-    List<AmenityBooking> getAllBookingsForAmenity(String amenityId);
+    Mono<Boolean> isAvailable(String amenityId, LocalDateTime startTime, LocalDateTime endTime);
 
     @Transactional
-    AmenityBooking getAmenityBooking(String bookingId);
+    Flux<AmenityBooking> getAllBookingsForAmenity(String amenityId);
 
     @Transactional
-    AmenityBooking updateBooking(AmenityBooking booking, LocalDateTime newStartTime, LocalDateTime newEndTime) throws BookingException;
+    Mono<AmenityBooking> getAmenityBooking(String bookingId);
 
     @Transactional
-    AmenityBooking updateBookingStatus(String bookingId, BookingStatus status);
+    Mono<AmenityBooking> updateBooking(AmenityBooking booking, LocalDateTime newStartTime, LocalDateTime newEndTime);
+
+    @Transactional
+    Mono<AmenityBooking> updateBookingStatus(String bookingId, BookingStatus status);
 }
