@@ -11,6 +11,9 @@ import com.cloudsuites.framework.services.amenity.service.AmenityBookingCalendar
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
@@ -50,36 +53,42 @@ public class AmenityBookingCalendarServiceImpl implements AmenityBookingCalendar
     }
 
     @Override
-    public List<AmenityBooking> getBookingsForUser(List<String> userIds, List<String> amenityIds, List<BookingStatus> bookingStatuses, LocalDateTime startDate, LocalDateTime endDate) {
+    public Flux<AmenityBooking> getBookingsForUser(List<String> userIds, List<String> amenityIds, List<BookingStatus> bookingStatuses, LocalDateTime startDate, LocalDateTime endDate) {
         logger.info("Fetching bookings for userId: {}, amenityIds: {}, startDate: {}, endDate: {}",
                 userIds, amenityIds, startDate, endDate);
-        List<AmenityBooking> bookings = customBookingCalendarRepository.findByUserIdAndFilters(userIds, amenityIds, bookingStatuses, startDate, endDate);
-        logger.debug("Found {} bookings for userId: {}, amenityIds: {}", bookings.size(), userIds, amenityIds);
-        return bookings;
+        return customBookingCalendarRepository.findByUserIdAndFilters(userIds, amenityIds, bookingStatuses, startDate, endDate)
+                .doOnNext(booking -> logger.debug("Found booking: {}", booking));
     }
 
     @Override
-    public List<AmenityBooking> getBookingsForAmenity(List<String> amenityIds, LocalDateTime startDate, LocalDateTime endDate) {
+    public Flux<AmenityBooking> getBookingsForAmenity(List<String> amenityIds, LocalDateTime startDate, LocalDateTime endDate) {
         logger.info("Fetching bookings for amenityIds: {}, startDate: {}, endDate: {}",
                 amenityIds, startDate, endDate);
-        List<AmenityBooking> bookings = customBookingCalendarRepository.findByUserIdAndFilters(null, amenityIds, null, startDate, endDate);
-        logger.debug("Found {} bookings for amenityIds: {}", bookings.size(), amenityIds);
-        return bookings;
+        return customBookingCalendarRepository.findByUserIdAndFilters(null, amenityIds, null, startDate, endDate)
+                .doOnNext(booking -> logger.debug("Found booking: {}", booking));
     }
 
     @Override
-    public List<LocalDateTime> getAvailableSlotsForAmenity(String amenityId, LocalDateTime start, LocalDateTime end) {
-        logger.info("Calculating available slots for amenityId: {}, start: {}, end: {}", amenityId, start, end);
-        List<AmenityBooking> bookings = customBookingCalendarRepository.findByAmenityIdAndTimeRange(amenityId, start, end);
-        Amenity amenity = amenityRepository.findById(amenityId).orElseThrow(() -> {
-            logger.error("Amenity with id {} not found.", amenityId);
-            return new AmenityNotFoundException("Amenity not found");
-        });
+    public Flux<LocalDateTime> getAvailableSlotsForAmenity(String amenityId, LocalDateTime start, LocalDateTime end) {
 
-        List<LocalDateTime> availableSlots = calculateAvailableSlots(amenity, bookings, start, end);
-        logger.debug("Found {} available slots for amenityId: {}", availableSlots.size(), amenityId);
-        return availableSlots;
+        return Mono.fromCallable(() -> amenityRepository.findById(amenityId)
+                        .orElseThrow(() -> {
+                            logger.error("Amenity with id {} not found.", amenityId);
+                            return new AmenityNotFoundException("Amenity not found");
+                        }))
+                .subscribeOn(Schedulers.boundedElastic()) // Ensure blocking call runs on I/O-bound thread pool
+                .doOnNext(amenity -> logger.debug("Found amenity with ID: {}", amenityId))
+                .flatMapMany(amenity ->
+                        customBookingCalendarRepository.findByAmenityIdAndTimeRange(amenityId, start, end)
+                                .collectList() // Collect bookings into a List
+                                .flatMapMany(bookings -> { // flatMapMany expects a Publisher, return Flux from it
+                                    List<LocalDateTime> availableSlots = calculateAvailableSlots(amenity, bookings, start, end);
+                                    logger.debug("Found {} available slots for amenityId: {}", availableSlots.size(), amenityId);
+                                    return Flux.fromIterable(availableSlots); // Return Flux<LocalDateTime>
+                                })
+                );
     }
+
 
     private List<LocalDateTime> calculateAvailableSlots(Amenity amenity, List<AmenityBooking> bookings, LocalDateTime start, LocalDateTime end) {
         List<LocalDateTime> availableSlots = new ArrayList<>();
