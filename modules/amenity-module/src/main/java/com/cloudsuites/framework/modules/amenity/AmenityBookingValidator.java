@@ -11,6 +11,8 @@ import com.cloudsuites.framework.services.amenity.entities.booking.BookingLimitP
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
@@ -31,58 +33,79 @@ public class AmenityBookingValidator {
         this.customBookingCalendarRepository = customBookingCalendarRepository;
     }
 
-    public void validateBookingConstraints(Amenity amenity, String userId, LocalDateTime startTime, LocalDateTime endTime) throws BookingException {
+    public Mono<Void> validateBookingConstraints(Amenity amenity, String userId, LocalDateTime startTime, LocalDateTime endTime) {
         logger.debug("Validating booking constraints for Amenity ID: {} from {} to {}", amenity.getAmenityId(), startTime, endTime);
+
         if (startTime.toLocalDate().equals(endTime.toLocalDate())) {
             // Single-day booking
             logger.debug("Single-day booking detected.");
-            if (!isAvailable(amenity, startTime, endTime)) {
-                throw new BookingException("Amenity is not available during the requested time.");
-            }
 
-            if (!isWithinDailyAvailability(amenity, startTime, endTime)) {
-                throw new BookingException("Booking time is outside of amenity's operating hours.");
-            }
+            return isAvailable(amenity, startTime, endTime)
+                    .flatMap(available -> {
+                        if (Boolean.FALSE.equals(available)) {
+                            return Mono.error(new BookingException("Amenity is not available during the requested time."));
+                        }
 
-            checkBookingRequirements(amenity, startTime, endTime);
-            checkBookingLimits(amenity, userId, startTime, endTime);
+                        if (!isWithinDailyAvailability(amenity, startTime, endTime)) {
+                            return Mono.error(new BookingException("Booking time is outside of amenity's operating hours."));
+                        }
+
+                        return Mono.empty();
+                    })
+                    .then(checkBookingRequirements(amenity, startTime, endTime))  // Ensure checkBookingRequirements is reactive
+                    .then(checkBookingLimits(amenity, userId, startTime, endTime)); // Ensure checkBookingLimits is reactive
         } else {
             // Multi-day booking
             logger.debug("Multi-day booking detected.");
-            validateMultiDayBooking(amenity, userId, startTime, endTime);
+            return validateMultiDayBooking(amenity, userId, startTime, endTime);  // Ensure validateMultiDayBooking is reactive
         }
     }
 
-    private void validateMultiDayBooking(Amenity amenity, String userId, LocalDateTime startTime, LocalDateTime endTime) throws BookingException {
+
+    private Mono<Void> validateMultiDayBooking(Amenity amenity, String userId, LocalDateTime startTime, LocalDateTime endTime) {
         logger.debug("Validating multi-day booking from {} to {}", startTime, endTime);
 
-        LocalDateTime currentStartTime = startTime;
-        LocalDateTime currentEndTime;
+        return Flux.generate(() -> startTime, (currentStartTime, sink) -> {
+                    // Define end of the current day or endTime, whichever is earlier
+                    LocalDateTime currentEndTime = currentStartTime.toLocalDate().atTime(LocalTime.MAX).isAfter(endTime) ? endTime : currentStartTime.toLocalDate().atTime(LocalTime.MAX);
 
-        while (!currentStartTime.toLocalDate().isAfter(endTime.toLocalDate())) {
-            // Define end of the current day or endTime, whichever is earlier
-            currentEndTime = currentStartTime.toLocalDate().atTime(LocalTime.MAX).isAfter(endTime) ? endTime : currentStartTime.toLocalDate().atTime(LocalTime.MAX);
+                    logger.debug("Validating day from {} to {}", currentStartTime, currentEndTime);
 
-            logger.debug("Validating day from {} to {}", currentStartTime, currentEndTime);
+                    // Emit current time range to be validated
+                    sink.next(new LocalDateTime[]{currentStartTime, currentEndTime});
 
-            // Validate each day
-            if (!isAvailable(amenity, currentStartTime, currentEndTime)) {
-                throw new BookingException("Amenity is not available during the requested time.");
-            }
+                    // Stop the Flux if the current day is after the endTime
+                    if (currentStartTime.toLocalDate().isAfter(endTime.toLocalDate())) {
+                        sink.complete();
+                    }
 
-            if (!isWithinDailyAvailability(amenity, currentStartTime, currentEndTime)) {
-                throw new BookingException("Booking time is outside of amenity's operating hours.");
-            }
+                    // Move to next day
+                    return currentStartTime.toLocalDate().plusDays(1).atStartOfDay();
+                })
+                .concatMap(timeRange -> {
+                    LocalDateTime[] times = (LocalDateTime[]) timeRange;
+                    LocalDateTime currentStartTime = times[0];
+                    LocalDateTime currentEndTime = times[1];
 
-            currentStartTime = currentStartTime.toLocalDate().plusDays(1).atStartOfDay(); // Move to next day
-        }
+                    return isAvailable(amenity, currentStartTime, currentEndTime)
+                            .flatMap(available -> {
+                                if (Boolean.FALSE.equals(available)) {
+                                    return Mono.error(new BookingException("Amenity is not available during the requested time."));
+                                }
 
-        // Check overall booking constraints
-        checkBookingRequirements(amenity, startTime, endTime);
-        checkBookingLimits(amenity, userId, startTime, endTime);
+                                if (!isWithinDailyAvailability(amenity, currentStartTime, currentEndTime)) {
+                                    return Mono.error(new BookingException("Booking time is outside of amenity's operating hours."));
+                                }
+
+                                return Mono.empty();
+                            });
+                })
+                .then(checkBookingRequirements(amenity, startTime, endTime))  // Reactive chaining
+                .then(checkBookingLimits(amenity, userId, startTime, endTime)); // Reactive chaining
     }
 
-    private void checkBookingRequirements(Amenity amenity, LocalDateTime startTime, LocalDateTime endTime) throws BookingException {
+
+    private Mono<Void> checkBookingRequirements(Amenity amenity, LocalDateTime startTime, LocalDateTime endTime) throws BookingException {
         logger.debug("Checking booking requirements for Amenity ID: {} from {} to {}", amenity.getAmenityId(), startTime, endTime);
 
         if (Boolean.FALSE.equals(amenity.getIsBookingRequired())) {
@@ -99,27 +122,41 @@ public class AmenityBookingValidator {
                 || (amenity.getBookingDurationLimit() != null && bookingDurationMinutes > amenity.getBookingDurationLimit())) {
             throw new BookingException("Booking duration is outside the allowed range.");
         }
+        return Mono.empty();
     }
 
-    private void checkBookingLimits(Amenity amenity, String userId, LocalDateTime startTime, LocalDateTime endTime) throws BookingException {
-        logger.debug("Checking booking limits for Amenity ID: {} for user ID: {} from {} to {}", amenity.getAmenityId(), userId, startTime, endTime);
+    private Mono<Void> checkBookingLimits(Amenity amenity, String userId, LocalDateTime startTime, LocalDateTime endTime) {
+        logger.debug("Checking booking limits for Amenity ID: {} for user ID: {} from {} to {}",
+                amenity.getAmenityId(), userId, startTime, endTime);
 
+        Mono<Void> bookingLimitCheck = Mono.empty();
         if (amenity.getMaxBookingsPerTenant() != null) {
             LocalDateTime periodStart = calculateBookingLimitStartTime(amenity.getBookingLimitPeriod());
-            int currentBookingCount = customBookingCalendarRepository.countBookingsForUser(userId, amenity.getAmenityId(), periodStart, endTime);
 
-            if (currentBookingCount >= amenity.getMaxBookingsPerTenant()) {
-                throw new BookingException("Booking limit reached for this amenity.");
-            }
+            bookingLimitCheck = customBookingCalendarRepository.countBookingsForUser(userId, amenity.getAmenityId(), periodStart, endTime)
+                    .flatMap(currentBookingCount -> {
+                        if (currentBookingCount >= amenity.getMaxBookingsPerTenant()) {
+                            return Mono.error(new BookingException("Booking limit reached for this amenity."));
+                        }
+                        return Mono.empty();  // Proceed if no limit reached
+                    });
         }
 
+        Mono<Void> bookingOverlapCheck = Mono.empty();
         if (amenity.getMaxBookingOverlap() != null) {
-            int overlappingCount = customBookingCalendarRepository.countOverlappingBookings(amenity.getAmenityId(), startTime, endTime);
-            if (overlappingCount >= amenity.getMaxBookingOverlap()) {
-                throw new BookingException("Maximum booking overlap reached.");
-            }
+            bookingOverlapCheck = customBookingCalendarRepository.countOverlappingBookings(amenity.getAmenityId(), startTime, endTime)
+                    .flatMap(overlappingCount -> {
+                        if (overlappingCount >= amenity.getMaxBookingOverlap()) {
+                            return Mono.error(new BookingException("Maximum booking overlap reached."));
+                        }
+                        return Mono.empty();
+                    });
         }
+
+        return Mono.when(bookingLimitCheck, bookingOverlapCheck)
+                .then();
     }
+
 
     private boolean isWithinDailyAvailability(Amenity amenity, LocalDateTime startTime, LocalDateTime endTime) {
         logger.debug("Checking daily availability for Amenity ID: {} on {}", amenity.getAmenityId(), startTime.toLocalDate());
@@ -170,23 +207,25 @@ public class AmenityBookingValidator {
         return startTime;
     }
 
-    public boolean isAvailable(Amenity amenity, LocalDateTime startTime, LocalDateTime endTime) {
+    public Mono<Boolean> isAvailable(Amenity amenity, LocalDateTime startTime, LocalDateTime endTime) {
         logger.debug("Checking availability for Amenity ID: {} from {} to {}", amenity.getAmenityId(), startTime, endTime);
 
-        List<AmenityBooking> overlappingBookings = customBookingCalendarRepository.findOverlappingBookings(
+        Flux<AmenityBooking> overlappingBookings = customBookingCalendarRepository.findOverlappingBookings(
                 amenity.getAmenityId(), startTime, endTime
         );
 
-        if (!overlappingBookings.isEmpty()) {
-            logger.debug("Amenity is not available due to overlapping bookings.");
-            return false;
-        }
+        return overlappingBookings.hasElements().flatMap(hasOverlaps -> {
+            if (Boolean.TRUE.equals(hasOverlaps)) {
+                logger.debug("Amenity is not available due to overlapping bookings.");
+                return Mono.just(false);
+            }
 
-        if (amenity.getMaintenanceStatus() != MaintenanceStatus.OPERATIONAL) {
-            logger.debug("Amenity is under maintenance.");
-            return false;
-        }
+            if (amenity.getMaintenanceStatus() != MaintenanceStatus.OPERATIONAL) {
+                logger.debug("Amenity is under maintenance.");
+                return Mono.just(false);
+            }
 
-        return true;
+            return Mono.just(true);
+        });
     }
 }
