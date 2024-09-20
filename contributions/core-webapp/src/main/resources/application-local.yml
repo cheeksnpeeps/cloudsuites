@@ -6,9 +6,18 @@ logging:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
     com.fasterxml.jackson.databind: DEBUG
+    orm:
+      jpa: DEBUG
   pattern:
     console: "%-4relative [%thread] %-5level %logger{35} %X{correlationId} - %msg %n"
 spring:
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/cloudsuites
+    username: csuser
+    password: csPassw0rd
+    pools:
+      initial-size: 5
+      max-size: 20
   datasource:
     url: jdbc:postgresql://localhost:5432/cloudsuites
     username: csuser
