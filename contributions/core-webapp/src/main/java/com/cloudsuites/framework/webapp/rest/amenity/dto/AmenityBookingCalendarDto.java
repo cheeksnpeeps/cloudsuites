@@ -24,7 +24,7 @@ public class AmenityBookingCalendarDto {
     @JsonView(Views.BookingCalendarView.class)
     @Schema(description = "Filters for the calendar", example = "{\"startDate\":\"2021-08-01T00:00:00\",\"endDate\":\"2021-08-31T23:59:59\"," +
             "\"byAmenityTypes\":[\"SWIMMING_POOL\",\"EVEVATOR\"]," +
-            "\"byBookingStatus\":[\"PENDING\",\"APPROVED\"]," +
+            "\"byBookingStatus\":[\"REQUESTED\",\"APPROVED\"]," +
             "\"byAmenityIds\":[\"AMN-01J79E2Z8MQXSAVM1AMCFK2ADZ\",\"AMN-01J77YPYDY1CDAR0CSAJZ6GY9W\"]}")
     private CalendarBookingFiltersDto filters;
 }
