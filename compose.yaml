@@ -9,6 +9,7 @@ services:
       - "59665:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
   pgadmin:
     image: dpage/pgadmin4:8.0
     environment:
