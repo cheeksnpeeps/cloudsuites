@@ -44,7 +44,7 @@ public class Staff {
     @Enumerated(EnumType.STRING)
     private StaffStatus status;
 
-    @Column(name = "role")
+    @Enumerated(EnumType.STRING)
     private StaffRole role;
 
     public List<GrantedAuthority> getAuthorities() {

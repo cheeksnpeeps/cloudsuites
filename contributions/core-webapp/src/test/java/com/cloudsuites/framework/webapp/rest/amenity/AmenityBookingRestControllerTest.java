@@ -5,9 +5,12 @@ import com.cloudsuites.framework.modules.amenity.repository.AmenityRepository;
 import com.cloudsuites.framework.modules.amenity.repository.AvailabilityRepository;
 import com.cloudsuites.framework.modules.property.features.repository.BuildingRepository;
 import com.cloudsuites.framework.modules.property.features.repository.UnitRepository;
+import com.cloudsuites.framework.modules.property.personas.repository.OwnerRepository;
+import com.cloudsuites.framework.modules.property.personas.repository.StaffRepository;
 import com.cloudsuites.framework.modules.property.personas.repository.TenantRepository;
 import com.cloudsuites.framework.modules.user.repository.AdminRepository;
 import com.cloudsuites.framework.modules.user.repository.UserRepository;
+import com.cloudsuites.framework.modules.user.repository.UserRoleRepository;
 import com.cloudsuites.framework.services.amenity.entities.Amenity;
 import com.cloudsuites.framework.services.amenity.entities.AmenityType;
 import com.cloudsuites.framework.services.amenity.entities.DailyAvailability;
@@ -105,6 +108,12 @@ class AmenityBookingRestControllerTest {
     private UnitRepository unitRepository;
     @Autowired
     private AvailabilityRepository availabilityRepository;
+    @Autowired
+    private StaffRepository staffRepository;
+    @Autowired
+    private OwnerRepository ownerRepository;
+    @Autowired
+    private UserRoleRepository userRoleRepository;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -141,11 +150,7 @@ class AmenityBookingRestControllerTest {
     // -------------------- Helper Methods --------------------
 
     private void clearDatabase() {
-        amenityBookingRepository.deleteAll();
-        amenityRepository.deleteAll();
-        buildingRepository.deleteAll();
-        adminRepository.deleteAll();
-        userRepository.deleteAll();
+
     }
 
     private Amenity createAmenity(String buildingId) {
