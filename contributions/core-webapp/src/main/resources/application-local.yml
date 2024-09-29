@@ -12,9 +12,12 @@ logging:
     console: "%-4relative [%thread] %-5level %logger{35} %X{correlationId} - %msg %n"
 spring:
   r2dbc:
-    url: r2dbc:postgresql://localhost:59665/cloudsuites
+    host: localhost
     username: csuser
     password: csPassw0rd
+    driver-class-name: postgresql
+    port: 59665
+    database: cloudsuites
     pools:
       initial-size: 5
       max-size: 20
