@@ -25,6 +25,7 @@ import java.util.Map;
         entityManagerFactoryRef = "entityManagerFactory",
         transactionManagerRef = "transactionManager"
 )
+
 public class JpaConfig {
 
     private final Environment env;
@@ -33,23 +34,25 @@ public class JpaConfig {
         this.env = env;
     }
 
+    private Map<String, Object> getVendorProperties() {
+        Map<String, Object> jpaProperties = new HashMap<>();
+        jpaProperties.put("hibernate.dialect", env.getProperty("spring.datasource.hibernate.dialect"));
+        jpaProperties.put("url", env.getProperty("spring.datasource.url"));
+        jpaProperties.put("username", env.getProperty("spring.datasource.username"));
+        jpaProperties.put("password", env.getProperty("spring.datasource.password"));
+        jpaProperties.put("driver-class-name", env.getProperty("spring.datasource.driver-class-name"));
+        return jpaProperties;
+    }
     @Primary
     @Bean
     public LocalContainerEntityManagerFactoryBean entityManagerFactory(EntityManagerFactoryBuilder builder,
                                                                        @Qualifier("dataSource") DataSource dataSource) {
-        Map<String, Object> jpaProperties = new HashMap<>();
-
-        // Explicitly setting Hibernate properties
-        jpaProperties.put("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
-        jpaProperties.put("hibernate.hbm2ddl.auto", "update");  // Change to "validate" or "none" in production
-        jpaProperties.put("hibernate.show_sql", "true");        // Optional: show SQL queries in logs
-        jpaProperties.put("hibernate.format_sql", "true");      // Optional: pretty-print SQL
-
+        Map<String, Object> jpaProperties = getVendorProperties();
         return builder
                 .dataSource(dataSource)
-                .packages("com.cloudsuites.framework.services")  // Your JPA entities package
-                .persistenceUnit("jpa")                          // Persistence unit name
-                .properties(jpaProperties)                       // Set JPA properties
+                .packages("com.cloudsuites.framework.services")
+                .persistenceUnit("jpa")
+                .properties(jpaProperties)
                 .build();
     }
 
@@ -63,11 +66,12 @@ public class JpaConfig {
     @Bean
     @ConfigurationProperties("spring.datasource")
     public DataSource dataSource() {
+        Map<String, Object> jpaProperties = getVendorProperties();
         return DataSourceBuilder.create()
-                .url("jdbc:postgresql://localhost:59665/cloudsuites")    // Explicit JDBC URL
-                .username("csuser")
-                .password("csPassw0rd")
-                .driverClassName("org.postgresql.Driver")               // Explicit driver class
+                .url(jpaProperties.get("url").toString())
+                .username(jpaProperties.get("username").toString())
+                .password(jpaProperties.get("password").toString())
+                .driverClassName(jpaProperties.get("driver-class-name").toString())
                 .build();
     }
 }
