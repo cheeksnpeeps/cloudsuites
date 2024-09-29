@@ -31,7 +31,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/building/{buildingId}")
+@RequestMapping("/api/v1/buildings/{buildingId}")
 @Tags(value = {@Tag(name = "AmenityBookingCalendar", description = "Operations related amenity booking calendar")})
 public class BookingCalendarRestController {
 
@@ -131,7 +131,7 @@ public class BookingCalendarRestController {
             throw new InvalidOperationException("Calendar filters cannot be null");
         }
         if (calendarBookingFiltersDto.getByBookingStatus() == null) {
-            logger.debug("No booking status provided, defaulting to PENDING");
+            logger.debug("No booking status provided, defaulting to REQUESTED");
             calendarBookingFiltersDto.setByBookingStatus(List.of(BookingStatus.REQUESTED));
         }
     }
