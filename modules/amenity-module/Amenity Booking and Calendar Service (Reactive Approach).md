@@ -1,4 +1,4 @@
-# Amenity Booking and Calendar Service (Reactive Approach) - Technical Documentation
+# Amenity Booking and Calendar Service (Reactive Approach)
 
 ### Introduction
 This document provides a comprehensive overview of the **Amenity Booking and Calendar Service**. The service is built using a **Reactive Programming** paradigm, designed to handle **high concurrency**, **scalability**, and **efficiency**. This approach leverages **Spring WebFlux** and **Project Reactor**, offering non-blocking I/O operations, backpressure support, and a highly responsive user experience.
@@ -27,7 +27,7 @@ The Amenity Booking service is composed of several layers that interconnect seam
 2. **Service Layer**: This layer handles the business logic, interacting with both the controller and the DAO layer. It manages booking constraints, availability checks, and data persistence using reactive patterns.
 3. **DAO Layer**: This layer uses R2DBC and `R2dbcEntityTemplate` for reactive, non-blocking interaction with the database. Complex queries are executed efficiently, handling criteria such as overlapping bookings and occupancy checks in real-time.
 
-### Benefits of the Reactive Approach
+### Benefits
 
 1. **Scalability**: Non-blocking operations allow the system to handle a massive number of concurrent users, ensuring that resources like CPU and memory are utilized efficiently.
 2. **Responsiveness**: The system remains highly responsive under load, providing real-time updates and feedback to users.
@@ -56,6 +56,7 @@ Our `JpaConfig` class configures JPA, which is typically synchronous and blockin
 #### **R2DBC Configuration (Reactive)**:
    The `R2dbcConfig` class configures the reactive database access using **R2DBC**. Since R2DBC is non-blocking and doesn’t rely on JDBC, it allows for truly reactive database operations, which are crucial in high-concurrency environments.
   Reactive programming aims to free up threads by avoiding such blocking operations, allowing the system to handle more concurrent requests with fewer threads. 
+
 **Key Design Considerations**:
    - The use of `ConnectionFactoryOptions` enables a flexible and programmatic way of building database connection factories tailored to R2DBC.
    - Properties related to connection pools (`initial-size`, `max-size`, etc.) ensure optimal resource management in a reactive context.
@@ -67,5 +68,3 @@ Our `JpaConfig` class configures JPA, which is typically synchronous and blockin
 
 ### Conclusion:
 In summary, this approach allowed us to adopt a hybrid data access strategy—using **JPA** where a blocking, traditional ORM approach was more suitable, and **R2DBC** for highly scalable, non-blocking reactive operations. By carefully managing configurations, transaction management, and service separation, we enabled both technologies to coexist smoothly in the same application.
-
-The Amenity Booking and Calendar Service is a prime example of how **Reactive Programming** can enhance the performance and scalability of modern applications. By using non-blocking I/O, the system is able to handle high-demand operations efficiently, making it well-suited for environments with a large number of concurrent users.
