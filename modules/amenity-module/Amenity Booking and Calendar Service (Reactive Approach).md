@@ -61,7 +61,6 @@ Our `JpaConfig` class configures JPA, which is typically synchronous and blockin
    - Properties related to connection pools (`initial-size`, `max-size`, etc.) ensure optimal resource management in a reactive context.
    - Reactive transactions, when needed, can be managed using `R2dbcTransactionManager` or similar constructs depending on use cases.
 
-
 ### **Key Advantages**:
    - **Scalability and Performance**: By leveraging R2DBC, we enabled better scalability for the parts of the application that required high throughput and concurrency.
    - **Simplicity in Use**: The decision to keep JPA for traditional, blocking workflows where performance was not a concern allowed us to retain the simplicity and familiarity of the JPA ecosystem.
