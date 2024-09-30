@@ -111,9 +111,15 @@ Optimize data management by partitioning the `Amenity Bookings` table for improv
 
 For a step-by-step guide on implementing and managing partitioning for the Amenity Bookings table, including
 instructions on changing partition intervals, managing old partitions, and more advanced partitioning techniques, please
-refer to the [Partition Management Migration Guide](https://github.com/cheeksnpeeps/cloudsuites/blob/main/modules/common-module/src/main/resources/db/migration/Partition%20Management%20Migration.md).
+refer to the [Partition Management Migration Guide] (https://github.com/cheeksnpeeps/cloudsuites/blob/main/modules/common-module/src/main/resources/db/migration/Partition%20Management%20Migration.md).
 
 ---
+
+### Amenity Booking and Calendar - Reactive Approach
+
+The Amenity Booking and Calendar Service is a key module within the Property Management Microservice, designed to handle amenity bookings efficiently in multi-tenant environments. Built using Reactive Programming with Spring WebFlux and R2DBC, it supports non-blocking, real-time interactions, ensuring high scalability and performance for concurrent operations. By integrating both JPA for synchronous workflows and R2DBC for reactive data access, this module balances traditional persistence needs with modern, high-throughput demands, allowing for flexible and efficient resource management within the broader property management system.
+
+Refer to the [Amenity Booking and Calendar - Reactive Approach](https://github.com/cheeksnpeeps/cloudsuites/blob/main/modules/amenity-module/Amenity%20Booking%20and%20Calendar%20Service%20(Reactive%20Approach).md) for more details.
 
 ### CONCEPT - LATE Partition Management Migration
 
