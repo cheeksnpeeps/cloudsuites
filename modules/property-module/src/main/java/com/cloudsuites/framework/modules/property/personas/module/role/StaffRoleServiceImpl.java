@@ -34,6 +34,9 @@ public class StaffRoleServiceImpl implements StaffRoleService {
             logger.warn("Staff not found for staffId: {}", staffId);
             return new NotFoundResponseException("Staff not found");
         });
+        if (staff.getRole() == null) {
+            staff.setRole(StaffRole.DEFAULT);
+        }
         logger.info("Staff found: {}", staff);
         cleanupStaffRoles(List.of(staff));
         return staff;
@@ -70,6 +73,11 @@ public class StaffRoleServiceImpl implements StaffRoleService {
     public List<Staff> getStaffByRole(StaffRole staffRole) {
         logger.debug("Fetching staff by role: {}", staffRole);
         List<Staff> staffList = staffRepository.findByRole(staffRole);
+        staffList.forEach(staff -> {
+            if (staff.getRole() == null) {
+                staff.setRole(StaffRole.DEFAULT);
+            }
+        });
         cleanupStaffRoles(staffList);
         logger.info("Found {} staff for role: {}", staffList.size(), staffRole);
         return staffList;
@@ -79,6 +87,11 @@ public class StaffRoleServiceImpl implements StaffRoleService {
     public List<Staff> getStaffByRoleAndStatus(StaffRole staffRole, StaffStatus status) {
         logger.debug("Fetching staff by role: {} and status: {}", staffRole, status);
         List<Staff> staffList = staffRepository.findByRoleAndStatus(staffRole, status);
+        staffList.forEach(staff -> {
+            if (staff.getRole() == null) {
+                staff.setRole(StaffRole.DEFAULT);
+            }
+        });
         cleanupStaffRoles(staffList);
         logger.info("Found {} staff for role: {} and status: {}", staffList.size(), staffRole, status);
         return staffList;
@@ -88,6 +101,11 @@ public class StaffRoleServiceImpl implements StaffRoleService {
     public List<Staff> getStaffByRole() {
         logger.debug("Fetching all staff");
         List<Staff> staffList = staffRepository.findAll();
+        staffList.forEach(staff -> {
+            if (staff.getRole() == null) {
+                staff.setRole(StaffRole.DEFAULT);
+            }
+        });
         cleanupStaffRoles(staffList);
         logger.info("Found {} staff", staffList.size());
         return staffList;
@@ -102,7 +120,7 @@ public class StaffRoleServiceImpl implements StaffRoleService {
                 logger.debug("Deleting all roles for staffId: {}", staff.getStaffId());
                 userRoleRepository.deleteAll(roles);
                 logger.info("Deleted all roles for staffId: {}", staff.getStaffId());
-            } else if (roles.size() == 1 && !roles.get(0).getRole().equals(staff.getRole().name())) {
+            } else if (roles.size() == 1 && roles.get(0).getRole() != null && !roles.get(0).getRole().equals(staff.getRole().name())) {
                 logger.debug("Deleting role for staffId: {} and saving new role", staff.getStaffId());
                 userRoleRepository.delete(roles.get(0));
                 userRoleRepository.save(staff.getUserRole());
