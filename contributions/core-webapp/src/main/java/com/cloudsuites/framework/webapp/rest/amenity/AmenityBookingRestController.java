@@ -53,33 +53,47 @@ public class AmenityBookingRestController {
 
     @PreAuthorize("hasAuthority('ALL_STAFF') or hasAuthority('TENANT') or hasAuthority('OWNER')")
     @Operation(summary = "Book an Amenity", description = "Create a new booking for an amenity")
-    @ApiResponse(responseCode = "201", description = "Booking created successfully", content = @Content(mediaType = "application/json"))
-    @ApiResponse(responseCode = "400", description = "Bad Request")
-    @ApiResponse(responseCode = "404", description = "Amenity not found")
     @PostMapping("/amenities/{amenityId}/tenants/{tenantId}/bookings")
     @JsonView(Views.AmenityBooking.class)
     public Mono<ResponseEntity<AmenityBookingDto>> bookAmenity(
             @PathVariable @NotBlank String amenityId,
             @PathVariable @NotBlank String tenantId,
-            @RequestBody @Parameter(description = "Amenity booking details") AmenityBookingDto amenityBookingDto) {
+            @RequestBody @Parameter(description = "Amenity booking details") AmenityBookingDto amenityBookingDto) throws BookingException {
 
-        logger.debug("Booking amenity {} for user {} from {} to {}", amenityId, amenityBookingDto.getUserId(),
+        logger.debug("Booking amenity {} for tenant {} from {} to {}", amenityId, tenantId,
                 amenityBookingDto.getStartTime(), amenityBookingDto.getEndTime());
 
         return Mono.fromCallable(() -> amenityService.getAmenityById(amenityId))
                 .subscribeOn(Schedulers.boundedElastic())
-                .flatMap(amenity -> {
-                    validateBookingTime(amenity.get(), amenityBookingDto.getStartTime(), amenityBookingDto.getEndTime());
+                .flatMap(amenityOpt -> {
+                    if (amenityOpt.isEmpty()) {
+                        logger.debug("Amenity not found with ID: {}", amenityId);
+                        return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
+                    }
+
+                    Amenity amenity = amenityOpt.get();
+                    validateBookingTime(amenity, amenityBookingDto.getStartTime(), amenityBookingDto.getEndTime());
                     logger.debug("Booking constraints validated for amenity {}", amenityId);
-                    return amenitybookingService.bookAmenity(amenity.get(), tenantId, amenityBookingDto.getStartTime(), amenityBookingDto.getEndTime())
-                            .map(booking -> ResponseEntity.status(HttpStatus.CREATED).body(mapper.convertToDTO(booking)));
-                })
-                .onErrorResume(BookingException.class, e -> Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).build()))
-                .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).build()));
+
+                    return amenitybookingService.bookAmenity(amenity, tenantId, amenityBookingDto.getStartTime(), amenityBookingDto.getEndTime())
+                            .doOnNext(booking -> logger.debug("Booking created successfully: {}", booking))
+                            .map(booking -> ResponseEntity.status(HttpStatus.CREATED).body(mapper.convertToDTO(booking)))
+                            .onErrorResume(e -> {
+                                logger.error("Booking failed for amenity {}: {}", amenityId, e.getMessage());
+                                return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
+                            });
+                });
     }
 
-    private void validateBookingTime(Amenity amenity, LocalDateTime startTime, LocalDateTime endTime) {
-        if (amenity.getMinBookingDuration() != null && ChronoUnit.MINUTES.between(startTime, endTime) < amenity.getMinBookingDuration()) {
+
+    private void validateBookingTime(Amenity amenity, LocalDateTime startTime, LocalDateTime endTime) throws BookingException {
+        if (startTime.isEqual(endTime)) {
+            throw new BookingException("Booking period cannot be zero.");
+        }
+        if (amenity.getMinBookingDuration() > startTime.until(endTime, ChronoUnit.MINUTES)) {
+            throw new BookingException("Booking duration is less than the minimum allowed duration.");
+        }
+        if (ChronoUnit.MINUTES.between(startTime, endTime) < amenity.getMinBookingDuration()) {
             throw new BookingException("Booking period is less than the minimum allowed.");
         }
         if (amenity.getMaxBookingDuration() != null && ChronoUnit.MINUTES.between(startTime, endTime) > amenity.getMaxBookingDuration()) {
@@ -138,7 +152,7 @@ public class AmenityBookingRestController {
     public Mono<ResponseEntity<Boolean>> checkAvailability(
             @PathVariable String amenityId,
             @RequestParam @NotBlank @FutureOrPresent LocalDateTime startTime,
-            @RequestParam @NotBlank @Future LocalDateTime endTime) {
+            @RequestParam @NotBlank @Future LocalDateTime endTime) throws BookingException {
         logger.debug("Checking availability for amenity {} from {} to {}", amenityId, startTime, endTime);
         return amenitybookingService.isAvailable(amenityId, startTime, endTime)
                 .map(isAvailable -> ResponseEntity.ok(isAvailable))
@@ -155,7 +169,7 @@ public class AmenityBookingRestController {
     public Mono<ResponseEntity<AmenityBookingDto>> updateBooking(
             @PathVariable String bookingId,
             @PathVariable String tenantId,
-            @RequestBody @Parameter(description = "Amenity booking details") AmenityBookingDto amenityBookingDto) {
+            @RequestBody @Parameter(description = "Amenity booking details") AmenityBookingDto amenityBookingDto) throws BookingException {
 
         logger.debug("Updating booking {} for user {} from {} to {}", bookingId, tenantId,
                 amenityBookingDto.getStartTime(), amenityBookingDto.getEndTime());
@@ -179,7 +193,7 @@ public class AmenityBookingRestController {
     @JsonView(Views.AmenityBookingStaff.class)
     public Mono<ResponseEntity<AmenityBookingDto>> updateBookingStatus(
             @PathVariable String bookingId,
-            @RequestBody @Parameter(description = "Amenity booking status") AmenityBookingDto amenityBookingDto) {
+            @RequestBody @Parameter(description = "Amenity booking status") AmenityBookingDto amenityBookingDto) throws BookingException {
 
         logger.debug("Updating booking status {}", bookingId);
         return amenitybookingService.getAmenityBooking(bookingId)
