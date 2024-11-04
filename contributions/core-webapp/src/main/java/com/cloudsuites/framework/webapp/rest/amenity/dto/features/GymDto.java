@@ -35,4 +35,29 @@ public class GymDto extends AmenityDto {
     @JsonView(Views.AmenityView.class)
     @Schema(description = "Indicates if fitness classes are offered", example = "true")
     private Boolean hasFitnessClasses;
+
+    @JsonView(Views.AmenityView.class)
+    @Schema(description = "Indicates if changing rooms are available", example = "true")
+    private Boolean hasChangingRooms;
+
+    @JsonView(Views.AmenityView.class)
+    @Schema(description = "Indicates if showers are available", example = "true")
+    private Boolean hasShowers;
+
+    @JsonView(Views.AmenityView.class)
+    @Schema(description = "Indicates if lockers are available", example = "true")
+    private Boolean hasLockers;
+
+    @JsonView(Views.AmenityView.class)
+    @Schema(description = "Indicates if towels are provided", example = "true")
+    private Boolean hasTowels;
+
+    @JsonView(Views.AmenityView.class)
+    @Schema(description = "Indicates if water fountains are available", example = "true")
+    private Boolean hasWaterFountains;
+
+    @JsonView(Views.AmenityView.class)
+    @Schema(description = "Indicates if wifi is available", example = "true")
+    private Boolean hasWifi;
+
 }
