@@ -35,8 +35,11 @@ public interface TenantRepository extends JpaRepository<Tenant, String> {
     Optional<List<Tenant>> findByBuilding_BuildingIdAndStatus(String buildingId, TenantStatus status);
 
     @Transactional(readOnly = true)
-    public List<Tenant> findByRole(TenantRole tenantRole);
+    List<Tenant> findByRole(TenantRole tenantRole);
 
     @Transactional(readOnly = true)
     List<Tenant> findByRoleAndStatus(TenantRole tenantRole, TenantStatus status);
+
+    @Transactional(readOnly = true)
+    List<Tenant> findAllByBuilding_BuildingIdAndIdentity_UserIdIn(String buildingId, List<String> list);
 }

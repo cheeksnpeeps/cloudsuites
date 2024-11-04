@@ -86,14 +86,15 @@ public class TenantRestController {
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @GetMapping("/buildings/{buildingId}/tenants")
     @JsonView(Views.TenantView.class)
-    public ResponseEntity<List<TenantDto>> listTenantsByBuildingId(
+    public ResponseEntity<List<TenantDto>> findTenantsByBuildingId(
             @PathVariable String buildingId,
-            @RequestParam(value = "status", required = false, defaultValue = "ACTIVE") TenantStatus status) throws NotFoundResponseException {
+            @RequestParam(value = "status", required = false, defaultValue = "ACTIVE") TenantStatus status,
+            @RequestParam(value = "q", required = false) String query) throws NotFoundResponseException {
         logger.info(WebAppConstants.Tenant.LOG_FETCHING_TENANTS_BY_BUILDING, buildingId);
         if (buildingService.getBuildingById(buildingId) == null) {
             throw new NotFoundResponseException(WebAppConstants.Building.LOG_BUILDING_NOT_FOUND + buildingId);
         }
-        List<TenantDto> tenants = tenantService.getAllTenantsByBuilding(buildingId, status).stream()
+        List<TenantDto> tenants = tenantService.findTenantsByBuildingId(buildingId, status, query).stream()
                 .map(tenantMapper::convertToDTO)
                 .collect(Collectors.toList());
         logger.debug(WebAppConstants.Tenant.LOG_FOUND_TENANTS_BY_BUILDING, tenants.size());
