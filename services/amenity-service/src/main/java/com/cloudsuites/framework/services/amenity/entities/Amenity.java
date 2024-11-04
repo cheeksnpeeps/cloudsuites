@@ -8,6 +8,7 @@ import lombok.Data;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -89,6 +90,20 @@ public abstract class Amenity {
     @Enumerated(EnumType.STRING)
     @Column(name = "booking_limit_period")
     private BookingLimitPeriod bookingLimitPeriod = BookingLimitPeriod.DAILY; // Period for which the booking limit is enforced
+
+    @ElementCollection
+    @CollectionTable(name = "amenity_custom_rules", joinColumns = @JoinColumn(name = "amenity_id"))
+    @Column(name = "rule")
+    private Set<String> customRules = new HashSet<>(); // Each rule will be stored in its own row in amenity_custom_rules
+
+    @Column(name = "waiver", columnDefinition = "TEXT")
+    private String waiver; // Stores a long text waiver directly in the Amenity table
+
+    @Column(name = "is_waiver_required")
+    private Boolean isWaiverRequired = false; // Indicates if a waiver is required to use the amenity
+
+    @Column(name = "is_waiver_signed")
+    private Boolean isWaiverSigned = false; // Indicates if the waiver has been signed by the tenant
 
     protected Amenity() {
     }
