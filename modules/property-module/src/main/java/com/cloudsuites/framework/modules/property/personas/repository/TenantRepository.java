@@ -41,5 +41,8 @@ public interface TenantRepository extends JpaRepository<Tenant, String> {
     List<Tenant> findByRoleAndStatus(TenantRole tenantRole, TenantStatus status);
 
     @Transactional(readOnly = true)
-    List<Tenant> findAllByBuilding_BuildingIdAndIdentity_UserIdIn(String buildingId, List<String> list);
+    List<Tenant> findAllByBuilding_BuildingIdAndIdentity_UserIdIn(String buildingId, List<String> tenantIds);
+
+    @Transactional(readOnly = true)
+    List<Tenant> findAllByBuilding_BuildingIdAndStatusAndIdentity_UserIdIn(String buildingId, TenantStatus status, List<String> tenantIds);
 }

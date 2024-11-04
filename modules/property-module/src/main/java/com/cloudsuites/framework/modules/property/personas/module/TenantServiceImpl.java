@@ -3,6 +3,7 @@ package com.cloudsuites.framework.modules.property.personas.module;
 import com.cloudsuites.framework.modules.property.features.repository.LeaseRepository;
 import com.cloudsuites.framework.modules.property.features.repository.UnitRepository;
 import com.cloudsuites.framework.modules.property.personas.repository.TenantRepository;
+import com.cloudsuites.framework.modules.user.repository.UserRepository;
 import com.cloudsuites.framework.modules.user.repository.UserRoleRepository;
 import com.cloudsuites.framework.services.common.exception.InvalidOperationException;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
@@ -23,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,8 +40,9 @@ public class TenantServiceImpl implements TenantService {
     private final UnitRepository unitRepository;
     private final UserRoleRepository userRoleRepository;
     private final LeaseRepository leaseRepository;
+    private final UserRepository userRepository;
 
-    public TenantServiceImpl(TenantRepository tenantRepository, UserService userService, UnitService unitService, OwnerService ownerService, UnitRepository unitRepository, UserRoleRepository userRoleRepository, LeaseRepository leaseRepository) {
+    public TenantServiceImpl(TenantRepository tenantRepository, UserService userService, UnitService unitService, OwnerService ownerService, UnitRepository unitRepository, UserRoleRepository userRoleRepository, LeaseRepository leaseRepository, UserRepository userRepository) {
         this.tenantRepository = tenantRepository;
         this.userService = userService;
         this.unitService = unitService;
@@ -47,6 +50,7 @@ public class TenantServiceImpl implements TenantService {
         this.unitRepository = unitRepository;
         this.userRoleRepository = userRoleRepository;
         this.leaseRepository = leaseRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -279,6 +283,55 @@ public class TenantServiceImpl implements TenantService {
         List<Tenant> tenants = tenantRepository.findAll();
         logger.info("Total tenants found: {}", tenants.size());
         return tenants;
+    }
+
+    @Override
+    public List<Tenant> findTenantsByBuildingId(String buildingId, TenantStatus status, String query) throws NotFoundResponseException {
+        logger.info("Fetching tenants for building ID: {}", buildingId);
+
+        List<Tenant> tenants;
+
+        if (status != null && query != null) {
+            logger.info("Fetching tenants with status: {} and query: {}", status, query);
+            tenants = findTenantsByStatusAndQuery(buildingId, status, query);
+        } else if (status != null) {
+            logger.info("Fetching tenants with status: {}", status);
+            tenants = tenantRepository.findByBuilding_BuildingIdAndStatus(buildingId, status).orElseThrow(() -> {
+                logger.error("No tenants found with status: {}", status);
+                return new NotFoundResponseException("No tenants found with status: " + status);
+            });
+        } else if (query != null) {
+            logger.info("Fetching tenants with query: {}", query);
+            tenants = findTenantsByQuery(buildingId, query);
+        } else {
+            tenants = tenantRepository.findAll();
+        }
+
+        logger.info("Total tenants found: {}", tenants.size());
+        return tenants;
+    }
+
+    private List<Tenant> findTenantsByStatusAndQuery(String buildingId, TenantStatus status, String query) {
+        Optional<List<Identity>> identities = userRepository.findByFirstNameLikeOrLastNameLikeOrEmailLikeOrPhoneNumberLike(query, query, query, query);
+        if (identities.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return tenantRepository.findAllByBuilding_BuildingIdAndStatusAndIdentity_UserIdIn(
+                buildingId,
+                status,
+                identities.get().stream().map(Identity::getUserId).toList()
+        );
+    }
+
+    private List<Tenant> findTenantsByQuery(String buildingId, String query) {
+        Optional<List<Identity>> identities = userRepository.findByFirstNameLikeOrLastNameLikeOrEmailLikeOrPhoneNumberLike(query, query, query, query);
+        if (identities.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return tenantRepository.findAllByBuilding_BuildingIdAndIdentity_UserIdIn(
+                buildingId,
+                identities.get().stream().map(Identity::getUserId).toList()
+        );
     }
 
     @Override

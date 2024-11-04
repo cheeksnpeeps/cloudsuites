@@ -47,4 +47,6 @@ public interface TenantService {
     @Transactional
     void saveTenant(Tenant tenant);
 
+    @Transactional
+    List<Tenant> findTenantsByBuildingId(String buildingId, TenantStatus status, String query) throws NotFoundResponseException;
 }
