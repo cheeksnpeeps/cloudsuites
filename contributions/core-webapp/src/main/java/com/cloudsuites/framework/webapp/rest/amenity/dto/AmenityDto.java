@@ -143,4 +143,19 @@ public class AmenityDto {
     @Schema(description = "Building IDs associated with the amenity", example = "[\"BLD-01J3C5A90XWRP7PW8TVT0E4C9K\", \"BLD-01J4N193J5R963HANH7D36JJ7Y\"]")
     private List<String> buildingIds;
 
+    @JsonView(Views.AmenityView.class)
+    @Schema(description = "Add custom rules for the amenity", example = "No smoking allowed")
+    private List<String> customRules;
+
+    @JsonView(Views.AmenityView.class)
+    @Schema(description = "Waiver Details for the amenity", example = "Waiver details")
+    private String waiverDetails;
+
+    @JsonView(Views.AmenityView.class)
+    @Schema(description = "Indicates if a waiver is required to use the amenity", example = "false")
+    private Boolean isWaiverRequired = false;
+
+    @JsonView(Views.AmenityView.class)
+    @Schema(description = "Indicates if the waiver has been signed by the tenant", example = "false")
+    private Boolean isWaiverSigned = false;
 }
