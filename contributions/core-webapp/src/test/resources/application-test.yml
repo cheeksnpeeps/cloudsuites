@@ -14,20 +14,20 @@ spring:
     username: csuser
     password: csPassw0rd
     driver-class-name: postgresql
-    port: 59665
+    port: 5432
     database: cloudsuites_test
     pools:
       initial-size: 5
       max-size: 20
   datasource:
-    url: jdbc:postgresql://localhost:59665/cloudsuites_test
+    url: jdbc:postgresql://localhost:5432/cloudsuites_test
     username: csuser
     password: csPassw0rd
     driver-class-name: org.postgresql.Driver
     properties:
       hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
   flyway:
-    url: jdbc:postgresql://localhost:59665/cloudsuites_test
+    url: jdbc:postgresql://localhost:5432/cloudsuites_test
     user: csuser
     password: csPassw0rd
     enabled: true
