@@ -1,5 +1,6 @@
 package com.cloudsuites.framework.webapp;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -37,6 +38,13 @@ public class CloudsuitesCoreApplication {
 		mapper.registerModule(new ParameterNamesModule());
 		mapper.registerModule(new SimpleModule());
 		mapper.configure(DeserializationFeature.READ_ENUMS_USING_TO_STRING, true);
+
+		// Enable support for polymorphic deserialization
+		mapper.activateDefaultTyping(
+				mapper.getPolymorphicTypeValidator(),
+				ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT,
+				JsonTypeInfo.As.PROPERTY
+		);
 
 		return mapper;
 	}
