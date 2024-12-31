@@ -1,7 +1,9 @@
 package com.cloudsuites.framework.webapp.rest.user.role;
 
+import com.cloudsuites.framework.modules.property.personas.repository.OwnerRepository;
 import com.cloudsuites.framework.modules.user.repository.AdminRepository;
 import com.cloudsuites.framework.modules.user.repository.UserRepository;
+import com.cloudsuites.framework.modules.user.repository.UserRoleRepository;
 import com.cloudsuites.framework.services.user.entities.Admin;
 import com.cloudsuites.framework.services.user.entities.AdminRole;
 import com.cloudsuites.framework.services.user.entities.AdminStatus;
@@ -49,6 +51,10 @@ class AdminRoleRestControllerTest {
     private AdminTestHelper adminTestHelper;
     private String accessToken;
     private String validAdminId;
+    @Autowired
+    private OwnerRepository ownerRepository;
+    @Autowired
+    private UserRoleRepository userRoleRepository;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -157,7 +163,10 @@ class AdminRoleRestControllerTest {
     // -------------------- Helper Methods --------------------
 
     private void clearDatabase() {
-        adminRepository.deleteAll();
+        userRoleRepository.deleteAll();// Delete user roles first (dependent table)
+        adminRepository.deleteAll();    // Delete admins (if they reference identity)
+        ownerRepository.deleteAll();    // Delete owners (if they reference identity)
+        userRepository.deleteAll();     // Delete users from the identity table last
     }
 
     private Admin createAdmin(String username, AdminRole role) {
