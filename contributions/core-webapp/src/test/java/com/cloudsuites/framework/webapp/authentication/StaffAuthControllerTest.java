@@ -3,6 +3,9 @@ package com.cloudsuites.framework.webapp.authentication;
 import com.cloudsuites.framework.modules.property.features.repository.BuildingRepository;
 import com.cloudsuites.framework.modules.property.features.repository.CompanyRepository;
 import com.cloudsuites.framework.modules.property.features.repository.UnitRepository;
+import com.cloudsuites.framework.modules.property.personas.repository.OwnerRepository;
+import com.cloudsuites.framework.modules.property.personas.repository.TenantRepository;
+import com.cloudsuites.framework.modules.user.repository.UserRoleRepository;
 import com.cloudsuites.framework.services.common.exception.InvalidOperationException;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import com.cloudsuites.framework.services.common.exception.UserAlreadyExistsException;
@@ -71,6 +74,12 @@ class StaffAuthControllerTest {
 
     @Autowired
     private CompanyRepository companyRepository;
+    @Autowired
+    private UserRoleRepository userRoleRepository;
+    @Autowired
+    private TenantRepository tenantRepository;
+    @Autowired
+    private OwnerRepository ownerRepository;
 
     @BeforeEach
     void setUp() throws UserAlreadyExistsException, InvalidOperationException, NotFoundResponseException {
@@ -199,7 +208,11 @@ class StaffAuthControllerTest {
     // -------------------- Helper Methods --------------------
 
     private void clearDatabase() {
-        // Clear out your database entities here
+        userRoleRepository.deleteAll();
+        tenantRepository.deleteAll();
+        ownerRepository.deleteAll();
+        buildingRepository.deleteAll();
+        unitRepository.deleteAll();
     }
 
     private Staff createStaff(String username) throws UserAlreadyExistsException, InvalidOperationException, NotFoundResponseException {

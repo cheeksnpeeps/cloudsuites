@@ -2,8 +2,12 @@ package com.cloudsuites.framework.webapp.rest.user;
 
 import com.cloudsuites.framework.modules.property.features.repository.BuildingRepository;
 import com.cloudsuites.framework.modules.property.features.repository.CompanyRepository;
+import com.cloudsuites.framework.modules.property.personas.repository.OwnerRepository;
 import com.cloudsuites.framework.modules.property.personas.repository.StaffRepository;
+import com.cloudsuites.framework.modules.property.personas.repository.TenantRepository;
 import com.cloudsuites.framework.modules.user.repository.AdminRepository;
+import com.cloudsuites.framework.modules.user.repository.UserRepository;
+import com.cloudsuites.framework.modules.user.repository.UserRoleRepository;
 import com.cloudsuites.framework.services.property.features.entities.Building;
 import com.cloudsuites.framework.services.property.features.entities.Company;
 import com.cloudsuites.framework.services.property.personas.entities.Staff;
@@ -62,6 +66,14 @@ public class StaffRestControllerTest {
 
     private AdminTestHelper adminTestHelper;
     private String accessToken;
+    @Autowired
+    private UserRoleRepository userRoleRepository;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private TenantRepository tenantRepository;
+    @Autowired
+    private OwnerRepository ownerRepository;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -240,6 +252,11 @@ public class StaffRestControllerTest {
     // -------------------- Helper Methods --------------------
 
     private void clearDatabase() {
+        userRoleRepository.deleteAll();
+        userRepository.deleteAll();
+        tenantRepository.deleteAll();
+        adminRepository.deleteAll();
+        ownerRepository.deleteAll();
         staffRepository.deleteAll();
         companyRepository.deleteAll();
         adminRepository.deleteAll();
