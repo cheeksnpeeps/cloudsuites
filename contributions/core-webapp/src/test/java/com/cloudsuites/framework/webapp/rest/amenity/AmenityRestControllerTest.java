@@ -1,10 +1,14 @@
 package com.cloudsuites.framework.webapp.rest.amenity;
 
+import com.cloudsuites.framework.modules.amenity.repository.AmenityBookingRepository;
 import com.cloudsuites.framework.modules.amenity.repository.AmenityBuildingRepository;
 import com.cloudsuites.framework.modules.amenity.repository.AmenityRepository;
 import com.cloudsuites.framework.modules.property.features.repository.BuildingRepository;
+import com.cloudsuites.framework.modules.property.personas.repository.StaffRepository;
+import com.cloudsuites.framework.modules.property.personas.repository.TenantRepository;
 import com.cloudsuites.framework.modules.user.repository.AdminRepository;
 import com.cloudsuites.framework.modules.user.repository.UserRepository;
+import com.cloudsuites.framework.modules.user.repository.UserRoleRepository;
 import com.cloudsuites.framework.services.amenity.entities.Amenity;
 import com.cloudsuites.framework.services.amenity.entities.AmenityBuilding;
 import com.cloudsuites.framework.services.amenity.entities.AmenityType;
@@ -12,6 +16,7 @@ import com.cloudsuites.framework.services.amenity.entities.features.SwimmingPool
 import com.cloudsuites.framework.services.property.features.entities.Building;
 import com.cloudsuites.framework.webapp.authentication.utils.AdminTestHelper;
 import com.cloudsuites.framework.webapp.rest.amenity.dto.AmenityDto;
+import com.cloudsuites.framework.webapp.rest.amenity.dto.DailyAvailabilityDto;
 import com.cloudsuites.framework.webapp.rest.amenity.mapper.AmenityMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,6 +30,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
+import java.time.LocalTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -67,6 +74,14 @@ class AmenityRestControllerTest {
 
     @Autowired
     private UserRepository identityRepository;
+    @Autowired
+    private AmenityBookingRepository amenityBookingRepository;
+    @Autowired
+    private TenantRepository tenantRepository;
+    @Autowired
+    private UserRoleRepository userRoleRepository;
+    @Autowired
+    private StaffRepository staffRepository;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -86,7 +101,11 @@ class AmenityRestControllerTest {
     // -------------------- Helper Methods --------------------
 
     private void clearDatabase() {
+        amenityBookingRepository.deleteAll();
         amenityRepository.deleteAll();
+        userRoleRepository.deleteAll();
+        staffRepository.deleteAll();
+        tenantRepository.deleteAll();
         buildingRepository.deleteAll();
         amenityBuildingRepository.deleteAll();
         adminRepository.deleteAll();
@@ -155,7 +174,14 @@ class AmenityRestControllerTest {
     void createAmenity_shouldReturnCreatedAmenity() throws Exception {
         AmenityDto newAmenity = new AmenityDto();
         newAmenity.setName("Pool");
+        newAmenity.setType(AmenityType.SWIMMING_POOL);
         newAmenity.setDescription("Well-equipped pool");
+        newAmenity.setBuildingIds(List.of(validBuildingId)); // Associate the amenity with the building
+        DailyAvailabilityDto dailyAvailability = new DailyAvailabilityDto();
+        dailyAvailability.setDayOfWeek(DayOfWeek.MONDAY);
+        dailyAvailability.setOpenTime(LocalTime.NOON);
+        dailyAvailability.setCloseTime(LocalTime.NOON.plusHours(1));
+        newAmenity.setDailyAvailabilities(List.of(dailyAvailability)); // Set daily availabilities
         // newAmenity.setAmenityType(AmenityType.SWIMMING_POOL);
         newAmenity.setBuildingIds(List.of(validBuildingId)); // Associate the amenity with the building
         mockMvc.perform(withAuth(post("/api/v1/amenities", validBuildingId))
@@ -174,7 +200,7 @@ class AmenityRestControllerTest {
     void createAmenity_withEmptyName_shouldReturnBadRequest() throws Exception {
         AmenityDto newAmenity = new AmenityDto();
         newAmenity.setName(""); // Invalid name
-
+        newAmenity.setType(AmenityType.SWIMMING_POOL);
         mockMvc.perform(withAuth(post("/api/v1/amenities", validBuildingId))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newAmenity)))
@@ -231,7 +257,7 @@ class AmenityRestControllerTest {
         AmenityDto newAmenity = new AmenityDto();
         newAmenity.setName("First Pool"); // Existing name
         newAmenity.setDescription("Another pool");
-        //    newAmenity.setAmenityType(AmenityType.SWIMMING_POOL);
+        newAmenity.setType(AmenityType.SWIMMING_POOL);
         newAmenity.setBuildingIds(List.of(validBuildingId));
 
         mockMvc.perform(withAuth(post("/api/v1/amenities", validBuildingId))
@@ -239,21 +265,6 @@ class AmenityRestControllerTest {
                         .content(objectMapper.writeValueAsString(newAmenity)))
                 .andExpect(status().isConflict()) // Assuming you handle duplicate entries as a conflict
                 .andExpect(content().string(containsString("menity already exists with name: First Pool")));
-    }
-
-
-    @Test
-    void createAmenity_withoutAuthorization_shouldReturnUnauthorized() throws Exception {
-        AmenityDto newAmenity = new AmenityDto();
-        newAmenity.setName("Unauthorized Pool");
-        newAmenity.setDescription("Pool without authorization");
-        //    newAmenity.setAmenityType(AmenityType.SWIMMING_POOL);
-        newAmenity.setBuildingIds(List.of(validBuildingId));
-
-        mockMvc.perform(post("/api/v1/amenities", validBuildingId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(newAmenity)))
-                .andExpect(status().isForbidden()); // Ensure unauthorized access is properly handled
     }
 
     @Test

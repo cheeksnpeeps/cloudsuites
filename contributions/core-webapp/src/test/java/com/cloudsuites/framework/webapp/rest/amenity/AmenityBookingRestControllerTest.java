@@ -221,6 +221,7 @@ class AmenityBookingRestControllerTest {
         webTestClient.post()
                 .uri("/api/v1/amenities/{amenityId}/tenants/{tenantId}/bookings", validAmenityId, validUserId)
                 .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + accessToken)
                 .bodyValue(bookingDto)
                 .exchange()
                 .expectStatus().isCreated() // Expect a 201 Created status
@@ -253,6 +254,7 @@ class AmenityBookingRestControllerTest {
         webTestClient.post()
                 .uri("/api/v1/amenities/{amenityId}/tenants/{tenantId}/bookings", validAmenityId, validUserId)
                 .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + accessToken)
                 .bodyValue(bookingDto)
                 .exchange()
                 .expectStatus().isBadRequest()
