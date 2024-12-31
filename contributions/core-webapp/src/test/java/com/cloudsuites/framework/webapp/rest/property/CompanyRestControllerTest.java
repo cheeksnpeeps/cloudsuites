@@ -1,8 +1,12 @@
 package com.cloudsuites.framework.webapp.rest.property;
 
 import com.cloudsuites.framework.modules.property.features.repository.CompanyRepository;
+import com.cloudsuites.framework.modules.property.personas.repository.OwnerRepository;
+import com.cloudsuites.framework.modules.property.personas.repository.StaffRepository;
+import com.cloudsuites.framework.modules.property.personas.repository.TenantRepository;
 import com.cloudsuites.framework.modules.user.repository.AdminRepository;
 import com.cloudsuites.framework.modules.user.repository.UserRepository;
+import com.cloudsuites.framework.modules.user.repository.UserRoleRepository;
 import com.cloudsuites.framework.services.property.features.entities.Company;
 import com.cloudsuites.framework.services.property.features.service.CompanyService;
 import com.cloudsuites.framework.services.user.entities.Address;
@@ -57,6 +61,14 @@ class CompanyRestControllerTest {
     private UserRepository userRepository;
     @Autowired
     private AdminRepository adminRepository;
+    @Autowired
+    private TenantRepository tenantRepository;
+    @Autowired
+    private OwnerRepository ownerRepository;
+    @Autowired
+    private UserRoleRepository userRoleRepository;
+    @Autowired
+    private StaffRepository staffRepository;
 
     /**
      * Set up test data before each test.
@@ -189,6 +201,12 @@ class CompanyRestControllerTest {
      * This method is used to ensure a clean state for each test.
      */
     private void clearDatabase() {
+        staffRepository.deleteAll();
+        userRoleRepository.deleteAll();
+        tenantRepository.deleteAll();
+        adminRepository.deleteAll();
+        ownerRepository.deleteAll();
+        userRepository.deleteAll();
         companyRepository.deleteAll();
         adminRepository.deleteAll();
     }

@@ -14,6 +14,7 @@ public class IdentityConstants {
         public static final String LOG_ADMIN_NOT_FOUND_EMAIL = "Admin not found with email: {}";
         public static final String LOG_ADMIN_NOT_FOUND_NAME = "Admin not found with name: {}";
         public static final String LOG_ADMIN_NOT_FOUND_USER_ID = "Admin not found for user ID: {}";
+        public static final String LOG_ROLE_DELETED = "Role deleted successfully for admin with ID: {}";
     }
 
     // You can add more constants related to Identity as needed
