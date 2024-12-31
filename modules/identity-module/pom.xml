@@ -18,9 +18,8 @@
 		<dependency>
 			<groupId>com.cloudsuites.framework.modules</groupId>
 			<artifactId>common-module</artifactId>
-			<version>${core.version}</version>
+            <version>0.0.1-SNAPSHOT</version>
 		</dependency>
-
 		<dependency>
 			<groupId>com.cloudsuites.framework.services</groupId>
 			<artifactId>identity-service</artifactId>
