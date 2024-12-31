@@ -5,6 +5,7 @@ import com.cloudsuites.framework.modules.property.features.repository.UnitReposi
 import com.cloudsuites.framework.modules.property.personas.repository.OwnerRepository;
 import com.cloudsuites.framework.modules.property.personas.repository.TenantRepository;
 import com.cloudsuites.framework.modules.user.repository.AdminRepository;
+import com.cloudsuites.framework.modules.user.repository.UserRoleRepository;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import com.cloudsuites.framework.services.common.exception.UserAlreadyExistsException;
 import com.cloudsuites.framework.services.property.features.entities.Building;
@@ -82,6 +83,8 @@ class TenantRestControllerTest {
 
     private AdminTestHelper adminTestHelper;
     private String accessToken;
+    @Autowired
+    private UserRoleRepository userRoleRepository;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -250,6 +253,11 @@ class TenantRestControllerTest {
     // -------------------- Helper Methods --------------------
 
     private void clearDatabase() {
+        userRoleRepository.deleteAll();
+        userRoleRepository.deleteAll();
+        tenantRepository.deleteAll();
+        adminRepository.deleteAll();
+        ownerRepository.deleteAll();
         tenantRepository.deleteAll();
         unitRepository.deleteAll();
         buildingRepository.deleteAll();

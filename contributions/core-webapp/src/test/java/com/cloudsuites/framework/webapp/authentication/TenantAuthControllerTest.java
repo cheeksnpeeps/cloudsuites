@@ -9,10 +9,10 @@ import com.cloudsuites.framework.services.property.features.entities.Lease;
 import com.cloudsuites.framework.services.property.features.entities.LeaseStatus;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.property.personas.entities.Owner;
-import com.cloudsuites.framework.services.property.personas.entities.Tenant;
 import com.cloudsuites.framework.services.user.entities.Identity;
 import com.cloudsuites.framework.webapp.rest.user.dto.IdentityDto;
 import com.cloudsuites.framework.webapp.rest.user.dto.TenantDto;
+import com.cloudsuites.framework.webapp.rest.user.mapper.TenantMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,8 +45,8 @@ class TenantAuthControllerTest {
 
     private final List<Building> createdBuildings = new ArrayList<>();
     private final List<Unit> createdUnits = new ArrayList<>();
-    private final List<Tenant> createdTenants = new ArrayList<>();
-    private Tenant testTenant;
+    private final List<TenantDto> createdTenants = new ArrayList<>();
+    private TenantDto testTenant;
     @Autowired
     private MockMvc mockMvc;
     @Autowired
@@ -63,6 +63,8 @@ class TenantAuthControllerTest {
     private ObjectMapper objectMapper;
     private String validBuildingId;
     private String validUnitId;
+    @Autowired
+    private TenantMapper tenantMapper;
 
     @BeforeEach
     void setUp() {
@@ -201,7 +203,7 @@ class TenantAuthControllerTest {
     // -------------------- Utility Methods --------------------
 
     private void clearDatabase() {
-        tenantRepository.deleteAll(createdTenants);
+        createdTenants.forEach(tenant -> tenantRepository.delete(tenantMapper.convertToEntity(tenant)));
         unitRepository.deleteAll(createdUnits);
         buildingRepository.deleteAll(createdBuildings);
         createdBuildings.clear();
@@ -254,7 +256,7 @@ class TenantAuthControllerTest {
         return tenantDto;
     }
 
-    private Tenant createAndRegisterTenant(String phoneNumber) throws Exception {
+    private TenantDto createAndRegisterTenant(String phoneNumber) throws Exception {
         TenantDto tenantDto = createTenantDto(phoneNumber);
 
         mockMvc.perform(post("/api/v1/auth/buildings/{buildingId}/units/{unitId}/tenants/register", validBuildingId, validUnitId)
@@ -264,7 +266,8 @@ class TenantAuthControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andDo(result -> {
                     String jsonResponse = result.getResponse().getContentAsString();
-                    testTenant = objectMapper.readValue(jsonResponse, Tenant.class);
+                    testTenant = objectMapper.readValue(jsonResponse, TenantDto.class);
+
                     createdTenants.add(testTenant);
                 });
 
