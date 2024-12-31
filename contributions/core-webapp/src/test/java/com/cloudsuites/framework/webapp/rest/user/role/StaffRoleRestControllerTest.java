@@ -1,7 +1,10 @@
 package com.cloudsuites.framework.webapp.rest.user.role;
 
+import com.cloudsuites.framework.modules.property.personas.repository.OwnerRepository;
 import com.cloudsuites.framework.modules.property.personas.repository.StaffRepository;
+import com.cloudsuites.framework.modules.user.repository.AdminRepository;
 import com.cloudsuites.framework.modules.user.repository.UserRepository;
+import com.cloudsuites.framework.modules.user.repository.UserRoleRepository;
 import com.cloudsuites.framework.services.property.personas.entities.Staff;
 import com.cloudsuites.framework.services.property.personas.entities.StaffRole;
 import com.cloudsuites.framework.services.property.personas.entities.StaffStatus;
@@ -49,6 +52,12 @@ class StaffRoleRestControllerTest {
     private AdminTestHelper adminTestHelper;
     private String accessToken;
     private String validStaffId;
+    @Autowired
+    private UserRoleRepository userRoleRepository;
+    @Autowired
+    private AdminRepository adminRepository;
+    @Autowired
+    private OwnerRepository ownerRepository;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -158,7 +167,11 @@ class StaffRoleRestControllerTest {
     // -------------------- Helper Methods --------------------
 
     private void clearDatabase() {
-        staffRepository.deleteAll();
+        userRoleRepository.deleteAll(); // Delete user roles first
+        adminRepository.deleteAll();    // Delete admins (if they reference identity)
+        ownerRepository.deleteAll();    // Delete owners (if they reference identity)
+        staffRepository.deleteAll();    // Delete staff (if they reference identity)
+        userRepository.deleteAll();     // Delete users from the identity table last
     }
 
     private Staff createStaff(String username, StaffRole role) {
