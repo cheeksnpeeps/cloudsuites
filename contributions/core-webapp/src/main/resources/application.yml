@@ -9,12 +9,12 @@ logging:
     console: "%-4relative [%thread] %-5level %logger{35} %X{correlationId} - %msg %n"
 spring:
   datasource:
-    url: jdbc:postgresql://127.0.0.1:5432/cloudsuites
+    url: jdbc:postgresql://127.0.0.1:59665/cloudsuites
     username: csuser
     password: csPassw0rd
     driver-class-name: org.postgresql.Driver
   flyway:
-    url: jdbc:postgresql://127.0.0.1:5432/cloudsuites
+    url: jdbc:postgresql://127.0.0.1:59665/cloudsuites
     user: csuser
     password: csPassw0rd
     enabled: false
