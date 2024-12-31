@@ -20,6 +20,7 @@
 		<module>property-service</module>
 		<module>identity-service</module>
 		<module>amenity-service</module>
+		<module>announcements-service</module>
 	</modules>
 </project>
 
