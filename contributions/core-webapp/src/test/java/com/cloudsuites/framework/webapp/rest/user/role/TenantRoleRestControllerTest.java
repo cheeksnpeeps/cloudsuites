@@ -1,7 +1,11 @@
 package com.cloudsuites.framework.webapp.rest.user.role;
 
+import com.cloudsuites.framework.modules.property.personas.repository.OwnerRepository;
+import com.cloudsuites.framework.modules.property.personas.repository.StaffRepository;
 import com.cloudsuites.framework.modules.property.personas.repository.TenantRepository;
+import com.cloudsuites.framework.modules.user.repository.AdminRepository;
 import com.cloudsuites.framework.modules.user.repository.UserRepository;
+import com.cloudsuites.framework.modules.user.repository.UserRoleRepository;
 import com.cloudsuites.framework.services.property.personas.entities.Tenant;
 import com.cloudsuites.framework.services.property.personas.entities.TenantRole;
 import com.cloudsuites.framework.services.property.personas.entities.TenantStatus;
@@ -49,6 +53,14 @@ class TenantRoleRestControllerTest {
     private AdminTestHelper adminTestHelper;
     private String accessToken;
     private String validTenantId;
+    @Autowired
+    private UserRoleRepository userRoleRepository;
+    @Autowired
+    private AdminRepository adminRepository;
+    @Autowired
+    private OwnerRepository ownerRepository;
+    @Autowired
+    private StaffRepository staffRepository;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -160,7 +172,11 @@ class TenantRoleRestControllerTest {
     // -------------------- Helper Methods --------------------
 
     private void clearDatabase() {
-        tenantRepository.deleteAll();
+        userRoleRepository.deleteAll(); // Delete user roles first
+        adminRepository.deleteAll();    // Delete admins (if they reference identity)
+        ownerRepository.deleteAll();    // Delete owners (if they reference identity)
+        staffRepository.deleteAll();    // Delete staff (if they reference identity)
+        userRepository.deleteAll();     // Delete users from the identity table last
     }
 
     private Tenant createTenant(String username, TenantRole role) {
