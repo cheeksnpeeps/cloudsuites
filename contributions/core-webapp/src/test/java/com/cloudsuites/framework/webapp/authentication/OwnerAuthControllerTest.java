@@ -3,6 +3,8 @@ package com.cloudsuites.framework.webapp.authentication;
 import com.cloudsuites.framework.modules.property.features.repository.BuildingRepository;
 import com.cloudsuites.framework.modules.property.features.repository.UnitRepository;
 import com.cloudsuites.framework.modules.property.personas.repository.OwnerRepository;
+import com.cloudsuites.framework.modules.property.personas.repository.TenantRepository;
+import com.cloudsuites.framework.modules.user.repository.UserRoleRepository;
 import com.cloudsuites.framework.services.property.features.entities.Building;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.property.personas.entities.Owner;
@@ -54,6 +56,10 @@ class OwnerAuthControllerTest {
     private String validOwnerId;
     private String validUnitId;
     private String validBuildingId;
+    @Autowired
+    private TenantRepository tenantRepository;
+    @Autowired
+    private UserRoleRepository userRoleRepository;
 
     @BeforeEach
     void setUp() {
@@ -256,6 +262,8 @@ class OwnerAuthControllerTest {
     // -------------------- Helper Methods --------------------
 
     private void clearDatabase() {
+        userRoleRepository.deleteAll();
+        tenantRepository.deleteAll();
         ownerRepository.deleteAll();
         buildingRepository.deleteAll();
         unitRepository.deleteAll();

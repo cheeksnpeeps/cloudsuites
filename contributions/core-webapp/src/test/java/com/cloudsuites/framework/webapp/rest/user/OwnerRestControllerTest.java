@@ -3,7 +3,10 @@ import com.cloudsuites.framework.modules.property.features.repository.BuildingRe
 import com.cloudsuites.framework.modules.property.features.repository.FloorRepository;
 import com.cloudsuites.framework.modules.property.features.repository.UnitRepository;
 import com.cloudsuites.framework.modules.property.personas.repository.OwnerRepository;
+import com.cloudsuites.framework.modules.property.personas.repository.TenantRepository;
 import com.cloudsuites.framework.modules.user.repository.AdminRepository;
+import com.cloudsuites.framework.modules.user.repository.UserRepository;
+import com.cloudsuites.framework.modules.user.repository.UserRoleRepository;
 import com.cloudsuites.framework.services.property.features.entities.Building;
 import com.cloudsuites.framework.services.property.features.entities.Floor;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
@@ -65,6 +68,12 @@ class OwnerRestControllerTest {
     private String accessToken;
     @Autowired
     private AdminRepository adminRepository;
+    @Autowired
+    private UserRoleRepository userRoleRepository;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private TenantRepository tenantRepository;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -340,10 +349,13 @@ class OwnerRestControllerTest {
     // -------------------- Helper Methods --------------------
 
     private void clearDatabase() {
+        userRoleRepository.deleteAll();
+        userRepository.deleteAll();
+        tenantRepository.deleteAll();
+        adminRepository.deleteAll();
         ownerRepository.deleteAll();
         buildingRepository.deleteAll();
         unitRepository.deleteAll();
-        adminRepository.deleteAll();
     }
 
     private Owner createOwner(String username) {
