@@ -2,7 +2,11 @@ package com.cloudsuites.framework.webapp.rest.property;
 
 import com.cloudsuites.framework.modules.property.features.repository.BuildingRepository;
 import com.cloudsuites.framework.modules.property.features.repository.UnitRepository;
+import com.cloudsuites.framework.modules.property.personas.repository.OwnerRepository;
+import com.cloudsuites.framework.modules.property.personas.repository.TenantRepository;
 import com.cloudsuites.framework.modules.user.repository.AdminRepository;
+import com.cloudsuites.framework.modules.user.repository.UserRepository;
+import com.cloudsuites.framework.modules.user.repository.UserRoleRepository;
 import com.cloudsuites.framework.services.property.features.entities.Building;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.property.features.service.BuildingService;
@@ -55,12 +59,18 @@ public class UnitRestControllerTest {
 
     private AdminTestHelper adminTestHelper;
     private String accessToken;
+    @Autowired
+    private UserRoleRepository userRoleRepository;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private TenantRepository tenantRepository;
+    @Autowired
+    private OwnerRepository ownerRepository;
 
     @BeforeEach
     void setUp() throws Exception {
-        adminRepository.deleteAll();
-        buildingRepository.deleteAll();
-        unitRepository.deleteAll();
+        clearDatabases();
 
         // Create a Building entity for testing
         building = new Building();
@@ -69,6 +79,16 @@ public class UnitRestControllerTest {
         building = buildingService.saveBuilding(building);
         adminTestHelper = new AdminTestHelper(mockMvc, objectMapper, null, null);
         accessToken = adminTestHelper.registerAdminAndGetToken("testRegisterAdmin", "+14166024668");
+    }
+
+    private void clearDatabases() {
+        userRoleRepository.deleteAll();
+        userRepository.deleteAll();
+        tenantRepository.deleteAll();
+        adminRepository.deleteAll();
+        ownerRepository.deleteAll();
+        buildingRepository.deleteAll();
+        unitRepository.deleteAll();
     }
 
     private MockHttpServletRequestBuilder withAuth(MockHttpServletRequestBuilder requestBuilder) {

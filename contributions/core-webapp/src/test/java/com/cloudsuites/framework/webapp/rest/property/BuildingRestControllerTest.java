@@ -2,6 +2,12 @@ package com.cloudsuites.framework.webapp.rest.property;
 
 import com.cloudsuites.framework.modules.property.features.repository.BuildingRepository;
 import com.cloudsuites.framework.modules.property.features.repository.CompanyRepository;
+import com.cloudsuites.framework.modules.property.personas.repository.OwnerRepository;
+import com.cloudsuites.framework.modules.property.personas.repository.StaffRepository;
+import com.cloudsuites.framework.modules.property.personas.repository.TenantRepository;
+import com.cloudsuites.framework.modules.user.repository.AdminRepository;
+import com.cloudsuites.framework.modules.user.repository.UserRepository;
+import com.cloudsuites.framework.modules.user.repository.UserRoleRepository;
 import com.cloudsuites.framework.services.property.features.entities.Building;
 import com.cloudsuites.framework.services.property.features.entities.Company;
 import com.cloudsuites.framework.webapp.authentication.utils.AdminTestHelper;
@@ -56,7 +62,19 @@ class BuildingRestControllerTest {
 
     private AdminTestHelper adminTestHelper;
     private String accessToken;
-    
+    @Autowired
+    private AdminRepository adminRepository;
+    @Autowired
+    private TenantRepository tenantRepository;
+    @Autowired
+    private OwnerRepository ownerRepository;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private UserRoleRepository userRoleRepository;
+    @Autowired
+    private StaffRepository staffRepository;
+
     /**
      * Set up test data before each test.
      * This method clears the database and initializes test data for a company and its buildings.
@@ -245,6 +263,12 @@ class BuildingRestControllerTest {
      * This method is used to ensure a clean state for each test.
      */
     private void clearDatabase() {
+        userRoleRepository.deleteAll();
+        adminRepository.deleteAll();
+        tenantRepository.deleteAll();
+        ownerRepository.deleteAll();
+        staffRepository.deleteAll();
+        userRepository.deleteAll();
         buildingRepository.deleteAll();
         companyRepository.deleteAll();
     }
