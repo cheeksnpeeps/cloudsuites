@@ -1,7 +1,9 @@
 package com.cloudsuites.framework.webapp.rest.amenity;
 
 import com.cloudsuites.framework.modules.amenity.repository.AmenityBookingRepository;
+import com.cloudsuites.framework.modules.amenity.repository.AmenityBuildingRepository;
 import com.cloudsuites.framework.modules.amenity.repository.AmenityRepository;
+import com.cloudsuites.framework.modules.amenity.repository.AvailabilityRepository;
 import com.cloudsuites.framework.modules.property.features.repository.BuildingRepository;
 import com.cloudsuites.framework.modules.property.features.repository.CompanyRepository;
 import com.cloudsuites.framework.modules.property.features.repository.UnitRepository;
@@ -11,7 +13,9 @@ import com.cloudsuites.framework.modules.property.personas.repository.TenantRepo
 import com.cloudsuites.framework.modules.user.repository.UserRepository;
 import com.cloudsuites.framework.modules.user.repository.UserRoleRepository;
 import com.cloudsuites.framework.services.amenity.entities.Amenity;
+import com.cloudsuites.framework.services.amenity.entities.AmenityBuilding;
 import com.cloudsuites.framework.services.amenity.entities.AmenityType;
+import com.cloudsuites.framework.services.amenity.entities.DailyAvailability;
 import com.cloudsuites.framework.services.amenity.entities.booking.AmenityBooking;
 import com.cloudsuites.framework.services.amenity.entities.features.SwimmingPool;
 import com.cloudsuites.framework.services.property.features.entities.Building;
@@ -22,35 +26,48 @@ import com.cloudsuites.framework.services.user.entities.Identity;
 import com.cloudsuites.framework.services.user.entities.UserRole;
 import com.cloudsuites.framework.webapp.authentication.utils.AdminTestHelper;
 import com.cloudsuites.framework.webapp.rest.amenity.dto.AmenityBookingCalendarDto;
+import com.cloudsuites.framework.webapp.rest.amenity.dto.AmenityBookingDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
-@AutoConfigureMockMvc
+@AutoConfigureWebTestClient
 @ActiveProfiles("test")
-@Transactional
+@AutoConfigureMockMvc
 class BookingCalendarRestControllerTest {
 
+    @Autowired
+    private TaskExecutor taskExecutor;
+
+    @Autowired
+    private WebTestClient webTestClient;
     String tenantId;
     Logger logger = LoggerFactory.getLogger(BookingCalendarRestControllerTest.class);
     @Autowired
@@ -85,19 +102,29 @@ class BookingCalendarRestControllerTest {
     private CompanyRepository companyRepository;
     @Autowired
     private OwnerRepository ownerRepository;
+    @Autowired
+    private AmenityBookingRepository amenityBookingRepository;
+    @Autowired
+    private AvailabilityRepository availabilityRepository;
+    private String validUserId;
+    @Autowired
+    private AmenityBuildingRepository amenityBuildingRepository;
 
     @BeforeEach
     void setUp() throws Exception {
+        logger.info("Setting up test with TaskExecutor: " + taskExecutor.getClass().getName());
         userRoleRepository.deleteAll();
         staffRepository.deleteAll();
         bookingRepository.deleteAll();
         tenantRepository.deleteAll();
         buildingRepository.deleteAll();
         ownerRepository.deleteAll();
+        companyRepository.deleteAll();
+        companyRepository.deleteAll();
+        companyRepository.deleteAll();
         amenityRepository.deleteAll();
         unitRepository.deleteAll();
         userRepository.deleteAll();
-        companyRepository.deleteAll();
 
         validBuildingId = createBuilding("BuildingA").getBuildingId();
         validUnitId = createUnit(validBuildingId).getUnitId();
@@ -137,14 +164,9 @@ class BookingCalendarRestControllerTest {
     @Test
     void testGetBookingCalendar_ValidRequest() throws Exception {
         // Create a request payload to match the curl example
-
-        String requestPayload = """
-                    {
-                      "byBookingStatus": ["REQUESTED", "APPROVED"],
-                      "startDate": "2024-01-27T02:08:00",
-                      "endDate": "2024-09-27T02:08:00"
-                    }
-                """;
+        bookAmenity();
+        String requestPayload = objectMapper.writeValueAsString(new TestBookingCalendarRequest(startTime, endTime));
+        logger.debug("Request payload: {}", requestPayload);
 
         mockMvc.perform(withAuth(post("/api/v1/buildings/{buildingId}/tenants/{tenantId}/bookings/calendar", validBuildingId, tenantId))
                         .content(requestPayload)  // Send the JSON payload
@@ -159,12 +181,65 @@ class BookingCalendarRestControllerTest {
                     // Additional assertions to validate the contents of calendarDto
                     assertThat(calendarDto, is(notNullValue()));
                     assertThat(calendarDto.getAmenitySchedule().getBookedSlots(), is(not(empty())));
-                    assertThat(calendarDto.getAmenitySchedule().getBookedSlots(), everyItem(hasProperty("status", is(in(List.of("REQUESTED", "APPROVED"))))));
+                    jsonPath("$.amenitySchedule.bookedSlots[*].status", everyItem(equalTo("REQUESTED")));
+                });
+    }
+
+    // Helper method to create an amenity entity with availability
+    private Amenity createAmenity(String buildingId) {
+        Amenity amenity = new SwimmingPool();
+        amenity.setName("First Pool");
+        amenity.setType(AmenityType.SWIMMING_POOL);
+
+        List<DailyAvailability> dailyAvailabilities = new ArrayList<>();
+        dailyAvailabilities.add(new DailyAvailability(amenity, DayOfWeek.MONDAY, LocalTime.of(8, 0), LocalTime.of(20, 0)));
+        dailyAvailabilities.add(new DailyAvailability(amenity, DayOfWeek.TUESDAY, LocalTime.of(8, 0), LocalTime.of(20, 0)));
+        dailyAvailabilities.add(new DailyAvailability(amenity, DayOfWeek.WEDNESDAY, LocalTime.of(8, 0), LocalTime.of(20, 0)));
+        dailyAvailabilities.add(new DailyAvailability(amenity, DayOfWeek.THURSDAY, LocalTime.of(8, 0), LocalTime.of(20, 0)));
+        dailyAvailabilities.add(new DailyAvailability(amenity, DayOfWeek.FRIDAY, LocalTime.of(8, 0), LocalTime.of(20, 0)));
+        dailyAvailabilities.add(new DailyAvailability(amenity, DayOfWeek.SATURDAY, LocalTime.of(8, 0), LocalTime.of(20, 0)));
+        dailyAvailabilities.add(new DailyAvailability(amenity, DayOfWeek.SUNDAY, LocalTime.of(8, 0), LocalTime.of(20, 0)));
+        amenity = amenityRepository.save(amenity);  // Save the amenity
+        availabilityRepository.saveAll(dailyAvailabilities);  // Save the availability
+        amenity.setDailyAvailabilities(dailyAvailabilities);
+        amenityBuildingRepository.save(new AmenityBuilding(amenityId, buildingId));
+        return amenity;
+    }
+
+    private void bookAmenity() {
+        Amenity retrievedAmenity = createAmenity(validBuildingId);
+        String validAmenityId = retrievedAmenity.getAmenityId();
+        // Set up booking details
+        AmenityBookingDto bookingDto = new AmenityBookingDto();
+        bookingDto.setStartTime(LocalDateTime.now().plusDays(0).withHour(12).withMinute(0).withSecond(0).withNano(0));
+        bookingDto.setEndTime(LocalDateTime.now().plusDays(0).withHour(13).withMinute(0).withSecond(0).withNano(0));
+
+        // Perform the request and capture the result
+        webTestClient.post()
+                .uri("/api/v1/amenities/{amenityId}/tenants/{tenantId}/bookings", validAmenityId, validUserId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(bookingDto)
+                .exchange()
+                .expectStatus().isCreated() // Expect a 201 Created status
+                .expectBody(AmenityBookingDto.class) // Expect body to be of type AmenityBookingDto
+                .consumeWith(response -> {
+                    AmenityBookingDto createdBooking = response.getResponseBody();
+                    Assertions.assertThat(createdBooking).isNotNull();
+                    Assertions.assertThat(createdBooking.getAmenityId()).isEqualTo(validAmenityId);
+                    Assertions.assertThat(createdBooking.getUserId()).isEqualTo(validUserId);
+
+                    // Verify the booking exists in the database
+                    Optional<AmenityBooking> bookingOpt = amenityBookingRepository.findById(createdBooking.getBookingId());
+                    assertTrue(bookingOpt.isPresent(), "Booking should exist in the database"); // Ensure the booking is present
+                    AmenityBooking booking = bookingOpt.get();
+                    Assertions.assertThat(booking.getUserId()).isEqualTo(validUserId);
+                    Assertions.assertThat(booking.getStartTime()).isEqualTo(bookingDto.getStartTime());
                 });
     }
 
     @Test
     void testGetStaffBookingCalendar_ValidRequest() throws Exception {
+        bookAmenity();
         String requestPayload = objectMapper.writeValueAsString(new TestBookingCalendarRequest(startTime, endTime));
         logger.debug("Request payload: {}", requestPayload);
         mockMvc.perform(withAuth(post("/api/v1/buildings/{buildingId}/staff/{staffId}/bookings/calendar", validBuildingId, staffId))
@@ -178,7 +253,7 @@ class BookingCalendarRestControllerTest {
 
                     // Additional assertions to validate the contents of calendarDto
                     assertThat(calendarDto.getAmenitySchedule().getBookedSlots(), is(not(empty())));
-                    assertThat(calendarDto.getAmenitySchedule().getBookedSlots(), everyItem(hasProperty("status", is(in(List.of("REQUESTED", "APPROVED"))))));
+                    jsonPath("$.amenitySchedule.bookedSlots[*].status", everyItem(equalTo("REQUESTED")));
                 });
     }
 
@@ -205,7 +280,7 @@ class BookingCalendarRestControllerTest {
                         .content(requestPayload)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isConflict())
-                .andExpect(content().string(containsString("Invalid time range")));
+                .andExpect(content().string(containsString("Start time cannot be after end time")));
     }
 
     @Test
@@ -260,15 +335,16 @@ class BookingCalendarRestControllerTest {
         Identity identity = new Identity();
         identity.setEmail("staff@gmail.com");
         identity = userRepository.save(identity);
+        validUserId = identity.getUserId();
         Staff staff = new Staff();
         staff.setIdentity(identity);
         staff.setRole(StaffRole.BUILDING_SECURITY);
         staff.setStatus(StaffStatus.ACTIVE);
         staff.setBuilding(buildingRepository.findById(validBuildingId).orElseThrow());
         Company company = new Company();
-        company.setName("Test Company");
+        company.setName("Test Company 2");
         staff.setCompany(company);
-        companyRepository.save(company);
+        //companyRepository.save(company);
         Staff savedStaff = staffRepository.save(staff);
 
         UserRole userRole = savedStaff.getUserRole();
