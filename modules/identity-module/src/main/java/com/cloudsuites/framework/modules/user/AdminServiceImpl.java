@@ -74,6 +74,9 @@ public class AdminServiceImpl implements AdminService {
     public void deleteAdmin(String adminId) throws NotFoundResponseException {
         logger.info(IdentityConstants.Admin.LOG_DELETING_ADMIN, adminId);
         Admin existingAdmin = getAdminById(adminId);
+        userRoleRepository.findByPersonaId(adminId).stream().findAny()
+                .ifPresent(userRoleRepository::delete);
+        logger.info(IdentityConstants.Admin.LOG_ROLE_DELETED, adminId);
         adminRepository.delete(existingAdmin);
         logger.info(IdentityConstants.Admin.LOG_ADMIN_DELETED, adminId);
     }
