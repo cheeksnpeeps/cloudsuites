@@ -20,6 +20,7 @@
 		<module>identity-module</module>
 		<module>property-module</module>
 		<module>amenity-module</module>
+        <module>announcements-module</module>
 	</modules>
 </project>
 
