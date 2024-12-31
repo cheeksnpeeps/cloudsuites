@@ -74,9 +74,9 @@ public class AmenityRestController {
     @JsonView(Views.AmenityView.class)
     @PostMapping("/amenities")
     public ResponseEntity<AmenityDto> createAmenity(
-            @RequestBody @Parameter(description = "Amenity payload") AmenityDto amenityDto) {
+            @Valid @RequestBody @Parameter(description = "Amenity payload") AmenityDto amenityDto) {
+        logger.debug("Creating new amenity: {}", amenityDto.getType());
         Amenity amenity = mapper.convertToEntity(amenityDto);
-        logger.debug("Creating new amenity: {}", amenity.getName());
         amenity = amenityService.createAmenity(amenity, amenityDto.getBuildingIds());
         logger.debug("Amenity created successfully: {}", amenity.getAmenityId());
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.convertToDTO(amenity));
@@ -124,11 +124,14 @@ public class AmenityRestController {
             @Parameter(description = "ID of the amenity to be updated")
             @PathVariable String amenityId,
             @RequestBody @Parameter(description = "Amenity payload") AmenityDto amenityDto,
-            @PathVariable String buildingId) {
+            @PathVariable String buildingId) throws NotFoundResponseException {
         if (!amenityId.equals(amenityDto.getAmenityId())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
         logger.debug("Updating amenity {}", amenityId);
+        Amenity savedAmenity = amenityService.getAmenityById(amenityId)
+                .orElseThrow(() -> new NotFoundResponseException("Amenity not found with ID: " + amenityId));
+        amenityDto.setType(savedAmenity.getType());
         Amenity amenity = mapper.convertToEntity(amenityDto);
         amenity = amenityService.updateAmenity(amenity, amenityDto.getBuildingIds());
         logger.debug("Amenity updated successfully: {}", amenity.getAmenityId());
