@@ -1,6 +1,7 @@
 services:
   postgres:
-    image: 'postgres:latest'
+    image: postgres:17
+    container_name: cloudsuites-postgres-17
     environment:
       - 'POSTGRES_DB=cloudsuites'
       - 'POSTGRES_PASSWORD=csPassw0rd'
@@ -8,7 +9,7 @@ services:
     ports:
       - "59665:5432"
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - new_pg_data:/var/lib/postgresql/data
       - ./init-scripts:/docker-entrypoint-initdb.d
   pgadmin:
     image: dpage/pgadmin4:8.0
@@ -20,4 +21,4 @@ services:
     depends_on:
       - postgres
 volumes:
-  postgres-data:
+  new_pg_data:
