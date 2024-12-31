@@ -18,117 +18,68 @@ public class AmenityMapper {
 
     private final ModelMapper modelMapper;
 
-    // Maps to convert between DTOs and Entities
-    private final Map<Class<? extends AmenityDto>, Class<? extends Amenity>> dtoToEntityMap;
-    private final Map<Class<? extends Amenity>, Class<? extends AmenityDto>> entityToDtoMap;
+    // Map to hold mapping of AmenityType to Entity and DTO classes
+    private final Map<AmenityType, MappingEntry> amenityTypeToMappingEntry;
 
     @Autowired
     public AmenityMapper(ModelMapper modelMapper) {
         this.modelMapper = modelMapper;
 
-        this.dtoToEntityMap = Map.ofEntries(
-                Map.entry(AmenityDto.class, Amenity.class),
-                Map.entry(TennisCourtDto.class, TennisCourt.class),
-                Map.entry(AerobicsRoomDto.class, AerobicsRoom.class),
-                Map.entry(PartyRoomDto.class, PartyRoom.class),
-                Map.entry(BarbequeAreaDto.class, BarbequeArea.class),
-                Map.entry(GymDto.class, Gym.class),
-                Map.entry(SwimmingPoolDto.class, SwimmingPool.class),
-                Map.entry(TheaterDto.class, Theater.class),
-                Map.entry(MassageRoomDto.class, MassageRoom.class),
-                Map.entry(WineTastingRoomDto.class, WineTastingRoom.class),
-                Map.entry(GuestSuiteDto.class, GuestSuite.class),
-                Map.entry(BilliardRoomDto.class, BilliardRoom.class),
-                Map.entry(GamesRoomDto.class, GamesRoom.class),
-                Map.entry(GolfSimulatorDto.class, GolfSimulator.class),
-                Map.entry(BowlingAlleyDto.class, BowlingAlley.class),
-                Map.entry(LibraryDto.class, Library.class),
-                Map.entry(YogaStudioDto.class, YogaStudio.class),
-                Map.entry(ElevatorDto.class, Elevator.class),
-                Map.entry(OtherDto.class, Other.class)
+        // Populate the mapping for AmenityType to Entity and DTO classes
+        this.amenityTypeToMappingEntry = Map.ofEntries(
+                Map.entry(AmenityType.SWIMMING_POOL, new MappingEntry(SwimmingPool.class, SwimmingPoolDto.class)),
+                Map.entry(AmenityType.TENNIS_COURT, new MappingEntry(TennisCourt.class, TennisCourtDto.class)),
+                Map.entry(AmenityType.GYM, new MappingEntry(Gym.class, GymDto.class)),
+                Map.entry(AmenityType.THEATER, new MappingEntry(Theater.class, TheaterDto.class)),
+                Map.entry(AmenityType.AEROBICS_ROOM, new MappingEntry(AerobicsRoom.class, AerobicsRoomDto.class)),
+                Map.entry(AmenityType.PARTY_ROOM, new MappingEntry(PartyRoom.class, PartyRoomDto.class)),
+                Map.entry(AmenityType.BARBECUE_AREA, new MappingEntry(BarbequeArea.class, BarbequeAreaDto.class)),
+                Map.entry(AmenityType.MASSAGE_ROOM, new MappingEntry(MassageRoom.class, MassageRoomDto.class)),
+                Map.entry(AmenityType.WINE_TASTING_ROOM, new MappingEntry(WineTastingRoom.class, WineTastingRoomDto.class)),
+                Map.entry(AmenityType.GUEST_SUITE, new MappingEntry(GuestSuite.class, GuestSuiteDto.class)),
+                Map.entry(AmenityType.BILLIARD_ROOM, new MappingEntry(BilliardRoom.class, BilliardRoomDto.class)),
+                Map.entry(AmenityType.GAMES_ROOM, new MappingEntry(GamesRoom.class, GamesRoomDto.class)),
+                Map.entry(AmenityType.GOLF_SIMULATOR, new MappingEntry(GolfSimulator.class, GolfSimulatorDto.class)),
+                Map.entry(AmenityType.BOWLING_ALLEY, new MappingEntry(BowlingAlley.class, BowlingAlleyDto.class)),
+                Map.entry(AmenityType.LIBRARY, new MappingEntry(Library.class, LibraryDto.class)),
+                Map.entry(AmenityType.YOGA_STUDIO, new MappingEntry(YogaStudio.class, YogaStudioDto.class)),
+                Map.entry(AmenityType.ELEVATOR, new MappingEntry(Elevator.class, ElevatorDto.class)),
+                Map.entry(AmenityType.OTHER, new MappingEntry(Other.class, OtherDto.class))
         );
-
-        this.entityToDtoMap = Map.ofEntries(
-                Map.entry(Amenity.class, AmenityDto.class),
-                Map.entry(TennisCourt.class, TennisCourtDto.class),
-                Map.entry(AerobicsRoom.class, AerobicsRoomDto.class),
-                Map.entry(PartyRoom.class, PartyRoomDto.class),
-                Map.entry(BarbequeArea.class, BarbequeAreaDto.class),
-                Map.entry(Gym.class, GymDto.class),
-                Map.entry(SwimmingPool.class, SwimmingPoolDto.class),
-                Map.entry(Theater.class, TheaterDto.class),
-                Map.entry(MassageRoom.class, MassageRoomDto.class),
-                Map.entry(WineTastingRoom.class, WineTastingRoomDto.class),
-                Map.entry(GuestSuite.class, GuestSuiteDto.class),
-                Map.entry(BilliardRoom.class, BilliardRoomDto.class),
-                Map.entry(GamesRoom.class, GamesRoomDto.class),
-                Map.entry(GolfSimulator.class, GolfSimulatorDto.class),
-                Map.entry(BowlingAlley.class, BowlingAlleyDto.class),
-                Map.entry(Library.class, LibraryDto.class),
-                Map.entry(YogaStudio.class, YogaStudioDto.class),
-                Map.entry(Elevator.class, ElevatorDto.class),
-                Map.entry(Other.class, OtherDto.class)
-        );
-
-        // Configure automatic mappings
-        configureMappings();
     }
 
-
     public Amenity convertToEntity(AmenityDto amenityDto) {
-        Class<? extends Amenity> entityClass = dtoToEntityMap.get(amenityDto.getClass());
-        if (entityClass == null) {
-            throw new IllegalArgumentException("Unknown DTO type: " + amenityDto.getClass());
+        if (amenityDto.getType() == null) {
+            throw new IllegalArgumentException("The 'type' field is missing or null in the provided DTO.");
         }
-        Amenity amenity = modelMapper.map(amenityDto, entityClass);
 
-        if (amenityDto instanceof SwimmingPoolDto) {
-            amenity.setType(AmenityType.SWIMMING_POOL);
-        } else if (amenityDto instanceof TennisCourtDto) {
-            amenity.setType(AmenityType.TENNIS_COURT);
-        } else if (amenityDto instanceof GymDto) {
-            amenity.setType(AmenityType.GYM);
-        } else if (amenityDto instanceof TheaterDto) {
-            amenity.setType(AmenityType.THEATER);
-        } else if (amenityDto instanceof AerobicsRoomDto) {
-            amenity.setType(AmenityType.AEROBICS_ROOM);
-        } else if (amenityDto instanceof PartyRoomDto) {
-            amenity.setType(AmenityType.PARTY_ROOM);
-        } else if (amenityDto instanceof BarbequeAreaDto) {
-            amenity.setType(AmenityType.BARBECUE_AREA);
-        } else if (amenityDto instanceof MassageRoomDto) {
-            amenity.setType(AmenityType.MASSAGE_ROOM);
-        } else if (amenityDto instanceof WineTastingRoomDto) {
-            amenity.setType(AmenityType.WINE_TASTING_ROOM);
-        } else if (amenityDto instanceof GuestSuiteDto) {
-            amenity.setType(AmenityType.GUEST_SUITE);
-        } else if (amenityDto instanceof BilliardRoomDto) {
-            amenity.setType(AmenityType.BILLIARD_ROOM);
-        } else if (amenityDto instanceof GamesRoomDto) {
-            amenity.setType(AmenityType.GAMES_ROOM);
-        } else if (amenityDto instanceof GolfSimulatorDto) {
-            amenity.setType(AmenityType.GOLF_SIMULATOR);
-        } else if (amenityDto instanceof BowlingAlleyDto) {
-            amenity.setType(AmenityType.BOWLING_ALLEY);
-        } else if (amenityDto instanceof LibraryDto) {
-            amenity.setType(AmenityType.LIBRARY);
-        } else if (amenityDto instanceof YogaStudioDto) {
-            amenity.setType(AmenityType.YOGA_STUDIO);
-        } else if (amenityDto instanceof ElevatorDto) {
-            amenity.setType(AmenityType.ELEVATOR);
-        } else if (amenityDto instanceof OtherDto) {
-            amenity.setType(AmenityType.OTHER);
+        MappingEntry mappingEntry = amenityTypeToMappingEntry.get(amenityDto.getType());
+        if (mappingEntry == null) {
+            throw new IllegalArgumentException("Unknown AmenityType: " + amenityDto.getType());
         }
+
+        // Map DTO to the corresponding Entity
+        Amenity amenity = modelMapper.map(amenityDto, mappingEntry.getEntityClass());
+
+        // Set the AmenityType
+        amenity.setType(amenityDto.getType());
+
         return amenity;
     }
 
     public AmenityDto convertToDTO(Amenity amenity) {
-        Class<? extends AmenityDto> dtoClass = entityToDtoMap.get(amenity.getClass());
-        if (dtoClass == null) {
-            throw new IllegalArgumentException("Unknown entity type: " + amenity.getClass());
+        if (amenity.getType() == null) {
+            throw new IllegalArgumentException("The 'type' field is missing or null in the provided Entity.");
         }
-        return modelMapper.map(amenity, dtoClass);
+
+        MappingEntry mappingEntry = amenityTypeToMappingEntry.get(amenity.getType());
+        if (mappingEntry == null) {
+            throw new IllegalArgumentException("Unknown AmenityType: " + amenity.getType());
+        }
+
+        return modelMapper.map(amenity, mappingEntry.getDtoClass());
     }
+
     public List<AmenityDto> convertToDTOList(List<Amenity> amenities) {
         return amenities.stream()
                 .map(this::convertToDTO)
@@ -141,7 +92,22 @@ public class AmenityMapper {
                 .collect(Collectors.toList());
     }
 
-    private void configureMappings() {
-        // Automatic mappings
+    // Inner class to store mapping details
+    private static class MappingEntry {
+        private final Class<? extends Amenity> entityClass;
+        private final Class<? extends AmenityDto> dtoClass;
+
+        public MappingEntry(Class<? extends Amenity> entityClass, Class<? extends AmenityDto> dtoClass) {
+            this.entityClass = entityClass;
+            this.dtoClass = dtoClass;
+        }
+
+        public Class<? extends Amenity> getEntityClass() {
+            return entityClass;
+        }
+
+        public Class<? extends AmenityDto> getDtoClass() {
+            return dtoClass;
+        }
     }
 }
