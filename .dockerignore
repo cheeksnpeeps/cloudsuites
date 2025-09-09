@@ -1,0 +1,70 @@
+# Git and version control
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+README.md
+*.md
+docs/
+
+# IDE files
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Build outputs (we'll build fresh in Docker)
+target/
+*/target/
+**/target/
+
+# Node.js (will be installed fresh during build)
+node_modules/
+*/node_modules/
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+*/package-lock.json
+**/package-lock.json
+
+# Docker files (except the main Dockerfile)
+Dockerfile.*
+docker-compose*.yml
+.dockerignore
+
+# Local environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+*~
+
+# Maven local repository (will be downloaded in container)
+.m2/
+
+# Test reports and coverage
+surefire-reports/
+*/surefire-reports/
+**/surefire-reports/
+coverage/
+*/coverage/
+**/coverage/
+
+# Backup files
+*.backup
+*.bak
+cloudsuites_backup.sql

@@ -1,3 +1,7 @@
+# Test Profile Configuration
+# Overrides for testing environment
+# =================================================================
+
 logging:
   level:
     com.cloudsuites: DEBUG
@@ -5,99 +9,62 @@ logging:
     org.hibernate.SQL: DEBUG
     org.flywaydb: DEBUG
     org.springframework.jdbc: DEBUG
-  pattern:
-    console: "%-4relative [%thread] %-5level %logger{35} %X{correlationId} - %msg %n"
+    root: WARN  # Reduce noise in tests
 
 spring:
-  r2dbc:
-    host: localhost
-    username: csuser
-    password: csPassw0rd
-    driver-class-name: postgresql
-    port: 59665
-    database: cloudsuites_test
-    pools:
-      initial-size: 5
-      max-size: 20
+  # Test Database Configuration (localhost for test containers)
   datasource:
-    url: jdbc:postgresql://localhost:59665/cloudsuites_test
-    username: csuser
-    password: csPassw0rd
-    driver-class-name: org.postgresql.Driver
-    properties:
-      hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
+    url: ${TEST_DATABASE_URL:jdbc:postgresql://localhost:59665/cloudsuites_test}
+    username: ${TEST_DATABASE_USERNAME:csuser}
+    password: ${TEST_DATABASE_PASSWORD:csPassw0rd}
+
+  # Test R2DBC Configuration  
+  r2dbc:
+    url: ${TEST_R2DBC_URL:r2dbc:postgresql://localhost:59665/cloudsuites_test}
+    username: ${TEST_DATABASE_USERNAME:csuser}
+    password: ${TEST_DATABASE_PASSWORD:csPassw0rd}
+    pool:
+      initial-size: 2
+      max-size: 5
+
+  # Test Flyway Configuration
   flyway:
-    url: jdbc:postgresql://localhost:59665/cloudsuites_test
-    user: csuser
-    password: csPassw0rd
+    url: ${TEST_DATABASE_URL:jdbc:postgresql://localhost:59665/cloudsuites_test}
+    user: ${TEST_DATABASE_USERNAME:csuser}
+    password: ${TEST_DATABASE_PASSWORD:csPassw0rd}
     enabled: true
-    locations: classpath:db/migration
-    baseline-on-migrate: true
-    #baseline-version: 0
+    clean-disabled: false  # Allow clean for tests
     placeholders:
-      partitioning.prefix: "amenity_booking_" # Prefix used for partition table names
-      partitioning.frequency: "4"              # Frequency of partitioning (e.g., number of quarters per year)
-      partitioning.retention_period_months: "3"  # Retention period for active data (in months)
-      partitioning.archive_storage_path: "/Users/loc/Desktop/storage"  # Path for storing archived data
-      archiving.cut_off_period_months: "6"     # Cut-off period for archiving (in months)
-      archiving.file_format: ".parquet"         # File format for archived data
-      interval.months: "1"                     # Interval for monthly partitions
-      interval.quarters: "3"                   # Interval for quarterly partitions
-      interval.years: "12"                     # Interval for yearly partitions
+      partitioning.archive_storage_path: "/tmp/test-storage"
+
+  # Test JPA Configuration
   jpa:
     properties:
       hibernate:
-        enable_lazy_load_no_trans: true
-        use_sql_comments: true
-        #        show_sql: true
         hbm2ddl:
-          auto: update
-  sql:
-    init:
-      mode: embedded
-  websecurity:
-    debug: true
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: https://cheeksnpeeps.auth0.com/
+          auto: validate  # Use Flyway for tests too
+        show_sql: false      # Reduce test output noise
 
-auth0:
-  audience: https://api.cloudsuites.com
+# Test-specific external services (mock values)
+twilio:
+  accountSid: ${TEST_TWILIO_ACCOUNT_SID:test-account-sid}
+  serviceSid: ${TEST_TWILIO_SERVICE_SID:test-service-sid}
+  authToken: ${TEST_TWILIO_AUTH_TOKEN:test-auth-token}
+  phoneNumber: ${TEST_TWILIO_PHONE_NUMBER:+1234567890}
 
-web:
-  cors:
-    allowed-origins: http://localhost:8080
-  web:
-    resources:
-      static-locations: classpath:/static/
+jwt:
+  secretKey: ${TEST_JWT_SECRET_KEY:dGVzdC1zZWNyZXQta2V5LWZvci10ZXN0aW5nLXB1cnBvc2VzLW9ubHk=}
+  accessTokenValidityMs: 3600000   # 1 hour for tests
+  refreshTokenValidityMs: 7200000  # 2 hours for tests
 
-okta:
-  oauth2:
-    groupsClaim: https://api.cloudsuites.com/roles
-
+# Disable management endpoints in tests
 management:
   endpoints:
     web:
       exposure:
-        include: info,health,metrics,env,beans,auditevents,loggers,configprops,threaddump,heapdump,dependencies
-      base-path: /actuator
-  endpoint:
-    health:
-      show-details: always
-    loggers:
-      enabled: true
-twilio:
-  accountSid: ${accountSid}
-  serviceSid: ${serviceSid}
-  authToken: ${authToken}
-  phoneNumber: ${phoneNumber}
-jwt:
-  secretKey: ${secretKey}
-  accessTokenValidityMs: 86400000  # 1 day in milliseconds
-  refreshTokenValidityMs: 604800000  # 7 days in milliseconds
-gcp:
-  firebase:
-    service-account: classpath:firebase-service-account.json
+        include: health,info
 
+# Test storage
+cloudsuites:
+  storage:
+    upload-path: /tmp/test-uploads

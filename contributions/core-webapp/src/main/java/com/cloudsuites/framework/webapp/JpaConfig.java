@@ -14,6 +14,7 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import jakarta.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,13 +36,39 @@ public class JpaConfig {
     }
 
     private Map<String, Object> getVendorProperties() {
-        Map<String, Object> jpaProperties = new HashMap<>();
-        jpaProperties.put("hibernate.dialect", env.getProperty("spring.datasource.hibernate.dialect"));
-        jpaProperties.put("url", env.getProperty("spring.datasource.url"));
-        jpaProperties.put("username", env.getProperty("spring.datasource.username"));
-        jpaProperties.put("password", env.getProperty("spring.datasource.password"));
-        jpaProperties.put("driver-class-name", env.getProperty("spring.datasource.driver-class-name"));
-        return jpaProperties;
+        Map<String, Object> p = new HashMap<>();
+
+        // Dialect is optional on Hibernate 6, but harmless
+        p.put("hibernate.dialect",
+              env.getProperty("spring.jpa.database-platform", "org.hibernate.dialect.PostgreSQLDialect"));
+
+        // Map Spring's ddl-auto to BOTH Hibernate & Jakarta knobs
+        String ddl = env.getProperty("spring.jpa.hibernate.ddl-auto",
+                        env.getProperty("spring.jpa.properties.hibernate.hbm2ddl.auto", "update"));
+
+        p.put("hibernate.hbm2ddl.auto", ddl); // Hibernate legacy switch still supported
+        p.put("jakarta.persistence.schema-generation.database.action",
+              ddlToJakartaAction(ddl));        // Hibernate 6+ standard key
+
+        // Your other flags
+        p.put("hibernate.show_sql", env.getProperty("spring.jpa.properties.hibernate.show_sql", "true"));
+        p.put("hibernate.format_sql", env.getProperty("spring.jpa.properties.hibernate.format_sql", "true"));
+        p.put("hibernate.enable_lazy_load_no_trans",
+              env.getProperty("spring.jpa.properties.hibernate.enable_lazy_load_no_trans", "true"));
+        p.put("hibernate.use_sql_comments",
+              env.getProperty("spring.jpa.properties.hibernate.use_sql_comments", "true"));
+
+        return p;
+    }
+
+    // helper
+    private static String ddlToJakartaAction(String ddl) {
+        return switch (ddl.toLowerCase()) {
+            case "create", "create-drop" -> "drop-and-create";
+            case "update" -> "update";
+            case "none", "validate" -> "none";
+            default -> "update";
+        };
     }
     @Primary
     @Bean
@@ -59,19 +86,22 @@ public class JpaConfig {
     @Primary
     @Bean
     public PlatformTransactionManager transactionManager(@Qualifier("entityManagerFactory") LocalContainerEntityManagerFactoryBean entityManagerFactory) {
-        return new JpaTransactionManager(entityManagerFactory.getObject());
+        EntityManagerFactory emf = entityManagerFactory.getObject();
+        if (emf == null) {
+            throw new IllegalStateException("EntityManagerFactory not available");
+        }
+        return new JpaTransactionManager(emf);
     }
 
     @Primary
     @Bean
     @ConfigurationProperties("spring.datasource")
     public DataSource dataSource() {
-        Map<String, Object> jpaProperties = getVendorProperties();
         return DataSourceBuilder.create()
-                .url(jpaProperties.get("url").toString())
-                .username(jpaProperties.get("username").toString())
-                .password(jpaProperties.get("password").toString())
-                .driverClassName(jpaProperties.get("driver-class-name").toString())
+                .url(env.getProperty("spring.datasource.url"))
+                .username(env.getProperty("spring.datasource.username"))
+                .password(env.getProperty("spring.datasource.password"))
+                .driverClassName(env.getProperty("spring.datasource.driver-class-name"))
                 .build();
     }
 }

@@ -1,0 +1,19 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Run Property Module Tests",
+			"type": "shell",
+			"command": "mvn",
+			"args": [
+				"test",
+				"-s",
+				".mvn/settings.xml",
+				"-pl",
+				"modules/property-module"
+			],
+			"group": "test",
+			"problemMatcher": []
+		}
+	]
+}

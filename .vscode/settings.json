@@ -1,0 +1,14 @@
+{
+    "java.compile.nullAnalysis.mode": "automatic",
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.configuration.runtimes": [],
+    "java.test.config": [],
+    "java.import.maven.enabled": true,
+    "java.configuration.maven.userSettings": ".mvn/settings.xml",
+    "files.exclude": {
+        "**/target": true,
+        "**/.classpath": true,
+        "**/.project": true,
+        "**/.factorypath": true
+    }
+}
