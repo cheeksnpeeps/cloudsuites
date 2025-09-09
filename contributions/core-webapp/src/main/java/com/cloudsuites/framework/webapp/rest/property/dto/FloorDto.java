@@ -36,10 +36,6 @@ public class FloorDto {
     @Max(value = 999, message = "Floor number must be no more than 3 digits")
     private Integer floorNumber;
 
-    @Schema(hidden = true)
-    @JsonView(Views.FloorView.class)
-    private BuildingDto building;
-
     @NotNull(message = "Units must not be null")
     @Valid
     @Schema(description = "Units in the floor")

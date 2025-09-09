@@ -10,6 +10,7 @@ import com.cloudsuites.framework.services.property.features.entities.Building;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.property.features.service.UnitService;
 import com.cloudsuites.framework.services.property.personas.entities.Owner;
+import com.cloudsuites.framework.services.property.personas.entities.OwnerRole;
 import com.cloudsuites.framework.services.property.personas.entities.OwnerStatus;
 import com.cloudsuites.framework.services.property.personas.entities.Tenant;
 import com.cloudsuites.framework.services.property.personas.entities.TenantStatus;
@@ -20,15 +21,21 @@ import com.cloudsuites.framework.services.user.entities.UserRole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Optional;
 
+
 @Component
 public class OwnerServiceImpl implements OwnerService {
 
     private static final Logger logger = LoggerFactory.getLogger(OwnerServiceImpl.class);
+    private static final String OWNER_NOT_FOUND_WITH_ID = "Owner not found with ID: {}";
+    private static final String OWNER_NOT_FOUND_WITH_EMAIL = "Owner not found with email: {}";
+    private static final String OWNER_NOT_FOUND_WITH_USER_ID = "Owner not found for user ID: {}";
+    
     private final OwnerRepository ownerRepository;
     private final UnitService unitService;
     private final UserService userService;
@@ -47,24 +54,40 @@ public class OwnerServiceImpl implements OwnerService {
     public Owner getOwnerById(String ownerId) throws NotFoundResponseException {
         return ownerRepository.findById(ownerId)
                 .orElseThrow(() -> {
-                    logger.error("Owner not found with ID: {}", ownerId);
+                    logger.error(OWNER_NOT_FOUND_WITH_ID, ownerId);
                     return new NotFoundResponseException("Owner not found with ID: " + ownerId);
                 });
     }
 
     @Override
+    @Transactional
     public Owner createOwner(Owner newOwner) throws UserAlreadyExistsException, InvalidOperationException {
-        Owner owner = createIdentiy(newOwner);
+        Owner owner = createIdentity(newOwner);
+        
+        // Ensure role is set before saving
+        if (owner.getRole() == null) {
+            logger.debug("Setting default role for owner: {}", owner.getIdentity().getEmail());
+            owner.setRole(OwnerRole.DEFAULT);
+        }
+        
         owner = ownerRepository.save(owner);
         logger.info("Owner created successfully with ID: {}", owner.getOwnerId());
-        UserRole userRole = userRoleRepository.save(owner.getUserRole());
-        logger.debug("User role saved for owner: {} - {}", owner.getOwnerId(), userRole);
+        
+        // Ensure user role is set and saved
+        UserRole userRole = owner.getUserRole();
+        if (userRole != null) {
+            userRoleRepository.save(userRole);
+            logger.debug("User role saved for owner: {} - {}", owner.getOwnerId(), userRole);
+        } else {
+            logger.warn("No user role found for owner: {}", owner.getOwnerId());
+        }
         return owner;
     }
 
     @Override
+    @Transactional
     public Owner createOwner(Owner newOwner, Building building, Unit unit) throws NotFoundResponseException, UserAlreadyExistsException, InvalidOperationException {
-        Owner owner = createIdentiy(newOwner);
+        Owner owner = createIdentity(newOwner);
 
         // validate building and unit
         if (building == null) {
@@ -105,37 +128,105 @@ public class OwnerServiceImpl implements OwnerService {
         logger.debug("Saving owner with unit: {}", unit.getUnitId());
         Owner savedOwner = ownerRepository.save(owner);
         savedUnit.setOwner(savedOwner);
-        unitService.saveUnit(unit);
+        unitService.saveUnit(savedUnit);
         // Log success and return the saved owner
         logger.info("Owner created successfully with ID: {}", savedOwner.getOwnerId());
-        UserRole userRole = userRoleRepository.save(owner.getUserRole());
-        logger.debug("User role saved for owner: {} - {}", owner.getOwnerId(), userRole);
+        
+        // Ensure user role is set and saved
+        UserRole userRole = owner.getUserRole();
+        if (userRole != null) {
+            userRoleRepository.save(userRole);
+            logger.debug("User role saved for owner: {} - {}", owner.getOwnerId(), userRole);
+        } else {
+            logger.warn("No user role found for owner: {}", owner.getOwnerId());
+        }
         return savedOwner;
     }
 
-    private Owner createIdentiy(Owner owner) throws UserAlreadyExistsException, InvalidOperationException {
-        // Log the start of the tenant creation process
+    /**
+     * Core business logic for owner creation implementing the decision table from ADR-001.
+     * 
+     * <p>This method handles the complex logic of Identity/Owner relationship management,
+     * implementing the following decision table:</p>
+     * 
+     * <table border="1">
+     * <tr><th>Identity Exists?</th><th>Owner Exists?</th><th>Action</th></tr>
+     * <tr><td>No</td><td>No</td><td>Create new Identity and Owner</td></tr>
+     * <tr><td>Yes</td><td>No</td><td>Create Owner with existing Identity</td></tr>
+     * <tr><td>Yes</td><td>Yes</td><td>Throw UserAlreadyExistsException</td></tr>
+     * </table>
+     * 
+     * <h3>Process Flow:</h3>
+     * <ol>
+     * <li>Validate identity and email presence</li>
+     * <li>Normalize email (trim + lowercase)</li>
+     * <li>Check if Identity exists by email</li>
+     * <li>If Identity exists, check if Owner already exists</li>
+     * <li>Create or reuse Identity as appropriate</li>
+     * <li>Return Owner with proper Identity association</li>
+     * </ol>
+     * 
+     * <h3>Email Normalization:</h3>
+     * <p>All emails are normalized using {@code email.trim().toLowerCase()} to ensure
+     * consistent lookup and prevent duplicate issues due to case/whitespace differences.</p>
+     * 
+     * <h3>Concurrency Safety:</h3>
+     * <p>Database unique constraints provide ultimate consistency. Race conditions between
+     * identity existence check and creation will result in constraint violations that are
+     * handled appropriately by the calling method's transaction management.</p>
+     * 
+     * @param owner The owner entity containing identity information
+     * @return Owner entity with properly associated Identity (existing or newly created)
+     * @throws UserAlreadyExistsException if an Owner already exists for the given email
+     * @throws InvalidOperationException if identity is null or email is missing/invalid
+     * @see ADR-001-Owner-Identity-Management for detailed business rules
+     */
+    private Owner createIdentity(Owner owner) throws UserAlreadyExistsException, InvalidOperationException {
+        // Log the start of the owner creation process
         logger.debug("Starting owner creation process for owner: {}", owner);
-        // Step 1: Create and save the identity for the tenant
+        // Step 1: Validate and process the identity for the owner
         Identity identity = owner.getIdentity();
 
         if (identity == null) {
             logger.error("Identity not found for owner: {}", owner);
             throw new InvalidOperationException("Identity not found for owner: " + owner);
         }
-        logger.debug("Creating identity with enail: {}", identity.getEmail());
+        logger.debug("Processing identity with email: {}", identity.getEmail());
         if (!StringUtils.hasText(identity.getEmail())) {
-            logger.error("Email not found for tenant: {}", owner);
+            logger.error("Email not found for owner: {}", owner);
             throw new InvalidOperationException("Email is required");
         }
-        if (userService.existsByEmail(identity.getEmail())) {
-            logger.error("User already exists with email: {}", identity.getEmail());
-            throw new UserAlreadyExistsException("User already exists with email: " + identity.getEmail());
+        
+        // Normalize email - trim and convert to lowercase
+        String normalizedEmail = identity.getEmail().trim().toLowerCase();
+        identity.setEmail(normalizedEmail);
+        
+        // Step 2: Check if Identity exists
+        Identity existingIdentity = userService.findByEmail(normalizedEmail);
+        
+        if (existingIdentity != null) {
+            // Identity exists - check if Owner already exists with this identity
+            logger.debug("Found existing identity for email: {}, checking for existing owner", identity.getEmail());
+            
+            Optional<Owner> existingOwner = ownerRepository.findByIdentity_UserId(existingIdentity.getUserId());
+            if (existingOwner.isPresent()) {
+                // Both Identity and Owner exist - throw error
+                logger.error("Owner already exists with email: {}", normalizedEmail);
+                throw new UserAlreadyExistsException("Owner already exists with email: " + normalizedEmail);
+            } else {
+                // Identity exists but no Owner - create Owner with existing Identity
+                logger.debug("Identity exists but no owner found. Creating owner with existing identity: {}", existingIdentity.getUserId());
+                owner.setIdentity(existingIdentity);
+                return owner;
+            }
+        } else {
+            // No identity exists - create new Identity + Owner
+            logger.debug("No existing identity found. Creating new identity and owner");
+            Identity savedIdentity = userService.createUser(identity);
+            owner.setIdentity(savedIdentity);
+            logger.debug("New identity created and saved: {}", savedIdentity.getUserId());
+            return owner;
         }
-        Identity savedIdentity = userService.createUser(identity);
-        owner.setIdentity(savedIdentity);
-        logger.debug("Identity created and saved: {}", savedIdentity.getUserId());
-        return owner;
     }
 
     private Tenant createTenantFromOwnerInfo(Building building, Unit savedUnit, Identity savedIdentity) {
@@ -150,6 +241,7 @@ public class OwnerServiceImpl implements OwnerService {
     }
 
     @Override
+    @Transactional
     public void createOrUpdateOwner(Tenant tenant) throws NotFoundResponseException {
         // Log the initial state of the tenant
         logger.info("Creating or updating owner for tenant: {}", tenant);
@@ -190,14 +282,35 @@ public class OwnerServiceImpl implements OwnerService {
     private Owner createOwner(Tenant tenant) {
         Owner owner = new Owner();
         owner.setIdentity(tenant.getIdentity());
-        return ownerRepository.save(owner);
+        owner.setStatus(OwnerStatus.ACTIVE);
+        owner.setIsPrimaryTenant(tenant.getIsPrimaryTenant());
+        
+        // Ensure role is set
+        if (owner.getRole() == null) {
+            logger.debug("Setting default role for owner created from tenant: {}", tenant.getTenantId());
+            owner.setRole(OwnerRole.DEFAULT);
+        }
+        
+        Owner savedOwner = ownerRepository.save(owner);
+        
+        // Ensure user role is set and saved
+        UserRole userRole = savedOwner.getUserRole();
+        if (userRole != null) {
+            userRoleRepository.save(userRole);
+            logger.debug("User role saved for owner created from tenant: {} - {}", savedOwner.getOwnerId(), userRole);
+        } else {
+            logger.warn("No user role found for owner created from tenant: {}", savedOwner.getOwnerId());
+        }
+        
+        return savedOwner;
     }
 
     @Override
+    @Transactional
     public Owner updateOwner(String ownerId, Owner owner) throws NotFoundResponseException {
         Owner existingOwner = ownerRepository.findById(ownerId)
                 .orElseThrow(() -> {
-                    logger.error("Owner not found with ID: {}", ownerId);
+                    logger.error(OWNER_NOT_FOUND_WITH_ID, ownerId);
                     return new NotFoundResponseException("Owner not found with ID: " + ownerId);
                 });
         existingOwner.getIdentity().updateIdentity(owner.getIdentity());
@@ -205,16 +318,17 @@ public class OwnerServiceImpl implements OwnerService {
 
         existingOwner.updateOwner(owner);
         logger.info("Updating owner with ID: {}", ownerId);
-        Owner updatedOwner = ownerRepository.save(owner);
+        Owner updatedOwner = ownerRepository.save(existingOwner);
         logger.info("Owner updated successfully with ID: {}", updatedOwner.getOwnerId());
         return updatedOwner;
     }
 
     @Override
+    @Transactional
     public void deleteOwner(String ownerId) throws NotFoundResponseException, InvalidOperationException {
         Optional<Owner> owner = ownerRepository.findById(ownerId);
         if (owner.isEmpty()) {
-            logger.error("Owner not found with ID: {}", ownerId);
+            logger.error(OWNER_NOT_FOUND_WITH_ID, ownerId);
             throw new NotFoundResponseException("Owner not found with ID: " + ownerId);
         }
         if (owner.get().getUnits() != null) {
@@ -240,7 +354,7 @@ public class OwnerServiceImpl implements OwnerService {
     public Owner findByEmail(String email) throws NotFoundResponseException {
         return ownerRepository.findByIdentity_Email(email)
                 .orElseThrow(() -> {
-                    logger.error("Owner not found with email: {}", email);
+                    logger.error(OWNER_NOT_FOUND_WITH_EMAIL, email);
                     return new NotFoundResponseException("Owner not found with email: " + email);
                 });
     }
@@ -258,7 +372,7 @@ public class OwnerServiceImpl implements OwnerService {
     public Owner findByUserId(String userId) throws NotFoundResponseException {
         return ownerRepository.findByIdentity_UserId(userId)
                 .orElseThrow(() -> {
-                    logger.error("Owner not found for user ID: {}", userId);
+                    logger.error(OWNER_NOT_FOUND_WITH_USER_ID, userId);
                     return new NotFoundResponseException("Owner not found for User ID: " + userId);
                 });
     }
