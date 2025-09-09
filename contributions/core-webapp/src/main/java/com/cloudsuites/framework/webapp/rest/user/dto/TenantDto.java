@@ -1,9 +1,9 @@
 package com.cloudsuites.framework.webapp.rest.user.dto;
 
-import com.cloudsuites.framework.services.property.features.entities.Lease;
 import com.cloudsuites.framework.services.property.personas.entities.TenantRole;
 import com.cloudsuites.framework.services.property.personas.entities.TenantStatus;
 import com.cloudsuites.framework.webapp.rest.property.dto.BuildingDto;
+import com.cloudsuites.framework.webapp.rest.property.dto.LeaseDto;
 import com.cloudsuites.framework.webapp.rest.property.dto.UnitDto;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -70,6 +70,6 @@ public class TenantDto{
 
     @Schema(description = "The lease associated with the unit")
     @JsonView({Views.RoleView.class, Views.TenantView.class, Views.UnitView.class, Views.OwnerView.class})
-    private Lease lease;
+    private LeaseDto lease;
 
 }
