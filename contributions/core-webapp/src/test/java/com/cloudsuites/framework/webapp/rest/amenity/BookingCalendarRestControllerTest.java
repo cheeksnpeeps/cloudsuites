@@ -211,8 +211,8 @@ class BookingCalendarRestControllerTest {
         String validAmenityId = retrievedAmenity.getAmenityId();
         // Set up booking details
         AmenityBookingDto bookingDto = new AmenityBookingDto();
-        bookingDto.setStartTime(LocalDateTime.now().plusDays(0).withHour(12).withMinute(0).withSecond(0).withNano(0));
-        bookingDto.setEndTime(LocalDateTime.now().plusDays(0).withHour(13).withMinute(0).withSecond(0).withNano(0));
+        bookingDto.setStartTime(LocalDateTime.now().plusDays(0).withHour(12).withMinute(0).withSecond(0).withNano(0).atOffset(java.time.ZoneOffset.UTC));
+        bookingDto.setEndTime(LocalDateTime.now().plusDays(0).withHour(13).withMinute(0).withSecond(0).withNano(0).atOffset(java.time.ZoneOffset.UTC));
 
         // Perform the request and capture the result
         webTestClient.post()

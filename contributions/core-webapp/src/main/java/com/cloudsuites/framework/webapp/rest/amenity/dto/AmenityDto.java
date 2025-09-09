@@ -34,7 +34,7 @@ import java.util.List;
         @JsonSubTypes.Type(value = TennisCourtDto.class, name = "TENNIS_COURT"),
         @JsonSubTypes.Type(value = AerobicsRoomDto.class, name = "AEROBICS_ROOM"),
         @JsonSubTypes.Type(value = PartyRoomDto.class, name = "PARTY_ROOM"),
-        @JsonSubTypes.Type(value = BarbequeAreaDto.class, name = "BARBEQUE_AREA"),
+        @JsonSubTypes.Type(value = BarbequeAreaDto.class, name = "BARBECUE_AREA"),
         @JsonSubTypes.Type(value = GymDto.class, name = "GYM"),
         @JsonSubTypes.Type(value = TheaterDto.class, name = "THEATER"),
         @JsonSubTypes.Type(value = MassageRoomDto.class, name = "MASSAGE_ROOM"),
@@ -144,12 +144,12 @@ public class AmenityDto {
     private List<String> buildingIds;
 
     @JsonView(Views.AmenityView.class)
-    @Schema(description = "Add custom rules for the amenity", example = "No smoking allowed")
+    @Schema(description = "Add custom rules for the amenity", example = "[\"No smoking allowed\"]")
     private List<String> customRules;
 
     @JsonView(Views.AmenityView.class)
-    @Schema(description = "Waiver Details for the amenity", example = "Waiver details")
-    private String waiverDetails;
+    @Schema(description = "Waiver Details for the amenity", example = "[\"Waiver details\"]")
+    private List<String> waiverDetails;
 
     @JsonView(Views.AmenityView.class)
     @Schema(description = "Indicates if a waiver is required to use the amenity", example = "false")

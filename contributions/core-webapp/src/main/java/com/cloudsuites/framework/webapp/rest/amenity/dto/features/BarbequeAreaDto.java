@@ -18,13 +18,8 @@ import java.math.BigDecimal;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@JsonTypeName("BARBEQUE_AREA") // This value should match the type in the base DTO
+@JsonTypeName("BARBECUE_AREA") // Fixed spelling to match AmenityType.BARBECUE_AREA
 public class BarbequeAreaDto extends AmenityDto {
-
-    @JsonView({Views.AmenityView.class, Views.BuildingView.class})
-    @Schema(description = "Type of the amenity", example = "SWIMMING_POOL")
-    @NotNull(message = "Type is mandatory")
-    private AmenityType type;
 
     @JsonView(Views.AmenityView.class)
     @Schema(description = "Number of barbeque grills available", example = "3")

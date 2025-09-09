@@ -21,10 +21,7 @@ import java.math.BigDecimal;
 @JsonTypeName("GUEST_SUITE")
 public class GuestSuiteDto extends AmenityDto {
 
-    @JsonView({Views.AmenityView.class, Views.BuildingView.class})
-    @Schema(description = "Type of the amenity", example = "SWIMMING_POOL")
-    @NotNull(message = "Type is mandatory")
-    private AmenityType type;
+
 
     @JsonView(Views.AmenityView.class)
     @Schema(description = "Number of bedrooms in the guest suite", example = "2")

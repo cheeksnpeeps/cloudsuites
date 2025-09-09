@@ -19,10 +19,7 @@ import lombok.Setter;
 @JsonTypeName("OTHER")
 public class OtherDto extends AmenityDto {
 
-    @JsonView({Views.AmenityView.class, Views.BuildingView.class})
-    @Schema(description = "Type of the amenity", example = "SWIMMING_POOL")
-    @NotNull(message = "Type is mandatory")
-    private AmenityType type;
+
 
     @JsonView(Views.AmenityView.class)
     @Schema(description = "Description of the amenity", example = "Custom-built rock climbing wall")

@@ -1,6 +1,9 @@
 package com.cloudsuites.framework.modules.amenity.repository;
 
 import com.cloudsuites.framework.services.amenity.entities.booking.AmenityBooking;
+
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -8,4 +11,5 @@ import org.springframework.stereotype.Repository;
 public interface AmenityBookingRepository extends JpaRepository<AmenityBooking, String> {
 
     AmenityBooking findByBookingIdAndUserId(String bookingId, String tenantId);
+
 }

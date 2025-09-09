@@ -8,6 +8,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public interface AmenityBookingService {
 
@@ -32,4 +33,25 @@ public interface AmenityBookingService {
 
     @Transactional
     Mono<AmenityBooking> updateBookingStatus(String bookingId, BookingStatus status);
+
+    @Transactional
+    AmenityBooking bookAmenitySync(Amenity amenity, String userId, LocalDateTime startTime, LocalDateTime endTime);
+
+    @Transactional
+    Void cancelBookingSync(String bookingId, String tenantId);
+
+    @Transactional
+    Boolean isAvailableSync(String amenityId, LocalDateTime startTime, LocalDateTime endTime);
+
+    @Transactional
+    List<AmenityBooking> getAllBookingsForAmenitySync(String amenityId);
+
+    @Transactional
+    AmenityBooking getAmenityBookingSync(String bookingId);
+
+    @Transactional
+    AmenityBooking updateBookingSync(AmenityBooking booking, LocalDateTime newStartTime, LocalDateTime newEndTime);
+
+    @Transactional
+    AmenityBooking updateBookingStatusSync(String bookingId, BookingStatus status);
 }
