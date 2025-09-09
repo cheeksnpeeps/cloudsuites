@@ -5,11 +5,11 @@ import com.cloudsuites.framework.modules.property.features.repository.UnitReposi
 import com.cloudsuites.framework.modules.property.personas.repository.OwnerRepository;
 import com.cloudsuites.framework.modules.property.personas.repository.TenantRepository;
 import com.cloudsuites.framework.services.property.features.entities.Building;
-import com.cloudsuites.framework.services.property.features.entities.Lease;
 import com.cloudsuites.framework.services.property.features.entities.LeaseStatus;
 import com.cloudsuites.framework.services.property.features.entities.Unit;
 import com.cloudsuites.framework.services.property.personas.entities.Owner;
 import com.cloudsuites.framework.services.user.entities.Identity;
+import com.cloudsuites.framework.webapp.rest.property.dto.LeaseDto;
 import com.cloudsuites.framework.webapp.rest.user.dto.IdentityDto;
 import com.cloudsuites.framework.webapp.rest.user.dto.TenantDto;
 import com.cloudsuites.framework.webapp.rest.user.mapper.TenantMapper;
@@ -247,7 +247,7 @@ class TenantAuthControllerTest {
         tenantDto.setIdentity(identity);
         tenantDto.setIsPrimaryTenant(true);
         tenantDto.setIsOwner(false);
-        Lease lease = new Lease();
+        LeaseDto lease = new LeaseDto();
         lease.setStatus(LeaseStatus.ACTIVE);
         lease.setStartDate(LocalDate.now());
         lease.setEndDate(LocalDate.now().plusYears(1));

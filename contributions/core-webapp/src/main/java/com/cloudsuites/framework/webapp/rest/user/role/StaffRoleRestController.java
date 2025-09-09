@@ -40,7 +40,7 @@ public class StaffRoleRestController {
         this.mapper = mapper;
     }
 
-    @PreAuthorize("hasAuthority('BUILDING_SUPERVISOR')")
+    @PreAuthorize("hasAuthority('ALL_ADMIN') or hasAuthority('BUILDING_SUPERVISOR')")
     @Operation(summary = "Get Staff by ID", description = "Retrieve staff details based on their ID")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Staff not found")
@@ -54,7 +54,7 @@ public class StaffRoleRestController {
         return ResponseEntity.ok().body(mapper.convertToDTO(staff));
     }
 
-    @PreAuthorize("hasAuthority('BUILDING_SUPERVISOR')")
+    @PreAuthorize("hasAuthority('ALL_ADMIN') or hasAuthority('BUILDING_SUPERVISOR')")
     @Operation(summary = "Update Staff Role", description = "Update the role of an existing staff member")
     @ApiResponse(responseCode = "200", description = "Staff role updated successfully", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "404", description = "Staff not found")
@@ -69,7 +69,7 @@ public class StaffRoleRestController {
         return ResponseEntity.ok().body(mapper.convertToDTO(updatedStaff));
     }
 
-    @PreAuthorize("hasAuthority('BUILDING_SUPERVISOR')")
+    @PreAuthorize("hasAuthority('ALL_ADMIN') or hasAuthority('BUILDING_SUPERVISOR')")
     @Operation(summary = "Delete Staff Role", description = "Delete the role of a staff member by ID")
     @ApiResponse(responseCode = "204", description = "Staff role deleted successfully")
     @ApiResponse(responseCode = "404", description = "Staff not found")
@@ -82,7 +82,7 @@ public class StaffRoleRestController {
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasAuthority('BUILDING_SUPERVISOR')")
+    @PreAuthorize("hasAuthority('ALL_ADMIN') or hasAuthority('BUILDING_SUPERVISOR')")
     @Operation(summary = "Get All Staff Roles", description = "Retrieve all staff roles")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @JsonView(Views.RoleView.class)
@@ -94,7 +94,7 @@ public class StaffRoleRestController {
         return ResponseEntity.ok().body(mapper.convertToDTOList(staffMembers));
     }
 
-    @PreAuthorize("hasAuthority('BUILDING_SUPERVISOR')")
+    @PreAuthorize("hasAuthority('ALL_ADMIN') or hasAuthority('BUILDING_SUPERVISOR')")
     @Operation(summary = "Get Staff by Role", description = "Retrieve all staff members with a specific role")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @JsonView(Views.RoleView.class)
@@ -107,7 +107,7 @@ public class StaffRoleRestController {
         return ResponseEntity.ok().body(mapper.convertToDTOList(staffMembers));
     }
 
-    @PreAuthorize("hasAuthority('BUILDING_SUPERVISOR')")
+    @PreAuthorize("hasAuthority('ALL_ADMIN') or hasAuthority('BUILDING_SUPERVISOR')")
     @Operation(summary = "Get Staff by Role and Status", description = "Retrieve all staff members with a specific role and status")
     @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(mediaType = "application/json"))
     @JsonView(Views.RoleView.class)
