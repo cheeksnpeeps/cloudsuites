@@ -150,6 +150,10 @@ public class OwnerAuthController {
     }
 
     private void validateOwnerOwnership(Unit unit, String ownerId) throws InvalidOperationException {
+        if (unit.getOwner() == null) {
+            logger.error("Unit {} has no owner assigned", unit.getUnitId());
+            throw new InvalidOperationException("Unit has no owner assigned");
+        }
         if (!unit.getOwner().getOwnerId().equals(ownerId)) {
             logger.error(WebAppConstants.Auth.OWNER_NOT_UNIT_OWNER_ERROR, ownerId);
             throw new InvalidOperationException(WebAppConstants.Auth.OWNER_NOT_UNIT_OWNER_ERROR);
