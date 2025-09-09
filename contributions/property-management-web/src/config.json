@@ -1,6 +1,0 @@
-{
-  "domain": "cheeksnpeeps.auth0.com",
-  "clientId": "ZkxUUYTnpftzHfDz3T3EfAXo2lIngEAK",
-  "audience": "https://api.cloudsuites.com",
-  "scope": "openid profile email offline_access administrator:property"
-}
