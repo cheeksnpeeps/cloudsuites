@@ -109,6 +109,14 @@ public class TenantServiceImpl implements TenantService {
     private void manageLeaseForTenant(Tenant tenant, Unit unit) {
         logger.debug("Tenant is not an owner.");
         Owner owner = unit.getOwner();
+        
+        if (owner == null) {
+            logger.warn("No owner found for unit: {}. Skipping lease management.", unit.getUnitId());
+            // Set lease to null if no owner is associated with the unit
+            tenant.setLease(null);
+            return;
+        }
+        
         Lease savedLease = leaseRepository.findByUnitIdAndOwnerId(owner.getOwnerId(), unit.getUnitId());
         if (savedLease != null) {
             logger.info("Lease already exists for owner: {} and unit: {}. Updating lease.", owner.getOwnerId(), unit.getUnitId());
@@ -117,11 +125,15 @@ public class TenantServiceImpl implements TenantService {
             tenant.setLease(savedLease);
         } else {
             Lease lease = tenant.getLease();
-            lease.setUnitId(unit.getUnitId());
-            lease.setOwnerId(owner.getOwnerId());
-            logger.debug("Creating lease for tenant: {} and unit: {}", tenant.getTenantId(), unit.getUnitId());
-            lease = leaseRepository.save(lease);
-            tenant.setLease(lease);
+            if (lease != null) {
+                lease.setUnitId(unit.getUnitId());
+                lease.setOwnerId(owner.getOwnerId());
+                logger.debug("Creating lease for tenant: {} and unit: {}", tenant.getTenantId(), unit.getUnitId());
+                lease = leaseRepository.save(lease);
+                tenant.setLease(lease);
+            } else {
+                logger.debug("No lease provided for tenant: {}", tenant.getTenantId());
+            }
         }
     }
 

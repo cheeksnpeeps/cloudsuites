@@ -26,10 +26,6 @@ public class UnitDto {
 	@JsonView({Views.UnitView.class, Views.FloorView.class, Views.OwnerView.class, Views.TenantView.class})
 	private String unitId;
 
-	@Schema(description = "Building of the unit")
-	@JsonView({Views.UnitView.class, Views.OwnerView.class})
-	private BuildingDto building;
-
 	@Schema(description = "Owner of the unit")
 	@JsonView({Views.UnitView.class, Views.TenantView.class})
 	private OwnerDto owner;

@@ -59,8 +59,8 @@ public class UnitServiceImpl implements UnitService {
     @Override
     public List<Unit> getAllUnits(String buildingId) {
         logger.debug("Entering getAllUnits with buildingId: {}", buildingId);
-        List<Unit> units = unitRepository.findAll();
-        logger.debug("Units found: {}", units.size());
+        List<Unit> units = unitRepository.findAllByBuilding_BuildingId(buildingId);
+        logger.debug("Units found: {} for building: {}", units.size(), buildingId);
         return units;
     }
 

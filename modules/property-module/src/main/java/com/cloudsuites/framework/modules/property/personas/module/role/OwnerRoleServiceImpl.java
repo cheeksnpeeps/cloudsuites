@@ -98,6 +98,13 @@ public class OwnerRoleServiceImpl implements OwnerRoleService {
         owners.forEach(owner -> {
             List<UserRole> roles = userRoleRepository.findUserRoleByPersonaId(owner.getOwnerId());
             logger.debug("OwnerId: {} has {} roles", owner.getOwnerId(), roles.size());
+            
+            // Ensure owner has a role - set default if null
+            if (owner.getRole() == null) {
+                logger.warn("Owner {} has null role, setting to DEFAULT", owner.getOwnerId());
+                owner.setRole(OwnerRole.DEFAULT);
+            }
+            
             if (roles.size() > 1) {
                 logger.debug("Deleting all roles for ownerId: {}", owner.getOwnerId());
                 userRoleRepository.deleteAll(roles);

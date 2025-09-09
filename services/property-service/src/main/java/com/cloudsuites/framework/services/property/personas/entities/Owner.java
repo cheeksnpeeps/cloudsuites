@@ -32,7 +32,7 @@ public class Owner {
     private List<Unit> units;
 
     @JoinColumn(name = "user_id")
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     private Identity identity;
 
     @Column(name = "is_primary_tenant")

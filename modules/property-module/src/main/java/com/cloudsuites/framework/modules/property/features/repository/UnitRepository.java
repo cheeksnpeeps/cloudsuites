@@ -13,4 +13,6 @@ public interface UnitRepository extends JpaRepository<Unit, String> {
     Optional<List<Unit>> findAllByFloor_FloorId(String floorId);
 
     Optional<Unit> findByBuilding_BuildingIdAndUnitId(String buildingId, String unitId);
+    
+    List<Unit> findAllByBuilding_BuildingId(String buildingId);
 }
