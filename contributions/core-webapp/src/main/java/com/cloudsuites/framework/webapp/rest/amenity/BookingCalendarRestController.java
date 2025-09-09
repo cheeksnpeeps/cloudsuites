@@ -51,7 +51,7 @@ public class BookingCalendarRestController {
         this.tenantService = tenantService;
     }
 
-    @PreAuthorize("hasAuthority('TENANT') or hasAuthority('OWNER')")
+    @PreAuthorize("hasAuthority('TENANT') or hasAuthority('OWNER') or hasAuthority('SUPER_ADMIN')")
     @Operation(
             summary = "Get Booking Calendar for a Tenant",
             description = "Get a list of all bookings amenities for a tenant within a given time range"
@@ -88,7 +88,7 @@ public class BookingCalendarRestController {
         return ResponseEntity.ok().body(calendarDto);
     }
 
-    @PreAuthorize("hasAuthority('STAFF')")
+    @PreAuthorize("hasAuthority('STAFF') or hasAuthority('SUPER_ADMIN')")
     @Operation(
             summary = "Get Booking Calendar for a Staff",
             description = "Get a list of all bookings amenities for a staff  within a given time range"

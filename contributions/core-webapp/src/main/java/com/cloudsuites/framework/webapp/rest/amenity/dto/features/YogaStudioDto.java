@@ -19,10 +19,7 @@ import lombok.Setter;
 @JsonTypeName("YOGA_STUDIO")
 public class YogaStudioDto extends AmenityDto {
 
-    @JsonView({Views.AmenityView.class, Views.BuildingView.class})
-    @Schema(description = "Type of the amenity", example = "SWIMMING_POOL")
-    @NotNull(message = "Type is mandatory")
-    private AmenityType type;
+
 
     @JsonView(Views.AmenityView.class)
     @Schema(description = "Indicates if yoga mats are provided", example = "true")

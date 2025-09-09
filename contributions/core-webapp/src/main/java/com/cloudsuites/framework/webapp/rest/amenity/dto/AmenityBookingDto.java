@@ -18,6 +18,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Data
 @NoArgsConstructor
@@ -41,24 +42,24 @@ public class AmenityBookingDto {
     private String userId;
 
     @Setter
-    @NotBlank
+    @NotNull
     @Schema(hidden = true)
     @JsonView({Views.AmenityBooking.class, Views.BookingCalendarView.class})
     private Boolean isCurrentUser;
 
     @NotNull
     @FutureOrPresent
-    @Schema(description = "Start time of the booking", example = "2021-12-23T08:00:00")
+    @Schema(description = "Start time of the booking", example = "2025-09-09T02:23:00Z")
     @JsonView({Views.AmenityBooking.class, Views.BookingCalendarView.class})
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
-    private LocalDateTime startTime;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX") // include offset
+    private OffsetDateTime startTime;
 
     @NotNull
     @Future
-    @Schema(description = "End time of the booking", example = "2021-12-23T10:00:00")
+    @Schema(description = "End time of the booking", example = "2025-09-09T03:23:00Z")
     @JsonView({Views.AmenityBooking.class, Views.BookingCalendarView.class})
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
-    private LocalDateTime endTime;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")
+    private OffsetDateTime endTime;
 
     @Schema(description = "Status of the booking", example = "APPROVED")
     @JsonView({Views.BookingCalendarView.class, Views.AmenityBookingStaff.class})

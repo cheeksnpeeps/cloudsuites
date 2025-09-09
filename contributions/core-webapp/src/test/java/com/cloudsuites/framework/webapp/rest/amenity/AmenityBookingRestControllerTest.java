@@ -214,8 +214,8 @@ class AmenityBookingRestControllerTest {
         logger.info("Test - Retrieved Amenity: " + retrievedAmenity.getAmenityId());
         // Set up booking details
         AmenityBookingDto bookingDto = new AmenityBookingDto();
-        bookingDto.setStartTime(LocalDateTime.now().plusDays(1).withHour(12).withMinute(0).withSecond(0).withNano(0));
-        bookingDto.setEndTime(LocalDateTime.now().plusDays(1).withHour(13).withMinute(0).withSecond(0).withNano(0));
+        bookingDto.setStartTime(LocalDateTime.now().plusDays(1).withHour(12).withMinute(0).withSecond(0).withNano(0).atOffset(java.time.ZoneOffset.UTC));
+        bookingDto.setEndTime(LocalDateTime.now().plusDays(1).withHour(13).withMinute(0).withSecond(0).withNano(0).atOffset(java.time.ZoneOffset.UTC));
 
         // Perform the request and capture the result
         webTestClient.post()
@@ -248,8 +248,8 @@ class AmenityBookingRestControllerTest {
         logger.info("Test - Retrieved Amenity: " + retrievedAmenity.getAmenityId());
 
         AmenityBookingDto bookingDto = new AmenityBookingDto();
-        bookingDto.setStartTime(LocalDateTime.now().withHour(0));
-        bookingDto.setEndTime(LocalDateTime.now().withHour(0));
+        bookingDto.setStartTime(LocalDateTime.now().withHour(0).atOffset(java.time.ZoneOffset.UTC));
+        bookingDto.setEndTime(LocalDateTime.now().withHour(0).atOffset(java.time.ZoneOffset.UTC));
 
         webTestClient.post()
                 .uri("/api/v1/amenities/{amenityId}/tenants/{tenantId}/bookings", validAmenityId, validUserId)

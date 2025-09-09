@@ -19,10 +19,7 @@ import lombok.Setter;
 @JsonTypeName("GOLF_SIMULATOR")
 public class GolfSimulatorDto extends AmenityDto {
 
-    @JsonView({Views.AmenityView.class, Views.BuildingView.class})
-    @Schema(description = "Type of the amenity", example = "SWIMMING_POOL")
-    @NotNull(message = "Type is mandatory")
-    private AmenityType type;
+
 
     @JsonView(Views.AmenityView.class)
     @Schema(description = "Brand or model of the golf simulator", example = "TrackMan")

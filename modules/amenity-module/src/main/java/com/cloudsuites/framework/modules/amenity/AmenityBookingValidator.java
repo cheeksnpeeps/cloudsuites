@@ -112,7 +112,7 @@ public class AmenityBookingValidator {
             throw new BookingException("Booking is not required for this amenity.");
         }
 
-        if (amenity.getAdvanceBookingPeriod() != null
+        if (amenity.getAdvanceBookingPeriod() != 0
                 && startTime.isAfter(LocalDateTime.now().plusDays(amenity.getAdvanceBookingPeriod()))) {
             throw new BookingException("Booking is too far in advance.");
         }
@@ -205,6 +205,10 @@ public class AmenityBookingValidator {
                 throw new IllegalArgumentException("Unsupported booking limit period: " + period);
         }
         return startTime;
+    }
+
+    public Boolean isAvailableSync(Amenity amenity, LocalDateTime startTime, LocalDateTime endTime) {
+        return isAvailable(amenity, startTime, endTime).block();
     }
 
     public Mono<Boolean> isAvailable(Amenity amenity, LocalDateTime startTime, LocalDateTime endTime) {

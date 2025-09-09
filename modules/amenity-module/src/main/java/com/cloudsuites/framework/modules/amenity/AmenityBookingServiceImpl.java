@@ -18,6 +18,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class AmenityBookingServiceImpl implements AmenityBookingService {
@@ -144,5 +145,47 @@ public class AmenityBookingServiceImpl implements AmenityBookingService {
                 });
     }
 
+    @Override
+    public AmenityBooking bookAmenitySync(Amenity amenity, String userId, LocalDateTime startTime, LocalDateTime endTime) {
+        return bookAmenity(amenity, userId, startTime, endTime).block();
+    }
+
+    @Override
+    public Void cancelBookingSync(String bookingId, String tenantId) {
+        return cancelBooking(bookingId, tenantId).block();
+    }
+
+    @Override
+    public Boolean isAvailableSync(String amenityId, LocalDateTime startTime, LocalDateTime endTime) {
+        return isAvailable(amenityId, startTime, endTime).block();
+    }
+
+    @Override
+    public List<AmenityBooking> getAllBookingsForAmenitySync(String amenityId) {
+        logger.debug("Retrieving all bookings for amenity with ID: {}", amenityId);
+        try {
+            return getAllBookingsForAmenity(amenityId)
+                    .collectList()
+                    .block();
+        } catch (Exception e) {
+            logger.error("Error retrieving bookings for amenity {}: {}", amenityId, e.getMessage(), e);
+            throw e; // or wrap in a domain exception
+        }
+    }
+
+    @Override
+    public AmenityBooking getAmenityBookingSync(String bookingId) {
+        return getAmenityBooking(bookingId).block();
+    }
+
+    @Override
+    public AmenityBooking updateBookingSync(AmenityBooking booking, LocalDateTime newStartTime, LocalDateTime newEndTime) {
+        return updateBooking(booking, newStartTime, newEndTime).block();
+    }
+
+    @Override
+    public AmenityBooking updateBookingStatusSync(String bookingId, BookingStatus status) {
+        return updateBookingStatus(bookingId, status).block();
+    }
 
 }

@@ -6,25 +6,20 @@ import com.cloudsuites.framework.webapp.rest.property.dto.Views;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
 
 @Getter
 @Setter
-@AllArgsConstructor
-@NoArgsConstructor
 @JsonTypeName("SWIMMING_POOL")
 public class SwimmingPoolDto extends AmenityDto {
 
-    @JsonView({Views.AmenityView.class, Views.BuildingView.class})
-    @Schema(description = "Type of the amenity", example = "SWIMMING_POOL")
-    @NotNull(message = "Type is mandatory")
-    private AmenityType type;
+    public SwimmingPoolDto() {
+        super();
+        setType(AmenityType.SWIMMING_POOL);
+    }
 
     @JsonView(Views.AmenityView.class)
     @Schema(description = "Indicates if a lifeguard is present", example = "true")

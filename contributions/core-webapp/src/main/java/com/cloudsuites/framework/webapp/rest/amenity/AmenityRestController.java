@@ -5,6 +5,7 @@ import com.cloudsuites.framework.services.amenity.entities.MaintenanceStatus;
 import com.cloudsuites.framework.services.amenity.service.AmenityService;
 import com.cloudsuites.framework.services.common.exception.NotFoundResponseException;
 import com.cloudsuites.framework.webapp.rest.amenity.dto.AmenityDto;
+import com.cloudsuites.framework.webapp.rest.amenity.dto.MaintenanceStatusUpdateDto;
 import com.cloudsuites.framework.webapp.rest.amenity.mapper.AmenityMapper;
 import com.cloudsuites.framework.webapp.rest.property.dto.Views;
 import com.fasterxml.jackson.annotation.JsonView;
@@ -74,7 +75,7 @@ public class AmenityRestController {
     @JsonView(Views.AmenityView.class)
     @PostMapping("/amenities")
     public ResponseEntity<AmenityDto> createAmenity(
-            @Valid @RequestBody @Parameter(description = "Amenity payload") AmenityDto amenityDto) {
+            @RequestBody @Parameter(description = "Amenity payload") AmenityDto amenityDto) {
         logger.debug("Creating new amenity: {}", amenityDto.getType());
         Amenity amenity = mapper.convertToEntity(amenityDto);
         amenity = amenityService.createAmenity(amenity, amenityDto.getBuildingIds());
@@ -145,9 +146,10 @@ public class AmenityRestController {
     @PutMapping("/buildings/{buildingId}/amenities/{amenityId}/maintenance-status")
     public ResponseEntity<AmenityDto> updateMaintenanceStatus(
             @Parameter(description = "ID of the amenity") @PathVariable String amenityId,
-            @Valid @RequestBody @Parameter(description = "New maintenance status") MaintenanceStatus status, @PathVariable String buildingId) {
-        logger.debug("Updating maintenance status for amenity {}", amenityId);
-        Amenity updatedAmenity = amenityService.updateMaintenanceStatus(amenityId, status);
+            @Valid @RequestBody @Parameter(description = "Maintenance status update") MaintenanceStatusUpdateDto statusUpdate, 
+            @PathVariable String buildingId) {
+        logger.debug("Updating maintenance status for amenity {} to {}", amenityId, statusUpdate.getMaintenanceStatus());
+        Amenity updatedAmenity = amenityService.updateMaintenanceStatus(amenityId, statusUpdate.getMaintenanceStatus());
         logger.debug("Maintenance status updated for amenity {}", amenityId);
         return ResponseEntity.ok().body(mapper.convertToDTO(updatedAmenity));
     }
