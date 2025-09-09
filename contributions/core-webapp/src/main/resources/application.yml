@@ -1,3 +1,7 @@
+# CloudSuites Application Configuration
+# Docker-First Development Environment
+# =================================================================
+
 logging:
   level:
     root: INFO
@@ -5,60 +9,128 @@ logging:
     org.springframework.security: DEBUG
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.hibernate.tool.schema: DEBUG
+    org.springframework.orm.jpa: DEBUG
+    com.fasterxml.jackson.databind: DEBUG
   pattern:
     console: "%-4relative [%thread] %-5level %logger{35} %X{correlationId} - %msg %n"
+
+# =================================================================
+# SPRING CONFIGURATION
+# =================================================================
 spring:
+  # Database Configuration (Docker PostgreSQL)
   datasource:
-    url: jdbc:postgresql://127.0.0.1:59665/cloudsuites
-    username: csuser
-    password: csPassw0rd
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  # Flyway Database Migration
   flyway:
-    url: jdbc:postgresql://127.0.0.1:59665/cloudsuites
-    user: csuser
-    password: csPassw0rd
-    enabled: false
-    locations: classpath:db/migrationps
+    url: ${SPRING_DATASOURCE_URL}
+    user: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    enabled: true  # ENABLED - Using Flyway for schema management
+    locations: classpath:db/migration
     baseline-on-migrate: true
+    validate-on-migrate: true
     placeholders:
-      partitioning.prefix: "amenity_booking_" # Prefix used for partition table names
-      partitioning.frequency: "4"              # Frequency of partitioning (e.g., number of quarters per year)
-      partitioning.retention_period_months: "3"  # Retention period for active data (in months)
-      partitioning.archive_storage_path: "/Users/loc/Desktop/storage"  # Path for storing archived data
-      archiving.cut_off_period_months: "6"     # Cut-off period for archiving (in months)
-      archiving.file_format: ".parquet"         # File format for archived data
-      interval.months: "1"                     # Interval for monthly partitions
-      interval.quarters: "3"                   # Interval for quarterly partitions
-      interval.years: "12"                     # Interval for yearly partitions
-    websecurity:
-    debug: true
+      partitioning.prefix: "amenity_booking_"
+      partitioning.frequency: "4"
+      partitioning.retention_period_months: "3"
+      partitioning.archive_storage_path: "/app/storage"
+      archiving.cut_off_period_months: "6"
+      archiving.file_format: ".parquet"
+      interval.months: "1"
+      interval.quarters: "3"
+      interval.years: "12"
+
+  # R2DBC Configuration (Reactive)
+  r2dbc:
+    host: ${DB_HOST}
+    port: ${DB_PORT}
+    database: ${DB_NAME}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: postgresql
+    pools:
+      initial-size: ${SPRING_R2DBC_POOL_INITIAL_SIZE}
+      max-size: ${SPRING_R2DBC_POOL_MAX_SIZE}
+
+  # JPA/Hibernate Configuration
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+        hbm2ddl.auto: none  # DISABLED - Using Flyway for schema management
+        enable_lazy_load_no_trans: true
+        use_sql_comments: true
+        show_sql: true
+        format_sql: true
+
+  # SQL Initialization
   sql:
     init:
-      mode: embedded
+      mode: always
+
+  # Security Configuration
   security:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: https://cheeksnpeeps.auth0.com/
-auth0:
-  audience: https://api.cloudsuites.com
-web:
-  cors:
-    allowed-origins: http://localhost:8080
-  jpa:
-    properties:
-      hibernate:
-        enable_lazy_load_no_trans: true
-        use_sql_comments: true
-        show_sql: true
-        hbm2ddl:
-          auto: update
+          issuer-uri: ${AUTH0_ISSUER_URI}
+
+  # Web Configuration
   web:
     resources:
       static-locations: classpath:/static/
+
+# =================================================================
+# EXTERNAL INTEGRATIONS
+# =================================================================
+
+# Auth0 Configuration
+auth0:
+  audience: ${AUTH0_AUDIENCE}
+
+# CORS Configuration  
+web:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS}
+
+# Okta Configuration (if needed)
 okta:
   oauth2:
     groupsClaim: https://api.cloudsuites.com/roles
+
+# Twilio SMS Configuration
+twilio:
+  accountSid: ${TWILIO_ACCOUNT_SID}
+  serviceSid: ${TWILIO_SERVICE_SID}
+  authToken: ${TWILIO_AUTH_TOKEN}
+  phoneNumber: ${TWILIO_PHONE_NUMBER}
+
+# JWT Configuration
+jwt:
+  secretKey: ${JWT_SECRET_KEY}
+  accessTokenValidityMs: ${JWT_ACCESS_TOKEN_VALIDITY_MS}
+  refreshTokenValidityMs: ${JWT_REFRESH_TOKEN_VALIDITY_MS}
+
+# Google Cloud Platform
+gcp:
+  firebase:
+    service-account: ${GCP_FIREBASE_SERVICE_ACCOUNT}
+
+# =================================================================
+# MONITORING & MANAGEMENT
+# =================================================================
 
 management:
   endpoints:
@@ -69,17 +141,36 @@ management:
   endpoint:
     health:
       show-details: always
+      probes:
+        enabled: true
     loggers:
       enabled: true
-twilio:
-  accountSid: ${accountSid}
-  serviceSid: ${serviceSid}
-  authToken: ${authToken}
-  phoneNumber: ${phoneNumber}
-jwt:
-  secretKey: ${secretKey}
-  accessTokenValidityMs: 86400000  # 1 day in milliseconds
-  refreshTokenValidityMs: 604800000  # 7 days in milliseconds
-gcp:
-  firebase:
-    service-account: classpath:firebase-service-account.json
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+
+# =================================================================
+# SERVER CONFIGURATION
+# =================================================================
+
+server:
+  port: ${SERVER_PORT}
+  servlet:
+    context-path: /
+  compression:
+    enabled: true
+  forward-headers-strategy: framework
+
+# =================================================================
+# APPLICATION-SPECIFIC CONFIGURATION
+# =================================================================
+
+cloudsuites:
+  app:
+    name: CloudSuites Property Management
+    version: '@project.version@'
+  storage:
+    upload-path: ${UPLOAD_PATH}
+    max-file-size: ${MAX_FILE_SIZE}

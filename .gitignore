@@ -8,10 +8,16 @@
 /services/property-service/target/
 /services/parking-service/target/
 *.iml
+*.class
 .idea/*
 /contributions/core-webapp/core-webapp/target/
 /contributions/property-management-web/node_modules/
 /contributions/property-management-web/node/node_modules/
 /contributions/property-management-web/build/
 /contributions/property-management-web/node/
+
+# Environment files with sensitive data
+.env
+.env.local
+.env.*.local
 

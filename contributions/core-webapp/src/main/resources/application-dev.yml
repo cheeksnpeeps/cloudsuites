@@ -1,0 +1,36 @@
+# Development Profile Configuration
+# Overrides for local Docker development
+# =================================================================
+
+logging:
+  level:
+    org.springframework.security: DEBUG  # More verbose for dev
+    com.cloudsuites: DEBUG
+
+spring:
+  # Development JPA settings
+  jpa:
+    properties:
+      hibernate:
+        hbm2ddl.auto: none  # Use Flyway for schema management
+        enable_lazy_load_no_trans: true
+        use_sql_comments: true
+        show_sql: true
+        format_sql: true
+
+# Development-specific CORS (more permissive)
+web:
+  cors:
+    allowed-origins: "*"  # Allow all origins in dev
+
+# Development monitoring (expose more endpoints)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"  # Expose all endpoints in dev
+      
+# Development storage
+cloudsuites:
+  storage:
+    upload-path: /app/dev-uploads

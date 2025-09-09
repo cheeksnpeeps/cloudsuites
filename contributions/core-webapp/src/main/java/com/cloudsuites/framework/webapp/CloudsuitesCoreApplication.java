@@ -39,12 +39,8 @@ public class CloudsuitesCoreApplication {
 		mapper.registerModule(new SimpleModule());
 		mapper.configure(DeserializationFeature.READ_ENUMS_USING_TO_STRING, true);
 
-		// Enable support for polymorphic deserialization
-		mapper.activateDefaultTyping(
-				mapper.getPolymorphicTypeValidator(),
-				ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT,
-				JsonTypeInfo.As.PROPERTY
-		);
+		// Note: Removed activateDefaultTyping() as it conflicts with explicit @JsonTypeInfo annotations
+		// Polymorphic deserialization is handled by @JsonTypeInfo/@JsonSubTypes on DTOs
 
 		return mapper;
 	}
