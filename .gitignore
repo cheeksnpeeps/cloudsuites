@@ -1,23 +1,211 @@
-/contributions/core-webapp/target/
-/modules/common-module/target/
-/modules/identity-module/target/
-/modules/property-module/target/
-/modules/parking-module/target/
-/services/common-service/target/
-/services/identity-service/target/
-/services/property-service/target/
-/services/parking-service/target/
-*.iml
-*.class
-.idea/*
-/contributions/core-webapp/core-webapp/target/
-/contributions/property-management-web/node_modules/
-/contributions/property-management-web/node/node_modules/
-/contributions/property-management-web/build/
-/contributions/property-management-web/node/
+# Maven build outputs
+**/target/
+**/classes/
+**/generated-sources/
+**/generated-test-sources/
+**/test-classes/
 
-# Environment files with sensitive data
+# Maven wrapper
+.mvn/wrapper/maven-wrapper.jar
+
+# Java compilation outputs
+*.class
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# IDE files
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+.settings/
+.project
+.classpath
+.factorypath
+.metadata/
+.recommenders/
+.sts4-cache/
+.apt_generated/
+.apt_generated_tests/
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+
+# Node.js (for React frontend)
+**/node_modules/
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+**/lerna-debug.log*
+**/node/
+**/build/
+**/dist/
+
+# React build outputs
+/contributions/property-management-web/build/
+/contributions/property-management-web/dist/
+
+# Logs
+*.log
+logs/
+**/*.log
+application.log*
+spring.log*
+gc.log*
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~
+*.orig
+*.rej
+
+# Environment and configuration files with sensitive data
 .env
 .env.local
 .env.*.local
+.env.development
+.env.production
+application-local.yml
+application-local.properties
+application-secret.yml
+application-secret.properties
+application-private.yml
+application-private.properties
+
+# Spring Boot
+**/application-dev.yml
+**/application-test.yml
+**/application-prod.yml
+**/application-staging.yml
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+*.h2.db
+*.mv.db
+*.trace.db
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Security
+*.key
+*.pem
+*.crt
+*.p12
+*.jks
+*.keystore
+*.truststore
+
+# Test coverage
+**/coverage/
+**/target/site/
+.nyc_output
+
+# Package managers
+.pnpm-debug.log*
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# JVM crash logs
+hs_err_pid*
+replay_pid*
+
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# JetBrains
+.idea_modules/
+atlassian-ide-plugin.xml
+com_crashlytics_export_strings.xml
+crashlytics.properties
+crashlytics-build.properties
+fabric.properties
+
+# Eclipse
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# VS Code
+.vscode/
+
+# Local development files
+scratch/
+local/
+test-data/
+
+# Authentication and session files
+**/sessions/
+**/tokens/
+jwt-*.key
+oauth-*.json
+auth-cache/
+
+# Performance and monitoring
+**/metrics/
+**/traces/
+**/dumps/
+heap-*.hprof
+thread-*.dump
+
+# Backup files
+*backup*
+*.backup
+*.bak.*
+*-backup-*
 
