@@ -1,0 +1,2136 @@
+# Property Management Platform Onboarding & Authentication Workflows
+
+## Overview & Key Principles
+
+This document defines detailed onboarding workflows and authentication flows for all user personas in a
+property management platform. The design prioritizes **OTP-first (One-Time Password) authentication** for
+a streamlined, passwordless user experience, while maintaining feature parity with BuildingLink’s proven
+functionality. Each persona’s workflow covers triggers, actors, inputs, step-by-step processes, and failure
+states. We also specify the **preferred login path (OTP)** , fallback options (password, SSO), account recovery
+flows, and both backend (Spring Boot, REST, JWT) and frontend (web, future mobile) implementation plans.
+Where applicable, references to BuildingLink features (e.g. login letters, multi-property access, etc.) are
+cited to ensure parity. Flowcharts illustrate each persona’s onboarding journey, and JSON examples or
+schemas are provided where useful.
+
+## Tenant Persona
+
+### Onboarding Workflow (Tenant)
+
+```
+Trigger: Building Admin adds a new tenant (resident) for a unit in the system, typically when a lease
+starts or a resident moves in. This action initiates the tenant’s onboarding.
+Actors: Building Admin (inviter); Tenant (new user).
+Inputs: Tenant’s personal details (name, unit, contact info – email and/or mobile phone). These are
+entered by the admin. The system may also generate a unique Tenant ID and temporary credentials
+or OTP.
+Steps:
+Admin Invitation: The Building Admin enters tenant info and marks the tenant as “invited” in the
+building’s resident list. Upon saving, the system creates a tenant account in an inactive state and
+triggers an onboarding sequence.
+OTP Dispatch: The system sends a One-Time Password to the tenant’s phone (SMS) and/or a login
+link via email. This serves as the “login letter” equivalent – instead of providing a default password,
+the email contains a secure link or instructions to use the OTP for first-time login. If the tenant
+has no email on file, management can print a physical login letter containing a one-time code or
+temporary password. (The letter content is configurable by admins, similar to BuildingLink’s
+editable login letters .)
+Tenant Account Claim: The tenant opens the app or website. They either click the emailed link or
+enter their registered email/phone and the OTP received. The frontend will prompt for the OTP code
+(6-digit numeric by SMS or a deep-link token via email).
+OTP Verification: The platform verifies the code against what was sent (checking correct value and
+within expiry, e.g. 5 minutes). If valid, the tenant’s account is activated and a JWT session token is
+issued, logging them in immediately. The tenant is then guided to complete their profile setup
+```
+#### • • • • • 1 • 1 2 3 • • 4
+
+
+```
+(e.g. create an optional password for fallback, set a custom username if desired, and accept Terms
+and Conditions).
+```
+```
+Post-Login Steps: On first login, the tenant is required to accept the platform’s Terms and
+Conditions (just as BuildingLink requires acceptance on first use ). They are encouraged (but not
+required) to set a permanent password for non-OTP logins and can choose a custom username for
+convenience (similar to BuildingLink’s option to change username on first login). The account is
+now fully active and the tenant can explore resident features.
+```
+```
+Failure States:
+```
+```
+Invalid/Expired OTP: If the tenant enters an incorrect OTP or the code has expired, the system denies
+activation. The tenant can request a new OTP via a “Resend code” option. The backend limits the
+number of OTP attempts (e.g. 3 tries) to prevent abuse. After exceeding the attempt limit or multiple
+expired codes, the workflow goes into a grace state – the tenant must either request again after a
+cooldown or contact building management for assistance.
+Missing Contact Info: If no valid phone/email was provided (e.g. tenant didn’t receive the OTP due to
+wrong info), the tenant cannot complete self-service onboarding. In this case, they are instructed to
+contact the Building Admin to update their contact details or receive a printed login letter with a
+one-time access code.
+System Errors: Any backend error (e.g. OTP service failure) is logged and shown as a friendly
+message. The tenant sees an error and is prompted to try again shortly or reach out for support.
+Admins are notified of failures so they can assist if needed.
+```
+_Figure: Tenant Onboarding Workflow._ **1)** Building Admin registers a new tenant in the system, triggering an
+OTP to the tenant. **2)** The tenant receives the OTP via SMS/email and enters it in the app/website. **3)** The
+system verifies the OTP; on success, the tenant’s account is activated and they proceed to set up their
+profile. **Failure paths** (dashed lines) show that if the OTP is invalid or not received, the tenant can request a
+new OTP or must seek admin help after repeated failures.
+
+### Authentication & Login (Tenant)
+
+```
+Preferred Login (OTP-First): Tenants log in by entering their registered email or mobile number,
+receiving a one-time login code. This OTP-first approach improves UX for residents who may not
+remember passwords. Upon entering the correct OTP, they are granted access (JWT issued). The
+OTP can be delivered via SMS for phone numbers or via email as a “magic link” (which contains a
+token to auto-login). Mobile apps will catch incoming SMS to auto-fill OTP for convenience (using
+platform autofill APIs).
+Fallback – Password: Tenants have the option to set a password (during onboarding or later in
+profile settings) if they prefer traditional login. The login screen offers a “Login with password” link
+that switches to username/password fields. This fallback ensures parity with BuildingLink’s
+username/password method. Tenants can use either their email or a chosen username as the
+login identifier in this mode. (Usernames are unique per tenant; our system defaults to using the
+email as username unless the tenant changes it.)
+Fallback – SSO: Generally not applicable for tenants (since they are individual residents, not
+corporate users). However, if the property supports social logins (e.g. Sign in with Google/Apple for
+resident portal), those can be offered as alternate options. By default, tenant SSO is not enabled,
+keeping things simple.
+```
+#### 5 • 5 5 • • • • • 6 • 1 •
+
+
+```
+Account Recovery: Tenants who opt for password login have self-service recovery: a “Forgot
+Password” link on the login page initiates a password reset email. The tenant enters their email and
+if it matches an account, the system emails a secure reset link. They can then choose a new
+password. (If the email is not in the system, an error email is sent indicating no account found ,
+and the user is prompted to retry or contact management.) For username retrieval, since email can
+be used to log in, “forgot username” is rarely needed; if a tenant did set a custom username and
+forgot it, they can use their email instead or contact support. BuildingLink similarly allows password
+resets via email and directs residents to management if their email wasn’t on file , so we mirror
+that process for robustness.
+Device Trust & Biometric: After a successful OTP login, tenants can enable “Trust this device” to
+reduce friction on subsequent logins. On trusted mobile devices, the app can leverage biometric
+unlock (fingerprint/FaceID) for quick access: the app stores an encrypted refresh token and uses
+biometrics to unlock and obtain a new access token, bypassing OTP each time. This is optional and
+falls back to OTP if biometric fails or token expired.
+Login Letters: To maintain BuildingLink parity, Building Admins can send or re-send “login info”
+letters to tenants at any time. Our platform provides an admin UI to email a tenant their login
+instructions (triggering a fresh OTP or magic link) or to print out a letter with either a one-time code
+or their registered username and a temporary password. The content of these letters is
+customizable by the management (welcome message, support contacts, etc.). This ensures even
+less tech-savvy tenants or those without immediate email access receive a tangible way to log in.
+```
+### Backend Implementation (Tenant)
+
+```
+Account & Role Model: Tenants are modeled as users associated with a specific Unit and Building.
+Each tenant user has a unique ID, contact info, and roles (e.g. ROLE_TENANT) scoping them to their
+unit. They may have additional flags like “primary occupant” vs “occupant” if needed. A tenant could
+be linked to multiple units (if they move or have secondary residences) under the same login; the
+JWT can include a list of authorized unit IDs or the frontend can allow switching context.
+REST API Endpoints: We define REST endpoints under a Tenant Authentication controller. Key
+endpoints include:
+POST /api/v1/auth/buildings/{buildingId}/units/{unitId}/tenants/register –
+Create a new tenant account (called by admin) with the given building/unit context. This triggers
+the OTP send internally after saving the user.
+POST /api/v1/auth/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}/
+request-otp – Request a new OTP for an existing tenant (for login or re-sending invite). This
+generates and delivers an OTP to the tenant’s phone/email on demand.
+POST /api/v1/auth/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}/
+verify-otp?otp=XXXX – Verify an OTP code for tenant login. On success, the service activates
+the account (if first time) and returns a JWT access token and refresh token pair.
+POST /api/v1/auth/buildings/{buildingId}/units/{unitId}/tenants/{tenantId}/
+refresh-token?refreshToken=YYY – Refresh the JWT using a valid refresh token. This
+returns a new access token (and optionally issues a rotated refresh token).
+(Optional) POST /api/v1/auth/tenants/login – (If combining login flows) Accepts either an
+OTP + tenant identifier or username/password, and performs the appropriate authentication,
+returning JWTs. This could be an alternative design to separate endpoints.
+POST /api/v1/tenants/{tenantId}/password – Set or update the tenant’s password
+(protected by requiring current password or OTP) if they choose to have one.
+```
+#### • 7 8 9 • • 2 3 • • •
+
+```
+10
+```
+#### •
+
+```
+11
+```
+#### •
+
+```
+4
+```
+#### •
+
+```
+12
+```
+#### •
+
+#### •
+
+
+```
+POST /api/v1/tenants/{tenantId}/forgot-password – Initiate password reset (sends email
+with token). Similarly, POST /api/v1/tenants/forgot-username could be implemented if
+usernames are used (emails username reminder).
+```
+Each of these endpoints will enforce proper authorization and validation. For example, the Register
+endpoint is accessible only to building admins or staff roles authorized to add tenants, not to the public.
+OTP verification and request endpoints allow unauthenticated access (since the user isn’t logged in yet) but
+are rate-limited and tied to a specific user ID and context to prevent abuse.
+
+```
+OTP Generation & Verification: OTP codes are generated using a secure random algorithm (6–
+digits). They are stored server-side (e.g. in a cache or OTP table) hashed for security, along with a
+short expiration timestamp and an attempt counter. The request-otp endpoint triggers an SMS
+via Twilio or email via SMTP, containing either the numeric code or a login link with a token. The
+verify-otp endpoint checks the provided code against the stored hash and validity window. On
+success, it marks the OTP as used (to prevent reuse) and proceeds with login. If the OTP is invalid or
+expired, appropriate HTTP error responses are returned (e.g. 401 Unauthorized or 410 Gone for
+expired). Audit logs record each OTP request and verification attempt (with timestamp and outcome)
+for security monitoring.
+```
+```
+JWT Handling: Upon successful authentication (OTP or password), the backend issues a JWT access
+token (short-lived, e.g. 15 minutes) and a refresh token (long-lived, e.g. 30 days). We use Spring
+Security with JWT filters to protect endpoints. The JWT contains claims such as sub (user id), role
+(e.g. TENANT), and scope claims for building/unit access. For example, a tenant’s JWT might include
+buildingId and unitId claims or a list of accessible unit IDs. This allows downstream
+authorization checks to ensure tenants can only access their own unit’s data. Sensitive operations
+may still double-check against the database for authority. The refresh token is stored in an HTTP-
+only cookie or returned in response body and is also saved (hashed) in a database table with an
+association to the user, so we can revoke it if needed. We implement refresh token rotation – each
+refresh call invalidates the old token and issues a new one , enhancing security if a refresh token
+is leaked. The JWT signing uses asymmetric keys (RSA) or a strong secret, and the system will employ
+Spring Boot’s JWT support to validate tokens on each request.
+```
+```
+Role and Scope Management: Tenants have minimal roles – primarily access to their resident portal
+features. The backend uses annotations or access-control rules to restrict tenant endpoints (for
+example, /api/v1/units/{unitId}/maintenance-requests can only be accessed by a tenant
+whose JWT unitId matches the path). If a tenant has multiple units, we might allow them to
+switch context via an API call or include multiple unit IDs in their scope. The design aligns with
+BuildingLink’s security model where each resident is limited to their own unit’s information.
+```
+```
+Audit & Logging: All authentication events are logged. Successful logins (timestamp, user ID,
+method OTP or password, device info) and failures (invalid OTP attempts, expired OTP requests, etc.)
+are recorded to an audit log. This helps detect suspicious activity (e.g. many failed OTPs) and
+provides traceability. Administrators (building admins) can view login attempts for their building’s
+residents if needed, and super admins can audit any account. Additionally, whenever a building
+admin sends a “login letter” or triggers an OTP for a tenant, that action is logged (with admin user ID
+and tenant ID) for accountability.
+```
+#### •
+
+#### •
+
+#### •
+
+```
+13
+```
+#### •
+
+#### •
+
+```
+2
+```
+
+### Frontend Implementation (Tenant – Web & Mobile)
+
+```
+Onboarding UI: The web portal will have a “First-Time User” entry point for tenants. For example, a
+welcome page saying “Welcome! Let’s get you set up.” If the tenant has an invite link (from email),
+clicking it opens this page with their email pre-filled or a token that auto-verifies. If not, the page can
+prompt: “Enter your email or phone to get started.” This corresponds to BuildingLink’s step where
+residents confirm their email to initiate a password reset , but in our case it triggers sending an
+OTP. After entering their identifier, the UI calls request-otp. Then, the tenant is taken to an OTP
+verification screen : a simple form to input the 6-digit code sent to them. This screen includes a
+countdown timer and a “Resend code” button that becomes enabled when appropriate. Error
+messages guide the user if the code is wrong (“Incorrect code, please try again”) or expired (“Code
+expired – request a new code”). If the user never receives the code, a help link suggests verifying
+their email/phone or contacting management. Once OTP is verified, if terms and profile setup are
+required (likely on first login), the frontend presents a Welcome/Terms page – the tenant agrees to
+Terms of Service (with a checkbox, mirroring BuildingLink’s approach ) and optionally sets a
+permanent password. These steps are all in a guided flow, after which they land in the resident
+dashboard. Any failure in this flow (e.g. invalid invite token in link, etc.) will show a clear error and
+direct the user to contact their building manager or support.
+```
+```
+Login Screen: The standard login page emphasizes OTP login. It features a single input for “Email or
+Mobile Number” and a prominent “Send Me a Login Code” button. This design signals the OTP-first
+approach (similar to modern apps like WhatsApp or Slack magic links). Below that, a toggle or
+secondary option says “Or, log in with password” – clicking it reveals the traditional Username/
+Password fields. If the user enters the password mode, a “Forgot Password?” link is available below
+the password field. If they are in OTP mode, a “Use Password Instead” link is shown. This dynamic
+approach ensures both methods are available without clutter. For tenants with SSO (unlikely), an SSO
+option (e.g. “Login with Google”) could appear as a smaller button.
+```
+```
+Error Handling: The frontend provides immediate feedback for common issues. For instance, if a
+tenant enters an email that is not found (the request-otp API returns user not found), the UI will
+display “No account found for that email. Please try again or contact your building management.” If
+an OTP code is wrong, the verify-otp API returns 401, and the UI shows “Incorrect code. You
+have X attempts remaining.” If attempts are exhausted or another failure state is hit, the message
+might escalate: “We’re having trouble verifying your code. Please request a new code or contact
+support.” All error messages are phrased in a tenant-friendly way and avoid technical jargon. The UI
+also prevents rapid re-clicking of “Send Code” to avoid spamming OTPs – e.g. disabling the button for
+a short time and showing a spinner/progress state during OTP delivery.
+```
+```
+Post-Login Experience: Once logged in, the tenant sees their resident portal (announcements,
+requests, etc.). If the tenant has access to multiple units or properties (e.g. they moved and still have
+access to a previous unit’s data, or they live in two buildings), the UI will present a property switcher
+```
+- perhaps a dropdown in the header to switch between addresses. This is analogous to multi-
+property support in other systems , ensuring a user with multiple residences doesn’t need
+separate accounts. However, by default most tenants will have one property. The portal will also
+surface profile settings where they can later change their contact info, set or change a password,
+and view their username (which by default is their email, unless they changed it). We will include a
+**“Send Login Info”** button in their profile that emails them their current username and a link to reset
+
+#### •
+
+```
+14
+```
+```
+5
+```
+#### •
+
+#### •
+
+#### •
+
+```
+15
+```
+
+```
+password – similar to BuildingLink’s ability to email login credentials upon request (in our case
+mostly useful if they forget their username and have set one different from email).
+```
+```
+Mobile Considerations: The mobile app (planned) will mirror these flows with a native experience.
+When a tenant enters their phone number on mobile to login, the SMS OTP can be autofilled via
+platform-specific APIs (e.g. SMS Retriever API on Android, AutoFill on iOS) – the app will detect the
+incoming SMS and populate the code automatically for convenience. If the tenant opts to receive the
+code via email, tapping the magic link on a mobile device will deep-link into the app and complete
+the login (bypassing manual code entry). We’ll use deep link URL schemes or universal links to
+achieve this. The app will also support biometric unlock as mentioned (storing credentials in the
+secure enclave and using fingerprint/face to authenticate future sessions without re-entering OTP).
+Push Notification OTP is another enhancement: if the tenant is logged in on one device and tries to
+log in on another, we could send a push notification to the first device to confirm the login (this is an
+advanced feature for future, providing a “Approve sign-in” experience instead of typing a code). For
+now, push may simply be used to deliver the OTP code as a notification for easier reading. All these
+mobile-friendly features aim to match the convenience of modern apps while maintaining security.
+```
+```
+Login Letters & Support: The frontend admin interface will have features to aid in onboarding: for
+example, a Building Admin can select a tenant and click “Resend Welcome Email” which triggers the
+invitation email/OTP again. There will also be an option to download/print a PDF of the login letter
+for a tenant – the template of which can be managed in a settings page (to fulfill the customization
+capability BuildingLink offers ). In the tenant’s view, if they haven’t activated their account, the
+login page can show a hint like “First time logging in? Request a login code above, or contact your
+management office for a printed login letter.” Contact information for building management and
+platform support will be readily available (e.g. support email/number on the login page and help
+menu), replicating BuildingLink’s practice of directing users appropriately for help.
+```
+## Owner Persona
+
+### Onboarding Workflow (Owner)
+
+```
+Trigger: Building Admin (or Property Manager) onboards a new unit owner in the system. This could
+happen when a condo unit is sold or a new owner needs access to the portal. The trigger may also
+be an import of ownership records during initial system setup for a building.
+Actors: Building Admin (inviter); Owner (new user). In some cases, an Owner might also be a
+resident of the unit (occupant), or they could be an off-site landlord – the system handles both
+scenarios by assigning appropriate roles (they might be both Owner and Tenant for the same unit if
+they live there).
+Inputs: Owner’s details – name, unit, contact email/phone, and ownership verification info (e.g. unit
+deed info or an invite code proving they are the owner, if used).
+Steps:
+Admin Invitation: The admin adds the owner’s profile to the unit in the system, marking them as
+the unit owner. The system creates an owner user account (inactive initially) linked to that unit and
+building. Immediately, an OTP or welcome email is sent to the owner’s contact info, much like the
+tenant flow. Owners receive a “login letter” email with a link to set up their portal access – in our
+OTP-first approach this is an OTP link or code rather than a preset password. If the owner has no
+email, a physical letter with a temporary password or code is provided.
+```
+```
+16
+```
+#### •
+
+#### •
+
+```
+3
+```
+```
+16
+```
+#### • • • • • 1 2
+
+
+```
+OTP Verification: The owner visits the portal or mobile app, enters their email/phone and the
+received OTP (or clicks the magic link). The system verifies the OTP code just as with tenants. Upon
+success, the owner account is activated.
+Profile Setup: On first login, the owner is prompted to accept Terms and Conditions and optionally
+set a password, similar to the tenant process. Since owners might not be daily users, the system
+emphasizes they can simply use OTPs each time or set a password if they prefer. If the owner is also
+an occupant, their profile may overlap with tenant info (the system could unify the two roles under
+one login). They can update contact info and notification preferences at this stage.
+```
+```
+Completion: The owner gains access to the Owner Portal features – which might include viewing
+announcements, documents (like board meeting minutes, financial statements), and possibly owner-
+specific functions (e.g. proxy voting in HOA, etc.). They have at least view access to their unit’s data
+and possibly edit rights for certain fields (depending on the platform’s features).
+```
+```
+Failure States:
+```
+```
+OTP issues: Similar to tenant, invalid or expired OTP codes prevent activation. Owners can request
+new OTPs. Because owners may be less urgently awaiting access (e.g. an off-site owner), the system
+might allow a longer OTP validity (perhaps 10 minutes) or the use of email magic links which have
+embedded tokens. If an owner doesn’t complete setup in a given time (say the invite link expires in 7
+days), the admin can re-trigger the invite. These scenarios are logged.
+Contact discrepancies: If the owner’s email on record is wrong or changed (a common case during
+property sales), they may not receive the invite. In such cases, the failure is usually noticed when the
+email bounces or the owner reports non-receipt. The admin can then update the email and resend
+the invite. The platform might implement a secondary contact method (e.g. SMS OTP to phone) if
+email fails.
+Multiple Owners for one unit: If a unit has co-owners, each can be onboarded. The first owner
+activation is straightforward; subsequent owners follow a similar process. A potential confusion is if
+they share one email (couples sometimes do). The system currently requires unique emails per user
+for login (like BuildingLink does with unique usernames ). If co-owners share an email, the admin
+may choose to only create one account or encourage them to provide separate emails. Failure to
+handle this could result in one owner not being able to register. We document this as an admin
+guideline.
+```
+_Figure: Owner Onboarding Workflow._ This flow parallels the tenant onboarding: **(1)** Building Admin registers
+the unit’s owner in the system, **(2)** the system sends an OTP/link to the owner, **(3)** the owner verifies the
+code to activate their account and then sets up their profile. The process accounts for owners who may not
+reside on-site, ensuring they can complete onboarding remotely via email/phone. Failure modes (not
+receiving OTP, etc.) result in admin intervention similar to the tenant process.
+
+### Authentication & Login (Owner)
+
+```
+Preferred Login (OTP): Owners log in via OTP codes sent to their email or phone, just like tenants.
+This is particularly convenient for owners who access the system infrequently (e.g. to download
+statements or participate in annual meetings) – they don’t have to remember a password after
+months of inactivity; a fresh OTP will log them in securely. Many owners will primarily use email
+(magic link) OTPs, as some may not have mobile SMS set up. We support both delivery channels.
+```
+#### • • 5 • • • • • 1 • 6
+
+
+```
+Password/Social Login: Owners, like tenants, may set a password if they plan to use the system
+regularly. The fallback password login and recovery flows are identical to tenants: “Forgot Password”
+emails, etc. Owners can use their email or chosen username for password login. Social logins are
+typically not configured for owners, but if provided (for example, using Google authentication to the
+same email address), it could be enabled as a convenience option.
+Recovery & Support: Since owners might be less tech-engaged, the platform ensures easy recovery.
+If an owner forgets how to log in, building management or support staff can trigger a “Send Login
+Link” action for them via the admin panel (just as BuildingLink’s staff can email login info to an
+occupant on request ). This sends a fresh magic link to the owner’s email. Additionally, the login
+page’s “Forgot Password?” and help text covers contacting the management office if they cannot
+self-service. Owners without an email (rare) can use phone OTP if a mobile is on file, or else they
+must obtain a physical login letter with credentials from the office. These edge cases are handled via
+manual support, akin to BuildingLink’s approach of management or support assisting in credential
+delivery.
+Multi-Unit Access: An important scenario is owners of multiple units (e.g. a person owns two
+condos, or an investment company owning several units). Our authentication design allows a single
+owner account to tie to multiple units, possibly across different buildings (if the same management
+company handles both). After login, such an owner can switch context to view each unit’s
+information. This is handled similarly to multi-property staff (described later): the JWT may list all unit
+IDs the owner has access to, and the frontend provides a switcher UI. BuildingLink’s platform is
+known to support multi-property management views , and while that often refers to staff, we
+extend the concept to owners for convenience (rather than forcing separate logins per property).
+Board Member Crossover: Some owners are also Board Members (see Board persona below). For
+those users, their login process is the same, but their JWT will carry an extra role/claim (e.g.
+ROLE_BOARD) and the UI will expose board-level functions. This means an owner-board-member
+doesn’t need to log in separately; one account serves both purposes with elevated privileges where
+applicable. Authentication flows will recognize the additional role and include it in the token. For
+example, an owner-board JWT might look like:
+{ "userId":123, "roles":["OWNER","BOARD"], "buildingId": "B1", "unitId":
+"101" ... }.
+```
+### Backend Implementation (Owner)
+
+```
+Account Structure: Owners are modeled similarly to tenants, tied to a unit (or multiple units) and
+building. They have a role ROLE_OWNER which grants them permission to owner-level data (which
+overlaps with tenant data in some areas). The system differentiates tenants vs owners mainly in
+permissions (e.g. owners might see financial reports, whereas tenants might not). An individual can
+simultaneously hold both roles for a unit – our data model could either allow a user to have multiple
+roles (preferred, to avoid duplicate accounts) or treat the owner-who-is-tenant as one role with
+combined privileges. The Role-Scope model is flexible: each JWT can carry multiple roles and
+context. We maintain relationships such as OwnerOf(Unit) in the database to check privileges.
+Endpoints: Owner authentication endpoints mirror the tenant ones, but scoped to owners. For
+instance:
+POST /api/v1/auth/buildings/{buildingId}/units/{unitId}/owners/register –
+Create a new owner account for a unit. Called by admins when adding an owner. This triggers an
+OTP invite.
+POST /api/v1/auth/buildings/{buildingId}/units/{unitId}/owners/{ownerId}/
+request-otp – Send an OTP to an owner’s phone/email (for login or re-invite).
+```
+#### •
+
+#### •
+
+```
+2
+```
+```
+9
+```
+-
+
+```
+17
+```
+#### •
+
+#### •
+
+#### •
+
+#### •
+
+```
+18
+```
+#### •
+
+```
+19
+```
+
+```
+POST /api/v1/auth/buildings/{buildingId}/units/{unitId}/owners/{ownerId}/
+verify-otp?otp=... – Verify an owner’s OTP and issue JWT.
+POST /api/v1/auth/buildings/{buildingId}/units/{unitId}/owners/{ownerId}/
+refresh-token – Refresh token for owners (same logic as tenants).
+These endpoints ensure the buildingId and unitId in the path correspond to the owner’s
+actual assigned unit for security (so one owner cannot attempt OTP verification on another’s unit ID
+```
+- the backend will validate the token or request context). The implementation uses the same service
+code under the hood as tenant OTP flows, just pointing to the owner repository and contact info.
+**JWT & Permissions:** An owner’s JWT will include their user ID and ROLE_OWNER. If they have
+multiple units, one approach is to issue separate JWTs per building context (they would log into one
+building at a time, similar to how BuildingLink might require separate logins per property). However,
+to improve UX, we opt to include a **scope claim** listing all accessible units/buildings. For example,
+    units: ["B1:Unit101","B2:Unit202"]. The front-end can use this to allow context switching.
+The backend, for data access endpoints, will typically require specifying a unit or building, and will
+check that the user has that in their scope. This way, a single JWT can authorize multiple contexts.
+**Password & SSO:** Owners’ password handling is identical to tenants (same endpoint for setting
+password, same forgot-password API). We don’t plan SSO for owners, so no special SAML/OAuth
+integration is needed on backend for this persona.
+**Audit Logs:** All owner login attempts are audited similar to tenant logs. Additionally, since owners
+may have access to sensitive financials, any login from a new device or location could trigger an alert
+email for security (this is a potential feature). We align with BuildingLink’s security stance that any
+credentials assistance to owners must be to a verified email on file – our audit ensures that when
+support staff use their super admin powers to reset an owner password or send a login link, it’s
+recorded and only sent to the owner’s email of record.
+**Integration with Tenant Data:** If an owner is also a resident, the backend might link the owner
+account to a tenant account internally. For simplicity, we might actually implement a single User
+object that can have both “tenant” and “owner” roles. In such a case, the separate endpoints for
+owners vs tenants could converge (the system finds or creates a single user with two roles). However,
+to keep the API design clean and mirror the domain language, we expose separate endpoints.
+Internally, we will avoid duplicating user records when the same person is both – possibly by
+detecting email/phone match and merging roles. This detail will be handled in the registration
+service.
+
+### Frontend Implementation (Owner – Web & Mobile)
+
+```
+Portal Access: Owners will typically use the same login page as tenants (the system identifies their
+role after authentication). We do not need a separate login page for owners; they just log in with
+their email/phone as described. The portal will then load owner-specific views. If an owner is not a
+resident of the building (off-site owner), the UI might hide resident-specific menus (like maintenance
+requests) and show owner menus (like financial statements, owner directory, etc.). This is controlled
+by role checks in the frontend app. For instance, an owner might see a “Ownership Documents”
+section that tenants don’t. Board members (owners with board role) might see an additional “Board
+Admin” section.
+Onboarding Flow UI: For owners, the first-time user flow is essentially the same as the tenant’s
+described earlier. The wording on screens might differ slightly: e.g. the welcome email might say
+“Welcome to the Owner Portal for [Building Name]” to clarify their role. The Terms and Conditions
+acceptance page might also include any HOA or co-op specific terms if needed (these could be
+configured per building). The system can display a custom welcome message for owners vs tenants,
+```
+#### •
+
+```
+20
+```
+-
+    21
+
+#### •
+
+#### •
+
+#### •
+
+```
+22
+```
+#### •
+
+#### •
+
+#### •
+
+
+```
+since management might want a different letter template for owners (this can be handled via
+templates by role). Owners set up their password optionally on first login in the same interface flow.
+Multiple Units UI: If an owner has more than one unit, upon login, the dashboard might default to
+one property (say the first one). We’ll provide a clear property switcher (e.g. a dropdown listing the
+addresses or unit numbers). When the owner switches context, the data (announcements,
+documents, etc.) refreshes to that building. This is similar to how a property manager might switch
+buildings, but here for an owner of multiple properties. We ensure that this UI element is prominent
+for those users, possibly accompanied by an indicator if there are new notifications in the other
+property. If the portfolio gets large (e.g. an investor with 10 units), we might implement a “Portfolio
+Overview” page listing all their units and high-level info, with links into each – but that’s an extended
+feature. For now, a simple switch satisfies the multi-unit owner case.
+User Guidance: Recognizing that owners, especially off-site ones, might not be as engaged, the UI
+provides guidance and support. On the login page or welcome email, instructions like “Bookmark
+this site for future access” or “You can always request a new login code if you forget your password”
+are included. The help section in the owner portal includes FAQs tailored to owners (e.g. how to find
+certain financial info). This echoes BuildingLink’s practice of providing help resources in initial
+communications. In case owners have trouble, contact info for the property manager is always
+visible (perhaps in the footer or a “Contact Management” link).
+Mobile App: The mobile experience for owners is largely the same as for tenants: OTP login, etc. The
+app will detect the user’s roles after login and adjust content. Push notifications could be used to
+alert owners of new documents or meetings. If using the app, owners can also leverage biometric
+login for convenience. One nuance: if an owner rarely logs in, they might not bother with the mobile
+app at all, preferring the web when needed – thus, we ensure the web experience is full-featured
+and mobile-web friendly (responsive design) so they can also use a mobile browser if they don’t
+install the app.
+```
+## Board Member Persona
+
+### Onboarding Workflow (Board Member)
+
+```
+Trigger: A Board Member role is assigned to a user. This typically happens when a condo/co-op
+board is formed or changes (e.g. annual elections). The trigger can be an existing owner or resident
+being elevated to “Board Member” status by a Building Admin or Company Admin. Alternatively,
+during initial implementation, the known board members are marked as such while their accounts
+are created.
+Actors: Building Admin or Company Admin (assigns board role); Board Member (owner/tenant who
+receives the role).
+Inputs: The designation of board status – usually no new personal data is needed if the person
+already has an account. If the board member is new to the system (unlikely, since board members
+are usually owners/residents), then the onboarding is the same as an owner or tenant invite, with an
+additional flag for board role. The inputs might include the Board Position (e.g. President, Secretary)
+if tracked, or term duration.
+Steps:
+Role Assignment: If the board member is an existing user (owner or tenant), an admin simply
+toggles a “Board Member” flag in their profile or adds them to the Board Member list for the
+building. The system updates their account roles to include ROLE_BOARD. A notification email can be
+sent: “You have been granted Board Member access for [Building]. Log in to see new options.” If the
+```
+#### •
+
+#### •
+
+```
+23
+```
+#### • • • • • •
+
+
+```
+person is not yet in the system (e.g. a non-resident board advisor, or an owner who wasn’t on the
+portal yet), then the admin uses the standard onboarding: create them as an owner (or tenant) first,
+including the board role in the creation. In that case, the flow sends an OTP invite as described
+earlier.
+Account Activation: If a new account, they activate via OTP same as owners/tenants. If existing
+account, no new activation is needed; their next login will simply reflect the new permissions. The
+system might prompt them with a one-time message upon login: “Your account has been updated
+with Board Member access.”
+```
+```
+Board Portal Introduction: Board members often have access to management-level features. After
+activation or role assignment, the user is shown new UI sections (e.g. a “Board Dashboard”). The first
+time they access these, a brief onboarding or tutorial might run, explaining features like reviewing
+financials, approving documents, or whatever board features exist. This ensures they know how to
+utilize their elevated privileges.
+```
+```
+Failure States:
+```
+```
+Misassignment: If an admin mistakenly marks the wrong user as a board member, they can remove
+the role. From the user’s perspective, if they see board options that don’t apply, they should contact
+management. (System-wise, this isn’t a technical failure but a usage error; audit logs will show who
+granted board access.)
+New Board Member Not in System: If a newly elected board member was never in the resident system
+(perhaps they never registered as an owner), the failure could be that they didn’t receive any login
+info. The management must then onboard them as a new user (triggering the OTP flow). If this step
+is missed, the person won’t have access – essentially an admin oversight. To mitigate, Company
+Admins might run a report of “Board members without login” to catch this.
+Role Activation Delays: If the board role assignment email is sent but the user doesn’t log in promptly,
+there is no harm – their account is still accessible via their normal credentials; they just might not
+notice the new features. There’s no expiration on the role itself, though the notification link (if any)
+might expire.
+```
+_Figure: Board Member Onboarding Workflow._ This diagram shows two paths: **(A) Existing user gets board
+role** – the admin assigns the role, and next login the user has board access. **(B) New board member not in
+system** – the admin creates an account with board status (following the owner/tenant invite process with
+OTP). In both cases, the user ends up with an active account that includes board privileges. The workflow
+for OTP and profile setup in path (B) is the same as earlier personas.
+
+### Authentication & Login (Board Member)
+
+```
+Login Process: Board Members log in using the same methods as their underlying role. There is no
+separate board member login. For example, a board member who is an owner will log in with OTP or
+password as an owner normally would. The system recognizes their board status from the JWT roles
+and grants access to board-only sections. In practice, we might not label them “ROLE_BOARD” in JWT
+but rather something like a claim board:true or include ROLE_BOARD as a secondary role. Either
+way, upon authentication, the presence of the board flag is what matters.
+SSO: Typically not applicable specifically to board members, unless a particular building uses an
+external authentication for board (unlikely). Board members will use the same credentials as their
+owner/tenant account.
+```
+#### • • • • • • • •
+
+
+```
+Security: Board members have elevated access (they might see private building information), so we
+treat their logins with high importance. It may be advisable that board members use stronger 2FA.
+For instance, the system could require that board members have a verified phone for OTP and always
+use OTP (even if they have a password) for each login to add an extra layer. This could be enforced by
+policy (e.g. detect ROLE_BOARD and then ignore a direct password login attempt or require an OTP
+step too). We document this as a security recommendation. BuildingLink did not have a distinct
+board login, but our platform’s emphasis on OTP inherently gives an extra factor (possession of
+phone or email) for every login, which is a benefit.
+```
+```
+Recovery: If a board member forgets credentials, the recovery is the same as for owners/tenants.
+The only nuance is if their board role was removed (e.g. they left the board) – in that case, their
+account still exists (likely as a normal owner) and they would log in accordingly. There’s no separate
+board-only account to recover. If somehow an external (non-owner) board member was given an
+account just for board access, they would be treated like an owner in a special “Board-only” unit or
+some dummy unit. Recovery for them would go through support if needed (since that’s a corner
+case).
+```
+```
+Concurrent Roles: If a user has multiple roles (common case: Owner + Board, or Tenant + Board),
+they use one set of credentials. The login UI doesn’t need to distinguish – it’s only once inside that
+the UI will show additional menus. This is seamless from an authentication standpoint.
+```
+### Backend Implementation (Board Member)
+
+```
+Role Management: The backend will likely implement board membership as an attribute on the
+user’s relationship to a building. For example, we might have an entity BuildingRole with types
+like “BOARD_MEMBER”, “BUILDING_ADMIN”, etc., associated with user and building. When an admin
+marks someone as a board member, we create such an entity. To fetch board members list, we query
+users with that role for the building. For authentication, our JWT issuing service will need to include
+the board role if present. This could mean multiple roles in the token (as mentioned, e.g. roles:
+["OWNER","BOARD"]). Spring Security can then have an authority for BOARD. We will also ensure
+any board-only API endpoints (if any, e.g. retrieving sensitive data) are protected with a check for
+BOARD role.
+Endpoints: There isn’t a separate “Board authentication” endpoint – board members use owner/
+tenant auth endpoints. However, we will have endpoints for managing board status: e.g.
+PUT /api/v1/buildings/{buildingId}/board/{userId} – grant or revoke board role for a
+user in that building (authorized for building/company admins).
+The invite endpoints for owners/tenants may accept a parameter indicating board role. For instance,
+the JSON in registerOwner could have "boardMember": true to flag the new owner as a
+board member in one go. Our implementation will read that and assign the role accordingly.
+Permissions: Board members usually have read/write permissions beyond normal owners. The
+backend will enforce these. For example, an endpoint like GET /api/v1/buildings/
+{buildingId}/financial-reports might allow access if user is a building admin or board
+member. We’ll use Spring Security annotations or manual checks to allow ROLE_BOARD where
+appropriate. The data returned might also depend on role (board might see more detail than regular
+owners).
+Audit: Assigning or removing a board role is a significant event – the backend logs which admin user
+did it and when. This way, if someone questions an unauthorized access, we can trace if a board role
+```
+#### • • • • • • •
+
+```
+24
+```
+-
+
+#### •
+
+
+```
+was improperly granted. Additionally, any use of board privileges (like downloading a sensitive
+report) could be logged under that user’s actions, if needed for compliance.
+No dedicated auth flow: Since board doesn’t have its own login, there’s no separate OTP handling
+needed specifically for “board user” – it’s the same OTP tied to their base account. So from a coding
+standpoint, no new auth endpoints are required beyond what owners/tenants have.
+```
+### Frontend Implementation (Board Member – Web & Mobile)
+
+```
+UI Access: Upon login, if the user is marked as a Board Member, the web application will display a
+Board Panel section. For example, the top navigation might show “Board” alongside Home,
+Requests, etc. Inside the Board section could be subsections like “Board Announcements”,
+“Documents”, “Votes/Polls”, etc., depending on features. This section is visible only if the JWT or user
+context indicates board status. We’ll likely implement this by checking the user’s roles stored in a
+global state after login.
+Board Features Introduction: To help board members utilize their tools, the first time a board
+member logs in after being assigned, a guided tour or highlight may run. For instance, a modal or
+tooltip could say “You now have access to Board features. Visit the Board Panel to manage building
+business.” This is a UX consideration to ensure they notice the new capabilities. It’s similar to how
+BuildingLink might send a memo to new board members on what they can do; we integrate it into
+the UI for immediacy.
+Role Toggle (if applicable): In some systems, users with multiple roles might have to toggle modes
+(e.g. a “switch to board view” button). We aim to avoid mode-switch complexity – instead, the UI
+seamlessly integrates their roles. However, if the context becomes confusing (say a board member
+who is also a regular tenant might wonder if certain actions they take are as a resident or board
+member), we can use labeling to clarify. For example, in forums or comments, a board member’s
+posts might be badged as “Board Member”. From a UI perspective, that’s more about content
+labeling than login.
+Mobile: The mobile app will similarly reveal board features when a board member logs in. Likely, an
+extra tab or menu item appears for board items. We must ensure that push notifications for board-
+related events (e.g. a new board meeting agenda uploaded) are only sent to board members. The
+app, reading the user’s roles, will subscribe the user to board-specific notification channels. Logging
+in or out on mobile updates those subscriptions. Board members can also use biometric login etc.,
+as per their underlying account.
+Error/Edge UI States: If for some reason a board member’s role is removed while they are logged in
+(perhaps an admin removed them during a session), the next API call that requires board access
+would fail authorization. In practice, that’s rare; removal usually would be followed by informing the
+person. If it did happen, the UI should handle a 403 Forbidden on a board API by perhaps refreshing
+the user’s roles and hiding board sections. Similarly, if an account is downgraded, we might show a
+message “Your board access has been revoked” on next login. These are edge cases but important
+for completeness.
+Parity with BuildingLink: BuildingLink likely handles board features through the same resident
+portal login, by adding special menu items for board members (often called “Board Room” or
+similar). Our approach mirrors this – one unified system for users with conditional content. By doing
+so, we preserve feature parity (board members in BuildingLink can, for example, view financials and
+meeting minutes through their normal login – our system will offer the same or more).
+```
+#### • • • • • • •
+
+
+## Staff Persona
+
+### Onboarding Workflow (Staff)
+
+```
+Trigger: The addition of a new staff member (employee) to the platform. This can be triggered either
+at the building level (e.g. a building manager adds a front desk concierge to that building’s staff) or
+at the company level (a property management company’s admin adds a new employee who may
+work across multiple buildings). Common triggers: new hire, staff transfers to a property, or initial
+system setup importing all staff.
+Actors: Building Admin or Company Admin (inviter); Staff Member (new user).
+Inputs: Staff details including name, work email, role/position (e.g. Property Manager, Concierge,
+Maintenance Tech), and phone number (for OTP delivery). Also, their assignment scope – which
+building(s) they will have access to. For building-level staff, this is just that one building; for regional
+staff or corporate roles, it could be multiple. The system may require specifying the buildings or a
+company-level role.
+Steps:
+Admin Invitation: The admin uses an interface to create the staff account. For a building admin
+doing this, the staff is typically linked to their building by default (though the UI may allow multi-
+select of buildings if the admin has rights to multiple). For a company admin, they can assign one or
+more buildings under that company. The system creates a staff user account with ROLE_STAFF (and
+possibly sub-roles like maintenance vs concierge via a field). Initially, the account is inactive/pending.
+The system sends an onboarding email to the staff’s work email containing an OTP link or temporary
+credential. If a phone is provided, an SMS OTP is also sent. The email will contain instructions similar
+to: “Welcome to [Platform]! Use the code below to activate your staff account.”
+OTP and Activation: The staff member opens the email and clicks the link or enters the provided
+OTP on the platform’s staff login page. Since staff likely have corporate email access, we assume they
+get the email promptly. Upon entering the OTP, the system verifies it and activates the account. If
+this is the staff’s first login, they will be prompted to set a password (more likely in staff use-cases,
+since staff may prefer a password in addition to OTP) and possibly set up a security Q&A or backup
+method if policy requires. They also accept Terms of Service (which might be a slightly different
+agreement for staff vs residents, covering data usage and compliance).
+```
+```
+Role Confirmation: Once logged in, the staff member sees the staff dashboard for the building(s)
+they have access to. The system might show a confirmation of which properties they can manage.
+For example, “You have been granted access to Building A (Front Desk role) and Building B
+(Maintenance role).” If their role requires it, they might configure some profile details (e.g. a photo
+for an ID badge, or working hours for scheduling). The staff is now fully onboarded and can use the
+system.
+```
+```
+Failure States:
+```
+```
+Incorrect Contact Info: If the email was typed wrong by the admin, the staff won’t receive the invite.
+This is caught either by bounce notifications or the staff asking why they didn’t get access. The
+resolution is admin correction of email and re-send invite. We will have a “Pending Invites” list to
+easily see if staff haven’t activated yet and allow resending.
+OTP Expiry: Staff OTP codes may expire typically in 5-10 minutes. If a staff member doesn’t use it in
+time (maybe they missed the email), they can use a “resend code” from the login page or ask the
+```
+#### • • • • • • • • • •
+
+
+```
+admin to trigger another invite. The system might also automatically send a reminder email after a
+day if not activated, with a fresh link.
+Multiple Roles Confusion: If a staff is assigned to multiple buildings, there could be confusion on first
+login if not communicated. For example, a maintenance staff might wonder if they need separate
+logins for each property. Our unified approach prevents that, but if the staff erroneously tries to
+register twice (somehow), the second attempt would fail because the email/phone is already used.
+The system should detect “email already exists” if an admin mistakenly tries to add a staff who’s
+already in the system for another building, and instead prompt to just grant additional building
+access. This de-duplication is important to avoid account conflicts.
+Staff Not Tech-Savvy: Some staff (like maintenance workers) might not be very comfortable with
+technology. If they fail to complete onboarding, a manager might resort to setting a manual
+password for them and handing it over. Our system allows admins to do that as a fallback: e.g. an
+admin can mark an account as activated and set a temporary password if OTP onboarding isn’t
+completed. This would be logged for security.
+```
+_Figure: Staff Onboarding Workflow._ The process begins with a Company or Building Admin creating the staff
+account and assigning them to one or more buildings. The system sends the OTP to the staff’s email/phone.
+The staff member enters the OTP to activate their account and then can log in. Notably, staff accounts
+might cover multiple properties; after activation, staff can switch building context in the app. Failure cases
+include re-sending OTP if not used and admin intervention if needed.
+
+### Authentication & Login (Staff)
+
+```
+Preferred Login (OTP): Staff can log in via OTP, especially if they haven’t set a password. The login
+page for staff is the same as the main login (we do not separate resident vs staff portals in URL, they
+use one interface but will see different content after login). They input their work email or phone,
+receive an OTP, and authenticate. This is convenient for staff who are mobile (e.g. a maintenance
+tech receiving an OTP on phone while on the go). However, many staff will opt to use passwords for
+faster login day-to-day, so our system encourages them to set a password post-onboarding.
+Password Login: Supported and likely common. Staff often have to log in frequently and might
+prefer memorizing a password or using a password manager. Our platform allows staff to log in with
+their email/username and password. We strongly encourage (and can enforce via policy) that staff
+also have 2FA, but since OTP-first is primary, we may treat OTP as either first-factor or second-factor.
+We have two possible modes for staff: (a) Password OR OTP : where either one can be used to log in
+(if they use password, no OTP required that session), or (b) Password AND OTP : where password is
+used, but then a second step OTP is required for higher security. The requirement depends on
+security level. For parity with BuildingLink, which historically uses just username/password for staff,
+we can make the second factor optional. Initially, we implement (a) with OTP-first as an alternative,
+but we can easily enforce (b) for sensitive roles via configuration.
+SSO Integration: Many property management companies use corporate directories. For staff (and
+building admins, company admins), we offer Single Sign-On as a fallback/alternative. If a company
+has an SSO (SAML or OAuth2 provider like Azure AD, Okta), staff can click “Login with Company SSO”
+on the login page. This will redirect to the company’s IdP, where they authenticate, and then return
+with a SAML assertion or OAuth token which our backend validates to log them in. We map the
+corporate identity (usually by email) to the staff user in our system. If it’s a match, we consider them
+authenticated and issue our JWT. If not, we deny or offer to create a link (some systems auto-
+provision users on first SSO login if email domain is trusted – we can consider that for future). SSO is
+a fallback here because OTP-first is default, but for large enterprises, SSO might actually be the
+```
+#### •
+
+#### •
+
+#### •
+
+#### •
+
+#### •
+
+
+```
+preferred method. We ensure feature parity by supporting it, as BuildingLink’s login screen even
+shows a “Enter Single sign-on” option for some orgs.
+Recovery: Staff who use password login have a standard “Forgot Password” flow: entering their
+email triggers a reset link to their work email. Given staff emails are usually controlled by the
+company, this is straightforward. If a staff member loses access to their email or phone (e.g. phone
+lost, or they left the company), a Company Admin can reset their contact info or deactivate their
+account. We do not have a “forgot username” since staff will use email or known username (often
+their email) for login. In case a staff forgets their password and for some reason cannot use email
+(maybe email down), a Company Admin can manually set a temporary password for them. This is
+done through an admin console securely (the admin sets a new password which triggers the system
+to force the staff to change it on next login).
+Multi-Property Access: A key feature for staff is multi-property or portfolio login. If a staff has
+access to multiple buildings (e.g. a regional manager overseeing 5 buildings), our system allows one
+login to view all. After authentication, the staff’s session knows the list of buildings they can manage
+(from JWT claims or an API call). The web UI might prompt “Select a building to continue” if multiple
+are available, or default to a primary building and allow switching. The staff can switch contexts
+without logging out/in again. This is a big improvement over older systems where staff might juggle
+separate logins for each site. BuildingLink is known to have a separate “Portfolio” section or require
+switching logins; our approach ensures seamless navigation. The JWT may include all building IDs in
+scope, but we might still require the staff to specify which building when performing certain actions
+(for clarity and auditing).
+Device Security: Staff devices (especially personal phones if used) could be lost, so if a staff uses
+“keep me logged in”, we ensure tokens expire and cannot be abused. We might disable “keep me
+logged in” for staff on shared computers by policy. Biometric unlock on mobile is helpful for staff too
+—e.g., a maintenance worker can open the app with fingerprint rather than typing a password or
+waiting for OTP every time during their shift. We support that similar to the tenant case.
+```
+### Backend Implementation (Staff)
+
+```
+User Model: Staff users are distinct from residents – they have ROLE_STAFF (and possibly sub-roles
+like ROLE_CONCIERGE, ROLE_MAINTENANCE as needed). They are associated with a Company
+(property management company) and potentially one or more Buildings. Our data model might
+have a join table for staff assignments: e.g. StaffUser ID -> Building IDs with a role for each (because
+a person could be a Manager in Building A and just have view access in Building B, etc.). However,
+initially we can assume uniform role across assigned buildings unless refined. A staff user’s primary
+key and email are unique across the whole platform (so one email = one staff account, which can link
+to multiple buildings).
+Endpoints: Staff authentication endpoints are provided:
+POST /api/v1/auth/staff/companies/{companyId}/buildings/{buildingId}/register
+```
+- Register a new staff member and assign to a building (or the path may allow multiple building IDs)
+   . This is used by admins to onboard staff. The request body includes staff details. It returns the
+created staff record (or at least an acknowledgment), after possibly sending the OTP invite.
+    POST /api/v1/auth/staff/{staffId}/request-otp – Send OTP to staff’s phone/email.
+    POST /api/v1/auth/staff/{staffId}/verify-otp?otp=... – Verify OTP for staff login.
+On success, returns JWT tokens.
+    POST /api/v1/auth/staff/{staffId}/refresh-token?refreshToken=... – Refresh JWT
+for staff.
+
+```
+25
+```
+-
+    7
+
+#### •^15
+
+#### •
+
+#### •
+
+#### •
+
+#### •
+
+```
+26
+```
+#### •^27
+
+#### •^28
+
+#### •
+
+```
+29
+```
+
+```
+If staff use passwords: POST /api/v1/auth/staff/login might accept email & password and
+authenticate (this could be unified with a general login endpoint too). We will also have endpoints for
+password change and forgot password (could reuse a generic one, with logic to send email to the
+staff’s address).
+GET /api/v1/staff/{staffId}/buildings – Retrieve list of buildings a staff can access (this
+could also be embedded in the JWT or provided by the user info endpoint).
+Role management endpoints: e.g. PUT /api/v1/staff/{staffId}/roles to update their role
+or building assignments (this corresponds to admin actions to grant/remove building access or
+change their staff role, which is separate from authentication but related to authorization).
+```
+These endpoints leverage Spring Security and perhaps method-level security to ensure only authorized
+users call them (e.g., only company admins can register staff, only the staff or an admin can trigger their
+OTP, etc.).
+
+```
+JWT Content: A staff’s JWT will contain their user ID, role: STAFF, and possibly a companyId.
+Importantly, it needs to include the list of buildings they have permissions for, or we design it such
+that each JWT is issued per building context. We prefer including all in one token to avoid re-
+authenticating for each building. For example, a claim buildings: ["B1","B2","B3"]. We will
+also include a claim for their staff role type if needed (e.g. staffRole: "CONCIERGE" or privileges
+list). When a staff calls an API that is building-specific, the backend will check that the building ID in
+the request is one of those in their claims. This is similar to how multi-property management
+software handle scoping. If using refresh tokens, the refresh process will maintain those claims.
+If a staff’s building access changes, we may need to invalidate existing tokens (the admin performing
+changes could trigger a token invalidation event requiring re-login, or simply the new building won’t
+appear until next login). We plan to implement a strategy for that – e.g. maintain a token version
+number per user and embed it in JWT, so that changing roles increments the version and old tokens
+become unusable.
+Password Handling: Staff passwords are stored hashed (bcrypt or argon2) in the database. Spring
+Security will handle verifying credentials on login attempts. If we implement two-factor (password +
+OTP), then after verifying password we would require OTP as an additional step (which could be
+done via a different endpoint or a special error code prompting OTP). We likely won’t enforce that at
+launch unless requested, but our design keeps it feasible. The Staff Authentication flow in the
+API might currently assume OTP or password. We will adapt as needed.
+SSO Implementation: For SSO, we will integrate Spring Security’s SAML or OAuth support.
+Essentially, an endpoint like /sso/authorize will redirect to an IdP, and /sso/callback will
+handle the response. On successful SSO login, we either find a matching staff by email or some
+identifier, then issue our JWT for that staff. We’ll need to have the company’s SSO metadata
+configured (which could be stored in company settings loaded by the super admin). Since this is an
+optional path, it doesn’t affect JWT generation except the source of authentication. We will treat an
+SSO-authenticated user the same as if they logged in normally in terms of issuing tokens and
+logging.
+Audit and Logging: Staff logins are logged with more detail possibly (because these accounts could
+access multiple buildings’ data). We log which building context they access if they switch contexts in
+the app (though the act of switching might not be a backend login event, it could simply be noted in
+usage logs). We also pay attention to failed logins – multiple failed password attempts should flag
+possibly (account lockout if 5 failures, etc.), and OTP misuse attempts similarly. Company Admins can
+```
+#### •
+
+#### •
+
+#### •
+
+#### •
+
+```
+30
+```
+#### •
+
+#### •
+
+#### •
+
+
+```
+view an audit trail of staff access (e.g. a report of last login time, last IP, etc., for each staff), helping
+them monitor their team’s access.
+```
+### Frontend Implementation (Staff – Web & Mobile)
+
+```
+Login UI: Staff use the same login page as everyone, but the system might auto-recognize corporate
+emails and suggest SSO. For instance, if a staff’s email domain is “company.com” and we have SSO
+metadata for that company, when they start typing their email, we could display a prompt: “Single
+Sign-On available – [Login with Company SSO]” to streamline. Otherwise, they can enter email and
+choose OTP or password as usual. We might also consider a separate subdomain or route for staff
+login if needed (for example, staff might bookmark a different URL if SSO is involved), but it’s not
+strictly necessary. BuildingLink’s interface doesn’t separate them – you enter your username and the
+system knows if you’re staff or resident. We do similarly.
+First Login Flow: After staff enters their OTP (or password) the first time, if their account was just
+activated, we guide them through setting personal preferences. For example, a wizard might ask:
+“Set your password for future logins” (if they came via OTP initially), “Enable two-factor
+authentication for added security” (if not enforced, giving them the option), and maybe “Review your
+profile info”. This ensures they are ready to use the system. Staff will also see Terms of Service which
+may be tailored to staff usage (could be the same T&C or include company policies). They must
+accept it to proceed.
+Dashboard & Multi-Building UI: Once in, staff see a Staff Dashboard which could include building
+announcements, tasks, and a building selector if they have multiple. If a staff has only one building,
+the UI is focused on that building’s modules (service requests, deliveries, etc. as applicable). If
+multiple, the top of the page might have a prominent dropdown or sidebar listing all buildings they
+can switch to. For example, a company regional manager might see a list of their properties and
+some KPIs for each, clicking into one to manage specifics. The UX should make it easy to jump
+between buildings without logging out. We ensure it’s clear which building’s data is being viewed at
+any time (maybe show the building name at the top).
+Error Handling & Edge Cases: If a staff tries to access a building they’re not authorized for (perhaps
+via a malformed link), the frontend will get a 403 and show a “Access Denied” message. If they
+somehow end up with no building selected, we prompt them to select one. We also handle session
+expiry gracefully: if their JWT expires while they’re active, we use the refresh token to silently renew it
+(if still valid) or prompt them to log in again. For OTP logins, we consider implementing a “Remember
+me for X days” for staff on trusted devices, which under the hood could mean storing a long-lived
+refresh token or using a persistent session. Since staff often use company devices, this can be
+enabled but with caution.
+SSO Redirects: On the UI, if a staff opts for SSO, clicking that button will redirect away to the IdP.
+We’ll display a loading page or a message like “Redirecting to Company SSO...”. After they
+authenticate, the returning page will finalize login. We handle success or failure (if SSO fails, we show
+an error and possibly let them fallback to OTP). It’s important the UI ties the SSO login back to the
+correct company – likely based on the email or domain they initially provided or by using separate
+SSO buttons for each configured company (which could be dynamically loaded if multiple companies
+use SSO). In most cases, each staff’s email domain can map to an IdP, so we can simplify it.
+Mobile for Staff: A dedicated mobile app for staff could be very useful (like scanning packages,
+managing tasks on the go). The mobile app will support staff login with OTP, password, or SSO. OTP
+autofill works as with tenants, and staff can also use device biometric unlock after the first login. If
+staff use shared devices (like a tablet at a front desk), we will likely force a logout after each session
+or use a special kiosk mode account. But assuming personal device usage: the staff app will cache
+```
+#### • • • • • •
+
+
+```
+their refresh token to keep them logged in during the workday, with perhaps an explicit logout at
+end of day for security. Push notifications for staff (e.g. new maintenance request arrived) will be tied
+to their login as well. So the authentication system on mobile needs to handle multiple concurrent
+logins if a staff manages multiple buildings – our solution is one account login covers all assigned
+buildings, so they don’t need to log in/out for each property. The app’s UI again will allow context
+switching easily.
+Support & Training: The staff onboarding isn’t just about the tech – we should mention that the
+platform will likely be accompanied by training (like how BuildingLink offers training sessions for
+staff ). From the UI perspective, we have a “Help” section for staff with documentation and
+possibly even guided walkthroughs for common tasks (especially for new staff). While not directly an
+auth concern, it’s part of the onboarding experience for staff users to get comfortable with the
+system.
+```
+## Building Admin Persona
+
+### Onboarding Workflow (Building Admin)
+
+```
+Trigger: A new Building Admin (often the property manager or building manager) is added to a
+building. This can occur when a building is first onboarded onto the platform or when a
+management personnel change happens (new manager takes over a building). It might also happen
+when a Company Admin delegates admin access to someone for a particular building.
+Actors: Company Admin or Super Admin (inviter); Building Admin (new user). In some cases, a
+Building Admin could self-signup for a building if the platform allows (like a single-building owner-
+managed scenario), but typically they are created by a higher authority.
+Inputs: Building Admin’s name, contact email, mobile number, and the building(s) they will manage.
+If the building admin is associated with a management company, also link them to that company.
+Possibly their title/position.
+Steps:
+Invitation by Company: A Company Admin selects the building and creates a Building Admin
+account for it (or promotes an existing staff to building admin role). If a brand-new building is being
+set up, a Super Admin might do this as part of implementation, assigning the primary manager. The
+system creates an admin user with ROLE_ADMIN (building-level). Immediately an invite email with
+OTP is sent to the new admin’s email, similar to staff invites. If the building admin was an existing
+staff user (e.g. maintenance staff promoted to manager), then it’s more of a role change: the system
+notifies them of the new role but no new account is made.
+Activation: The Building Admin uses the OTP link to activate their account. Given the importance of
+their role, they will almost certainly set a password as well during activation (we might even require
+building admins to set a password and not rely solely on OTP for subsequent logins, for security).
+They accept Terms of Service. If this is the first admin for a building, after login they might go
+through additional setup steps (like confirming building profile info, uploading a logo, etc., outside
+the direct auth context).
+```
+```
+Onboarding Tasks: Once logged in, the Building Admin is typically guided through initial
+configuration: adding units, residents, staff, etc. This goes beyond authentication, but it’s part of
+their onboarding experience. From an auth perspective, their account is now active and they can
+invite others. The system may highlight, “You are the administrator for Building X” and show them
+how to toggle to other buildings if they have more than one (some building admins manage multiple
+sites in smaller portfolios).
+```
+#### •
+
+```
+31
+```
+#### • • • • • • •
+
+
+```
+Failure States:
+```
+```
+Missing Invite: If the email to the new admin doesn’t reach them (spam issues, etc.), a Company
+Admin or Super Admin may need to resend. The new building admin cannot access the system until
+they get the OTP or a manual password set. In worst case, a Super Admin could provide them a one-
+time login code over phone if email fails.
+Partial Activation: If a building admin registers but doesn’t complete setup (for example, they verify
+OTP but skip setting a password or drop off), their account might be active but not fully configured.
+We should ensure that the process forces key steps (like password setting) or at least reminds them
+until done.
+Role Overlap: If someone is both a Company Admin and Building Admin (which can happen in small
+companies where one person fills both roles), they might get multiple invites or role grants. The
+system should unify that into one account with both roles. A failure would be if the system
+accidentally created two accounts for the same person (one as staff, one as admin). We avoid that by
+using the email as a unique key; if an existing user is invited to a new role, we attach the role to the
+existing account and notify them.
+Revocation: If a building admin is removed (say the manager leaves), the Company Admin or Super
+Admin will deactivate that account or remove the role. If the person tries to log in after removal, it
+should fail with account disabled message. That’s expected behavior, not a failure of the system but a
+termination scenario.
+```
+_Figure: Building Admin Onboarding Workflow._ A Company Admin or Super Admin creates the building admin’s
+account, triggering an OTP invite. The building admin activates their account via OTP, sets a password, and
+gains access to manage the building. If the building admin was already a staff user, the flow is simpler (just
+role updated). Failure modes revolve around invite delivery and account merging for existing users.
+
+### Authentication & Login (Building Admin)
+
+```
+Credentials: Building Admins typically will use both OTP and password. Being tech-savvy property
+managers, they might appreciate the ease of OTP login when mobile, but also often have a secure
+password for daily use. We consider enforcing 2FA here: for instance, require OTP plus password for
+building admins since they have high privileges. However, to maintain parity with current systems,
+we can make it optional but recommended. The login interface is the same – they can enter email
+and password or just do OTP. If we enforce two-factor, the flow would be: enter password, then the
+system sends an OTP to confirm (or use an authenticator app, etc.). This might be a company-wide
+policy that can be toggled.
+SSO: If the property management company has SSO, building admins (being employees) would likely
+be included. So SSO is definitely applicable. For example, a building admin could log in via the
+company’s Okta and get into our system without separate credentials. We support that as described
+in the Staff section. In SSO scenarios, 2FA might be handled by the IdP (so we wouldn’t double-OTP
+them).
+Access Scope: A building admin’s login restricts them to their building(s). If a building admin
+manages two buildings (maybe adjacent properties), their account will have both. The multi-building
+UI works the same way as for multi-property staff. Many building admins will have just one building,
+in which case no switching is needed – they go straight into that building’s management dashboard.
+Recovery: If a building admin forgets their password, they can use “Forgot Password” to get a reset
+link (to their email, which is likely their corporate email). If they lost their 2FA device (if 2FA was
+enabled), recovery might involve backup codes or contacting a Super Admin to reset 2FA. Our design
+```
+#### • • • • • • • • • 7
+
+
+```
+should include the ability for a Super Admin to disable 2FA on an account if the user is locked out, or
+to update their phone number if needed. Since building admins are critical users, support will treat
+their issues with high priority.
+Session Management: We might implement stricter session rules for building admins – e.g., auto-
+logout after a period of inactivity, no “keep me logged in” for admin dashboards on public
+computers, etc. Also, building admins might have access to an “Impersonate Resident” feature
+(common in management portals to see what a resident sees). If we provide that, it’s initiated from
+their logged-in session and doesn’t require separate auth, but we log it thoroughly.
+```
+### Backend Implementation (Building Admin)
+
+```
+Unified Admin Role: In our system design, we have Building Admin and Company Admin personas.
+The OpenAPI snippet shows endpoints under Admin Authentication and Admins which likely
+cover both types. We might implement them as one Admin entity with a scope attribute
+(building or company). For clarity, let’s assume ROLE_BUILDING_ADMIN vs ROLE_COMPANY_ADMIN
+internally. A building admin account is linked to one or more building IDs.
+Endpoints: Key endpoints include:
+POST /api/v1/auth/admins/register – Register a new admin (could be building or company)
+```
+. The request body would include details and maybe a flag or the buildingId. If a buildingId is
+present, we create a building admin for that building. (In some designs, we might have used /
+buildings/{id}/admins/register, but since the OpenAPI shows a generic register, we likely
+specify in the JSON which building(s) this admin manages.)
+POST /api/v1/auth/admins/{adminId}/request-otp – Send OTP to admin’s device.
+POST /api/v1/auth/admins/{adminId}/verify-otp – Verify OTP for admin login.
+POST /api/v1/auth/admins/{adminId}/refresh-token – Refresh token for admin.
+Endpoints for login with password or SSO token can be unified with staff’s if needed. Possibly a
+POST /api/v1/auth/admin/login that checks credentials.
+
+```
+Administrative actions: Building admins will themselves use various endpoints to manage data
+(units, residents, etc.), which is beyond auth. But relevant here, they might have an endpoint to invite
+other users (which we covered under tenant/staff onboarding flows calling those endpoints). We
+ensure they have permission to call, say, the registerTenant or registerStaff endpoints for
+their building. This is controlled via JWT claims and Spring Security checks.
+```
+```
+JWT Claims: A building admin’s JWT will have role: ADMIN (or specifically BUILDING_ADMIN if we
+differentiate). It will also have the buildingId(s) they manage. Typically just one – we can include
+buildingId: "XYZ" if one, or buildings: ["X","Y"] if multiple. They also inherently belong
+to a company (the company that manages the building), which could be another claim (companyId).
+This might not be strictly necessary for authorization, but could be useful for multi-company
+systems. The token will be used to grant broad access within those buildings – essentially, any API
+call for that building that requires admin rights will accept this token. We will still restrict certain
+actions to Company Admin or Super Admin only (like deleting a building, etc.). For building-level
+tasks, this JWT suffices.
+```
+```
+Privilege Levels: Sometimes within building admins, there might be levels (e.g. “Management” vs
+“Front Desk” could both be admin in building context but with different powers). Our role model
+might include that via either separate roles or a role plus a position attribute. Initially, we treat
+Building Admin as a singular role with full control of that building. If needed, we could introduce
+```
+#### •
+
+#### •
+
+```
+32 33
+```
+#### •
+
+#### •
+
+```
+33
+```
+#### •^34
+
+#### •^35
+
+#### •^36
+
+#### •
+
+#### •
+
+#### •
+
+#### •
+
+
+```
+sub-roles later (like a “Security Officer” in BuildingLink terms vs “Manager”). The JWT might then list
+multiple authorities. For now, we’ll keep it simple.
+2FA Enforcement: If we want to enforce that building admins always perform 2-factor auth, we can
+implement a check in the password login flow: if role=ADMIN, then after verifying password, mark
+the JWT as requiring OTP confirmation. One way is to issue a JWT with limited scope (or a special
+claim “otp_verified": false) that only allows the OTP verification endpoint. Then the admin must
+complete OTP step to get the full token. Alternatively, force them to use OTP-first always (but that
+doesn’t enforce password usage). We likely won’t build this complexity unless policy dictates, but
+design allows it.
+Audit: Building admin actions are highly sensitive – beyond just logins, whatever they do inside (like
+editing resident info, sending notices) should be logged. From an auth perspective, every login of a
+building admin is logged with detail. We might also alert Company Admins on new building admin
+activations. For example, when a building admin account is created and first used, the system could
+email the Company Admin: “Building Admin John Doe for Building X has activated their account.”
+This is similar in spirit to how BuildingLink’s implementation team might monitor when managers
+have logged in during setup. Failed login attempts for admins should generate alerts to the support
+team after certain thresholds, to quickly address any security concerns.
+```
+### Frontend Implementation (Building Admin – Web & Mobile)
+
+```
+Admin Portal Access: Building Admins log in through the same portal, but upon authentication,
+they are directed to the Building Admin dashboard. This interface is more complex than a
+resident’s: it includes management menus (e.g. Manage Residents, Work Orders, Amenities, etc.). We
+ensure that the UI clearly indicates their role (e.g. maybe the header says “Building Manager Portal”).
+If a person holds both company and building admin roles, the UI might give them a choice or
+combine features (see Company Admin section for that scenario).
+Walkthrough and Setup: For a first-time building admin, the web UI likely presents an onboarding
+checklist (common in SaaS apps): e.g. “1. Verify building details, 2. Add units, 3. Invite residents, 4.
+etc.” This guides them to fully configure the system. From an auth perspective, they’re already
+logged in; this is more about using their access. However, it’s worth noting as part of their overall
+onboarding user experience.
+Multi-Building Toggle: If they manage multiple buildings, similar to staff, a building dropdown will
+be present. Many building admins manage exactly one building, but a senior manager might
+manage two. The UI should handle it gracefully (perhaps under their profile menu, an option “Switch
+Building”). When they switch, the content and context changes. We need to ensure any context-
+specific pages (like a link that includes building ID) updates accordingly. Since the building admin
+interface is rich, we might consider separate subdomains per building for simplicity (some systems
+do that), but dynamic switching is achievable with a single app by scoping data.
+SSO Considerations: If they log in via SSO, once back, the UI doesn’t differ except maybe a note that
+they’re under SSO session. We might disable certain password change options if SSO is controlling
+their credentials. For instance, in the profile settings, if an admin is SSO-authenticated, we don’t let
+them change password (since they don’t have one in our system) – instead we indicate “Your account
+is managed by [IdP].”
+Mobile Access: A building admin could use a mobile app, but typically they might prefer desktop for
+the admin tasks (as they often involve data entry, viewing tables, etc.). Still, we plan for mobile
+support. The admin sections on mobile might be read-only or limited for practicality, or a specialized
+mobile admin app could be developed later. For now, the responsive web can allow basic tasks (e.g.
+viewing dashboards, responding to requests) on a phone. OTP login on mobile works the same. We’ll
+```
+#### • • • • • • •
+
+
+```
+ensure that any admin-critical notifications (like an emergency alert) do push to their phone if they’re
+logged in there. Biometric unlock can be allowed, but given the risk, maybe only if device has a PIN
+enabled (which is standard anyway for enabling biometric).
+Error Handling: If a building admin tries to access a page for which they lack rights (shouldn’t
+happen if our role checks are correct – e.g. a building admin tries to access a company-wide setting
+only available to company admins), the UI will show either that option greyed out or an error
+message if directly navigated. We want to prevent confusion by hiding what they cannot do. If an
+admin session expires while doing work, we’ll prompt re-authentication (maybe even an OTP re-auth
+if they were editing sensitive settings, similar to how some platforms ask for credentials again when
+accessing security settings).
+Impersonation Mode: Mentioned earlier, one feature often requested is the ability for an admin to
+see the resident view (to assist a resident on a call, for example). We can implement a front-end
+feature “View as Resident” which essentially uses the building admin’s privileges to fetch data as if
+they were that resident. This could be as simple as a front-end switch that filters data, or as robust as
+a backend-supported impersonation token. If the latter, the admin would authenticate, then request
+an impersonation token for a resident, which the backend issues if allowed, and then the admin’s UI
+would temporarily use that token to show exactly the resident’s perspective. This is advanced and
+must be logged (and probably only allowed for Super/Company admins in our design, to avoid
+privacy issues). It’s beyond core auth flows, but included for completeness as a parity consideration
+(BuildingLink allows management to impersonate residents in some capacity, I believe).
+```
+## Company Admin Persona
+
+### Onboarding Workflow (Company Admin)
+
+```
+Trigger: Onboarding a new property management company onto the platform, or adding an
+additional Company Admin for an existing company. The primary trigger is often the initial setup of
+a new client (property management company) – at that point, a Super Admin creates the company
+entity and a primary Company Admin user (often a general manager or IT contact at that company).
+Alternatively, an existing Company Admin might use the system to invite a colleague as a fellow
+admin.
+Actors: Super Admin (or implementation engineer) for initial creation; Company Admin (new user).
+In subsequent cases, an existing Company Admin can be the actor inviting another admin.
+Inputs: Company details (name, address, etc.) and admin’s personal info – name, corporate email,
+phone. Possibly a default password or whether they should be forced to use SSO (some companies
+might only allow SSO logins).
+Steps:
+Super Admin Setup: For a new company onboarding, a Super Admin in our platform enters the
+company info into an “Add New Company” form and designates the primary admin. The system
+creates the Company Admin user account with ROLE_COMPANY_ADMIN linked to that company, in
+inactive state. An invite email is sent to the admin’s email with OTP or activation link. If the platform
+allows self-service sign-up, this step could instead be initiated by the person themselves filling a
+registration form for a new company; in that case the system would still create the account and
+perhaps queue it for approval by a Super Admin. But typically, this is handled internally for quality
+control.
+Activation by Company Admin: The new Company Admin receives the welcome email (possibly
+containing a temporary password as well, especially if they insisted on one during contract setup).
+```
+#### • • • • • • • •
+
+
+```
+They click the link or go to a special onboarding URL. They verify their identity either via OTP to their
+phone or by entering the temporary password provided. Once verified, they are prompted to set a
+permanent password (if one wasn’t already given), and possibly to set up 2FA (we likely encourage
+company admins to set up at least phone OTP or authenticator app for security). They accept Terms
+of Service (and maybe a Master Service Agreement if not already handled offline).
+```
+```
+Initial Login and Company Configuration: Upon first login, since this is a high-level user, we guide
+them through setting up their portfolio: e.g. “Add your first building.” The onboarding wizard might
+prompt them to input building details, upload data, and invite building admins or staff. Essentially,
+the Company Admin’s onboarding extends beyond just authentication – it’s about configuring their
+use of the system. However, from the auth perspective, at this point their account is active, with full
+company-level privileges. If this is an additional Company Admin (invited by an existing one), the
+flow is similar: they get an invite and upon activation, they join the already-configured company
+environment.
+```
+```
+Failure States:
+```
+```
+Approval Required: If the platform uses an approval step (for self-service signups), after the user
+registers the company info, their account might be pending approval. A failure would be if they try to
+log in before approval – the system should inform “Your account is pending verification by our team.”
+This is only relevant for self-service scenarios.
+Invite Issues: As usual, if the email invite doesn’t reach the person, the Super Admin may need to
+resend or contact them directly. Since this is often during business onboarding, there’s usually direct
+communication. We also allow the use of a setup link outside of email (the Super Admin could read
+them a code over phone if needed).
+SSO Onboarding: If the company plans to use SSO from the start, the onboarding might skip the
+password/OTP and instead link their account to an IdP. A failure case here is if SSO isn’t configured
+correctly and they can’t log in. We’d then have to provide a fallback (like a local password) to get
+them in. So for companies using SSO, we likely still create a local account and send an OTP, then later
+turn on SSO integration.
+Multiple Company Admins Race: If two admins from the same company are invited separately by
+different means (like one by Super Admin, one by an existing admin) and they use the same email or
+get confused, there could be duplication. We ensure company admin emails are unique and
+associated with that company. The system should not allow duplicate accounts for the same person.
+If an invite is sent to an email already in use as staff or building admin, ideally we convert that user
+to also be a company admin (merging roles). If not, we might end up with separate accounts, which
+is not ideal. We handle this via checks at invite time.
+```
+_Figure: Company Admin Onboarding Workflow._ Initially, a Super Admin creates the company and primary
+admin account (or a self-signup is submitted). The Company Admin receives an invite, activates their
+account via OTP or initial credentials, and then logs in to configure their portfolio. If the Company Admin is
+added to an existing company (secondary admin), the process is similar: an invite from an existing admin
+and OTP verification. The main difference is the post-login steps (initial setup vs joining an established
+setup).
+
+#### • • • • • •
+
+
+### Authentication & Login (Company Admin)
+
+```
+Methods: Company Admins can log in with password, OTP, or SSO. Given they are corporate users,
+many will integrate with SSO for convenience and centralized security. We support all three:
+OTP: Useful as a backup or for quick login if they forget their password. They enter their email, get
+an OTP code, and log in. Possibly used if SSO is down or they are having issues with their password.
+Password: Likely the standard for daily use (unless SSO is enabled). They’ll have a strong password
+set. We highly recommend enabling two-factor for these accounts due to the breadth of access. If
+two-factor is enabled, after entering password the system will require an OTP code (via SMS or
+authenticator app) to complete login. This can be enforced at the company policy level.
+SSO: For companies that choose this, the Company Admin’s experience is one-click login with their
+corporate credentials. We ensure the first Company Admin’s account is linked properly to the IdP
+(usually by email federation or an established user ID). SSO might be set up after initial onboarding;
+thus, the first login might be via OTP/password, and subsequent ones via SSO once configured.
+Permissions on Login: A Company Admin has access to all buildings under their company. Their JWT
+and session will reflect that. They can manage multiple buildings from one interface. If the company
+has many buildings, the UI will allow filtering and searching among them. There is no need for
+context switching like staff; their scope is the entire company by default. (If needed, we could allow
+restricting a company admin to certain regions, but by definition if they are “Company Admin” we
+assume full scope.)
+Recovery: Similar to building admins/staff – forgot password triggers an email. If SSO, recovery is
+handled by the company’s IT (outside our system). If they lose 2FA device and 2FA was required, a
+Super Admin can disable 2FA for them or provide backup codes. We will supply a mechanism for
+backup codes (a set of one-time codes they can generate and store).
+Delegated Admin Invite: Company Admins can invite other company admins. This is a bit meta –
+basically creating peers. The invited person gets an OTP and goes through activation.
+Authentication-wise, once active, they have the same login methods available. We mention this to
+note that the system can have multiple company admins concurrently, all using these flows.
+Session Security: For company admins, we might enforce shorter session lifetimes and stricter
+device recognition. For example, no perpetual logins – maybe require re-login every 24 hours even
+with refresh tokens. Also, we may log them out of all devices if their role changes or if suspicious
+activity is detected. These are security measures aligned with protecting high-level access.
+```
+### Backend Implementation (Company Admin)
+
+```
+Account & Role: Company Admin accounts are essentially the same entity type as building admins
+in our system (both possibly considered “Admin” in the OpenAPI). We differentiate by scope: a
+company admin’s account might have a null buildingId but a companyId association. We may
+implement separate roles like ROLE_COMPANY_ADMIN vs ROLE_BUILDING_ADMIN. The endpoints
+are the same /api/v1/auth/admins/... ones used for building admins. The registerAdmin
+endpoint likely takes an Admin DTO where we can specify if it’s company or building. Possibly if
+the JSON has a buildingId, we treat it as building admin; if it has only companyId, as company admin.
+Since the OpenAPI snippet didn’t explicitly show parameters for building or company in
+registerAdmin, it might rely on the body. We will design accordingly.
+SSO Setup: The backend for company admin will include configuration for SSO – typically stored in
+company settings (IdP metadata, allowed domains, etc.). A Super Admin or the Company Admin (if
+capable) will input those. The auth flow as mentioned will then rely on those settings for SSO
+endpoints. For initial login, SSO might not yet be available, but after config, the Company Admin can
+```
+#### • • • • • • • • •
+
+```
+33
+```
+#### •
+
+
+```
+choose to enforce that all their staff use SSO (with maybe OTP as backup if IdP fails). This could be a
+toggle in company settings, and our backend would then prefer SSO on the login page for that
+company’s users.
+JWT & Scope: A company admin’s JWT will have something like role: ADMIN and companyId:
+XYZ with no specific building (or possibly a claim like allBuildings: true). This token allows
+access to all resources within that company. We will protect endpoints such that a company admin
+can access multiple buildings’ endpoints. For example, if a company admin calls GET /api/v1/
+buildings/{id}/units for any building that belongs to their company, it should succeed. We
+implement this check by verifying that the companyId in token matches the company of the
+building ID requested (which we can lookup in cache or DB quickly). If matched, authorize. This
+prevents company admins from other companies accessing each other’s data. It’s a partitioning akin
+to multi-tenant SaaS security.
+Org Management: Company admins can create building admins and staff, so their token must be
+accepted for calls to registerStaff, registerTenant, etc., as long as the building in question
+belongs to them. We enforce via the same mechanism above. They can also likely create new
+buildings in the system for their company (through an endpoint like POST /api/v1/companies/
+{companyId}/buildings). That’s beyond auth but relevant to their capabilities.
+Audit: At the company admin level, audits are crucial. We log creation of any new admin users,
+changes to SSO settings, logins (with IP, device, etc.). If a company admin invites another admin, that
+event is logged (“Admin A invited Admin B on date...”). If any security setting is altered (like 2FA
+requirement toggled), it’s logged. These logs are accessible to super admins for oversight. We could
+also expose some logs to the company admins (like they could see login history of their staff).
+```
+### Frontend Implementation (Company Admin – Web & Mobile)
+
+```
+Portal Interface: Company Admins get the most expansive view. Upon login, they see a Portfolio
+Dashboard listing all buildings under their management. Key metrics and alerts might be shown
+(e.g. how many new resident requests across all buildings). The UI likely has a navigation where they
+can drill into a specific building (which then looks similar to a building admin’s view), but they also
+have company-level menus (like manage company info, manage global settings, see aggregated
+reports across buildings). We design a two-level navigation: one for company-wide functions, and
+one that appears when viewing an individual building. For example, on the left side maybe a list of
+buildings (or a selector), and on the top, company-level tabs. Selecting a building filters context for
+the bottom menus.
+SSO Toggle UI: If the company wants to enforce SSO, the company admin UI will have a settings
+page for “Authentication Settings” where they can enable/disable password login for their users,
+require 2FA, upload SSO metadata, etc. This is an advanced area only they (or super admins) can
+access. When they change something like enabling SSO, we’ll warn them to test it on their own
+account first. Possibly provide a “Test SSO connection” feature. This part of UI is somewhat out-of-
+band of daily use, but crucial during setup.
+Inviting Users: Company Admins will use the frontend to onboard others – there will be UI flows for
+“Add Building Manager” or “Add Staff” which correspond to calling the backend endpoints. These
+flows will often mirror what a Super Admin could do, but scoped to their company. For example, a
+wizard to add a new building, and within it add an admin for that building, sending out invites
+accordingly. We ensure these flows incorporate the OTP-first approach (e.g., after they add a user, a
+confirmation says “Invitation sent to John (john@xyz.com) with login instructions.”).
+Multi-company: In rare cases, a person might be Company Admin of more than one company (say
+two separate management firms). Our system doesn’t expect that normally (each login is tied to one
+```
+#### • • • • • • •
+
+
+```
+company). If it did happen, they’d need separate accounts, or if we support it, a company switcher
+similar to building switcher. But likely unnecessary.
+Mobile: A company admin might use mobile to quickly check statuses, but heavy configuration (like
+onboarding new buildings or adjusting settings) is likely web-only. The mobile app for company
+admin could be read-only dashboards and notifications. If we allow full functionality on mobile, we
+make sure all critical flows (like approving something or sending a notice) are accessible. Login on
+mobile supports OTP, password, SSO as usual. Given the high privileges, if a mobile device is used,
+we ensure it’s secure (the app could enforce a device PIN if not set, etc.). Possibly, we might not
+encourage company admins to use the mobile app for major changes, but they will have access if
+needed.
+Error States: If a company admin’s account is not yet approved (in a self-signup scenario), the login
+page should show a clear message. If their account is suspended (maybe for non-payment or
+security reasons), we show “Account disabled, contact support.” Those conditions would be set by
+super admin in backend.
+Support: Company admins typically have direct support from our team (super admins). The UI
+should have an easy way for them to contact us (the platform provider) – perhaps a support chat or a
+ticket system link. This is not exactly auth, but part of their onboarding to know they’re not alone.
+BuildingLink’s implementation likely involves a lot of hand-holding by their team for new company
+admins , and we strive to replicate that via in-app guidance and readily available contact info.
+```
+## Super Admin Persona (Internal)
+
+### Onboarding Workflow (Super Admin)
+
+```
+Trigger: Creation of a new Super Admin account (internal use). This is rare and typically happens
+when a new internal employee (like a support engineer) needs access to the system’s back-end
+admin console. Alternatively, one might be created during initial system install (like a default “admin”
+account).
+Actors: Another Super Admin or System process (inviter); Super Admin (new user).
+Inputs: Name, internal email, and a secure initial credential. Often, for super admins, we may not
+use OTP invites due to security; instead, we might manually set a password and 2FA. But if we keep
+consistent, we could send an OTP email via a trusted channel. Possibly the new super admin is sitting
+with an existing one to set up their account.
+Steps:
+Account Creation: A current Super Admin uses an internal User Management tool to create the new
+super admin account. They assign the necessary privileges (ROLE_SUPER_ADMIN). The system might
+not send an automated email (for security, we might want to hand-deliver credentials). Alternatively,
+it could send an email with an activation link if internal email is considered secure. This is
+configurable.
+Credential Setup: The new super admin sets their password and sets up MFA. For internal accounts,
+we require MFA strongly. This could be via OTP SMS, but more likely via an authenticator app or
+hardware token (since we can’t risk SMS interception). The user might scan a QR code for TOTP
+(Time-based OTP) during setup, or be given backup codes.
+```
+```
+Confirmation: Once their credentials are set, the super admin logs into the internal admin portal.
+There might be additional verification steps if policy demands (like approval from another admin).
+After that, they have full access to the system’s super admin functions (managing companies, global
+settings, etc.).
+```
+#### •
+
+#### •
+
+#### •
+
+```
+37
+```
+#### • • • • • • •
+
+
+```
+Failure States:
+```
+```
+Tight Security: If anything is off (e.g., the new super admin didn’t configure MFA properly), we
+wouldn’t let them proceed. The account may remain disabled until MFA is done. Another failure
+would be if the invite email is somehow compromised – to mitigate, often these are done in person
+or out-of-band.
+Misassignment: If by mistake someone gets super admin role who shouldn’t, that’s a major issue.
+Therefore, creation likely requires multiple approvals (maybe the system could enforce that one
+super admin’s creation must be confirmed by another). This is more process than technical, but it’s
+worth noting to avoid a single point of breach.
+Deprovisioning: When a super admin leaves the organization, their account must be removed
+promptly. If not, that’s a security hole. We will have procedures for that (and possibly an automated
+check if an account hasn’t been used in X days to flag for review).
+```
+_Figure: Super Admin Onboarding Workflow._ An existing super admin (or system install) creates the account,
+then the new super admin sets up their password and multi-factor authentication. No external invite is
+usually sent; often it’s done manually for maximum security. Once configured, the super admin has full
+system access.
+
+### Authentication & Login (Super Admin)
+
+```
+Login Process: Super Admins log in through a special interface or the same login with elevated
+credentials. We may or may not expose the “super admin” functions on the main domain –
+sometimes there is a separate admin site for internal users. Assuming it’s integrated, the super
+admin would enter their email and password. We enforce multi-factor : after password, they must
+enter a second factor (either an OTP from an authenticator or a push confirmation). We might not
+rely on SMS OTP here due to SIM swap risks; an app or hardware key is preferred. If our system has
+OTP via authenticator, we’ll have a field for that on login or use a time-based token approach.
+SSO: It’s conceivable we integrate super admin auth with our internal IdP (like an internal corporate
+Google Workspace or Okta). That would simplify management (e.g. if they leave, disabling in IdP cuts
+access). However, we also want the ability to bypass in case SSO is down (super admins need access
+even during outages). So we might allow both: primarily SSO, with a fallback local login if given a
+special override (like a master account). This detail depends on company policy. For completeness,
+we mention SSO for internal as an option.
+Privileges: Once logged in, super admins can do anything: manage any company, any user. Their
+session should be distinct and highly secured. Possibly shorter timeout (like auto-logout after 15
+minutes of inactivity). They might have a different UI theme or banner indicating they are in super
+admin mode to avoid confusion with normal usage.
+Recovery: If a super admin forgets their password, since they can’t exactly use the normal “Forgot
+Password” (we might not expose that for super accounts), the recovery might be manual by another
+super admin. For example, one super admin can reset another’s password through the admin
+console (since they all have that power). Or if there’s only one and they’re locked out, it might involve
+database intervention with a master key – which is an emergency procedure. Essentially, we don’t
+rely on the public-facing recovery for these accounts. Backup codes for 2FA are given at setup to
+each super admin for emergency.
+Monitoring: Every super admin login should trigger an alert (like email or SMS to lead developers/
+security) because it’s powerful. We may integrate with an SIEM system to monitor these
+authentications.
+```
+#### • • • • • • • • •
+
+
+### Backend Implementation (Super Admin)
+
+```
+Roles and Authentication: Super Admins might be handled via the same JWT approach but with a
+role like ROLE_SUPER_ADMIN. We need to ensure this role is recognized in all authorization checks
+as all-powerful (or we bypass checks if role=SUPER_ADMIN). They can impersonate any company or
+building context as needed. Possibly the JWT might carry a special claim “superAdmin: true”. They
+likely also have a companyId (their own company entry, representing the software provider) but
+that’s mostly irrelevant to data access.
+Endpoints: There may be a separate set of endpoints for super admin operations (not exposed to
+normal users). E.g.,
+/api/v1/system/companies (POST to create new company, GET list of companies, etc.),
+/api/v1/system/users/{id}/roles (to elevate someone to admin or other maintenance
+tasks).
+These endpoints would be protected so that only a JWT with super admin role can access them. For
+safety, we might host them under a different path or subdomain not accessible at all to regular
+clients. In the OpenAPI, we don’t explicitly see “super admin” paths – possibly they are omitted or
+under “Admins” with some flag. We will implement what’s needed regardless of docs.
+Security: We take additional measures for super admin accounts: e.g., require strong passwords
+(min length, complexity), enforce password changes periodically, and mandatory 2FA. The backend
+can enforce these on the account (e.g. a flag that requires change on next login). Also, limit login
+attempts stringently (maybe 3 strikes and account is locked until another super admin unlocks it
+manually). Given their power, we don’t want brute force possibilities. IP whitelisting could be
+considered (only allow super admin login from certain networks or via VPN). Those are more
+infrastructure decisions but could be baked into the app config.
+Audit: Every action by a super admin is logged. Not just logins, but creation of companies, deletion
+of data, etc. We might even have a tamper-evident log (write to append-only storage) for audit
+compliance. If a super admin impersonates a user to debug an issue, that’s recorded (“SuperAdmin X
+impersonated Tenant Y at time Z”).
+Tooling: The backend might offer an “impersonation token” endpoint: e.g.
+POST /api/v1/system/impersonate?userId=ABC which only super admin can call, and it
+returns a JWT that represents that user. This is extremely powerful (basically logging in as any user)
+and should be used carefully (mostly for support). If implemented, it’s behind super admin auth and
+logged. It’s a valuable support tool to troubleshoot user issues.
+No OTP Emails: We likely do not send OTP via the normal channels for super admins (to avoid any
+chance of interception). If using authenticator apps, the verification is offline. If using hardware keys,
+the backend will use WebAuthn or similar flows (which are beyond OTP; these would require a
+specialized endpoint to register the key and verify signatures at login). If we keep it simpler with
+TOTP (Google Authenticator style), the backend just needs to store a secret for the user and verify
+TOTP codes on login. We’d integrate that into the verify flow for super admins.
+```
+### Frontend Implementation (Super Admin – Internal Console)
+
+```
+Interface: Super Admins use an internal admin console UI. This could be integrated into the main
+web app but likely under an “Admin” section that only appears if your role is super. It might also be
+on a separate URL (for security by obscurity). In any case, when a super admin logs in, they can
+access features to manage companies, users, settings, etc. The UI might be more utilitarian (not as
+pretty, more forms and tables for data). We might also include advanced tools like system health
+dashboards, logs viewer, etc., which are more for devops but possibly in the same app.
+```
+#### • • • • • • • • •
+
+
+```
+Navigating as Others: The super admin UI may allow selecting a company and “entering” that
+company’s context. For example, choose ACME Property Management from a dropdown, then see all
+its buildings and users and effectively browse their data as if a company admin. This is a safe way to
+implement without actual impersonation. But for actions that need identity (like if they want to
+simulate a resident experience), we’d use the impersonate function discussed. The UI could present
+an “Impersonate User” button when viewing a user’s profile. If clicked, it might open a new incognito
+window or session as that user. We must make it clear to the super admin when they are in
+impersonation mode to avoid confusion.
+Distinct Appearance: To avoid any mishaps (like accidentally doing super admin tasks thinking
+they’re in normal view), we might skin the super admin area differently (different color scheme or a
+big “Super Admin Mode” banner). This kind of UI hint is good for caution.
+Mobile: Possibly, super admin functionality is not provided on mobile at all, or at least not fully. It’s
+generally done from secure desktops. We can simply not allow logging in as super admin on the
+mobile app (or if we do, extremely limited). The risk is too high if a phone is lost. Most internal admin
+tasks will be done on corporate laptops behind VPN.
+User Management UX: If a super admin needs to reset another super admin’s password, the UI will
+have that capability (since no normal recovery flow exists). Similarly, they can disable accounts,
+adjust roles. We make these actions require confirmation (like typing CONFIRM or something) to
+prevent accidental clicks.
+SSO for Internal: If using SSO for super admins (say they login with Google Workspace), then the UI
+will direct them to Google. On return, they might still need to do an extra 2FA if we require (though if
+Google already did 2FA, maybe not). The UI for internal login might thus just be a single “Login with
+Google (Internal)” button rather than username/password, to simplify things. This is environment-
+specific.
+```
+## Vendors/Guests (External Temporary Access) – Optional Persona
+
+_(Note: Vendors and Guests are not core system users but may receive temporary or limited access. We include
+them for completeness in parity with features like visitor access.)_
+
+### Onboarding Workflow (Vendor/Guest)
+
+```
+Trigger: A resident or staff schedules a Guest access (e.g., visitor coming to the building), or a staff
+registers a Vendor (contractor) for temporary access or a specific portal feature. For a Guest (like a
+visitor invited by a tenant for a day), onboarding is essentially creating a one-time access credential.
+For a Vendor (like a recurring maintenance contractor, delivery person, or real estate agent),
+onboarding might involve creating a limited user account in the system.
+Actors: Tenant or Staff (inviter); Guest or Vendor (external user).
+Inputs: For a guest: typically name and contact (phone or email) of the guest, plus schedule (date/
+time of visit). For a vendor: name, company, contact info, possibly an ID or license number, and the
+scope of access (which building or which part of portal they can see).
+Steps (Guest example):
+Invitation Creation: A tenant uses the resident app to pre-register a visitor for a certain time
+(“Visitor Management” feature). They enter guest’s name and phone/email. The system generates a
+guest access code or link.
+Notification to Guest: The guest receives a text or email saying “You’ve been invited to Building ABC
+by [Tenant]. Show this QR code or click this link when you arrive.” The link could be a simple page
+```
+#### • • • • • • • • • • •
+
+
+```
+with visit details or even an HTML-based QR code. In some cases, it might ask the guest to fill in
+details (like COVID questionnaire or photo) – but focusing on auth, the link might contain a token for
+any needed login.
+```
+```
+Arrival/Access: When the guest arrives at the property, they either show their code to a staff who
+validates it, or they click the link which might bring up a check-in screen on their phone. If the
+system requires authentication (say the guest needs to sign in on a tablet), the code or link serves as
+the one-time authentication token – no username/password. It’s essentially an OTP that grants
+limited access (maybe valid for a short window). The guest might be asked to verify via OTP as well
+(for instance, “Enter the code sent to your phone to confirm identity” using the number they gave). If
+verified, they are marked as arrived and potentially given elevator access or so on (outside scope
+here). They do not get a full “account” in the system, just a one-time session. After the visit, the token
+expires and cannot be reused.
+```
+```
+Steps (Vendor example):
+```
+```
+Account Creation by Staff: A staff or building admin adds a vendor to the system (e.g., a cleaning
+company’s supervisor needs a login to see work orders). The vendor is set up somewhat like a staff
+account but with very limited permissions (maybe ROLE_VENDOR). They get an email invite with OTP
+similar to other user types.
+Activation: The vendor activates via OTP, sets a password if needed. Their access might be limited to
+a specific module or time frame. For instance, they can only view certain maintenance tickets or only
+access during a project duration. This could be enforced by role and additional attributes.
+```
+```
+Usage: The vendor logs in via the vendor portal (could just be the regular login but the system
+recognizes their role). They might only see one page (like “Scheduled Visits” or “Key Pickup Code”).
+After their job is done, an admin might deactivate the account or it auto-expires.
+```
+```
+Failure States:
+```
+```
+Guest Misses Notification: If a guest doesn’t receive or open their access link, they might just show up
+at the front desk clueless. The front desk can verify them manually (since their name is on the visitor
+list). The one-time link is just a convenience (like a fast-pass). Failure is mitigated by staff handling.
+Code Expired: If a guest tries to use the link outside the allowed time, it will not work (maybe shows
+“expired”). They’d need to contact the host to resend or re-invite.
+Vendor No-Show or Delay: If a vendor doesn’t activate their account in time (maybe the OTP expired),
+staff can resend the invite. If a vendor’s project ends, but their account wasn’t disabled, it’s a security
+risk – admin must remember to revoke. We could implement auto-expiry dates on vendor accounts
+at creation to handle that.
+```
+### Authentication & Access (Vendor/Guest)
+
+```
+Guest Access: This is typically passwordless and session-limited. The guest’s link or code is
+effectively an authentication token itself. For example, a link might be https://app.com/guest-
+access?token=ABC123 which, when clicked, logs the guest into a very restricted session (maybe
+only the ability to confirm their arrival). We treat that token like a JWT or exchange it for a JWT that
+has extremely limited scope (e.g. only valid for a check-in endpoint). No long-term credentials are
+```
+#### • • • • • • • • • •
+
+
+```
+created. The token is one-time use. We could also use QR codes scanned on-site to authenticate
+them (the QR encodes a token that our system verifies).
+Vendor Login: Vendors who have accounts use OTP or password similar to staff. Because they are
+external, probably OTP-first is fine (they might not even remember a password for a system they
+rarely use). If they have a password, recovery via email works. Their login page is the same universal
+login. We might show them only a subset of features after login.
+Scope & Permissions: Guest tokens might internally be tied to a specific building and timeframe.
+They cannot access anything else. For vendors with accounts, ROLE_VENDOR will be used to gate
+their accessible APIs. Possibly we give them access only to a “Vendor Portal” section. For instance, a
+cleaning vendor might only see cleaning schedules and be able to mark tasks done. Under the hood,
+their JWT might list what they can do (or we just hardcode logic for that role on certain endpoints).
+Expiration: Guest sessions expire after use or after the visit date. Vendor accounts might expire at a
+set date or remain active for ongoing service providers. We might implement automatic deactivation
+for vendors who haven’t logged in for X days or after project end.
+```
+### Backend Implementation (Vendor/Guest)
+
+```
+Guest Tokens: We create a guest access record in the database when a resident registers a visitor.
+The token (random string) is stored with validity period and possibly a reference to the host (tenant)
+and event (so staff can see who they’re here for). An endpoint might be: GET /api/v1/guest-
+access/{token} which either returns a valid small JWT or marks the guest as arrived. Actually, it
+could directly perform the check-in action and not even maintain a session. Simpler: hitting the link
+sets a flag “Guest checked in”. If we needed the guest to do more (like fill a form), we might issue a
+temporary session cookie. We’ll implement minimal auth around it since it’s one-time.
+Vendor Accounts: These are basically users in our system with a special role. Endpoints to register
+vendors could reuse staff endpoints or we provide a dedicated one for clarity: e.g. POST /api/v1/
+auth/vendors/register if needed. But possibly not necessary if we treat them as a kind of staff.
+We ensure they cannot escalate privileges (the role is fixed).
+API Security: All guest token processing must be secure: tokens should be sufficiently random (at
+least 128 bits). When a guest link is used, we might immediately invalidate it (to prevent reuse). Or
+mark it as used so it can’t be used again if forwarded. For vendor APIs, ensure that ROLE_VENDOR is
+limited: for example, even if a vendor tries to call a resident endpoint, the auth filter will deny
+because they lack the resident role. We explicitly code what each role can do.
+Auditing: Log when guest tokens are created, used, or expired (for security and tracking visitor
+history). Log vendor logins and activities – e.g. if a vendor views a work order, that might be logged
+to know they accessed certain info.
+```
+### Frontend Implementation (Vendor/Guest)
+
+```
+Guest UX: For guests, there might not be a traditional “login”. The email or SMS they get might say
+“Tap when you arrive” or “Show this QR at the entrance.” If they tap early, it might say “This will be
+valid on [date] from [time].” At the right time, tapping might either confirm their arrival or open a
+simple page: “Welcome, [Guest Name]. You’re checked in to [Building]. Show this screen to the front
+desk.” If additional info is needed (like photo ID upload or form), the page would guide them. It’s
+essentially a very lightweight web page tailored for that purpose, not the full app. We ensure it
+works without login – the token in URL authenticates them directly. On the front desk side, staff
+might have a screen showing expected guests and see that this guest checked in (in real-time via the
+backend update).
+```
+#### • • • • • • • •
+
+
+```
+Vendor UI: Vendors with accounts might have a simplified version of the staff interface. For
+example, a vendor who handles repairs might log in and see a list of work orders assigned to them.
+They likely won’t see the full navigation of the platform – maybe just a couple of sections. We design
+a special view for vendor users where irrelevant menus are hidden. We can detect ROLE_VENDOR
+on the frontend to do this. Possibly it’s labeled “Vendor Portal” and has the company’s branding but
+limited functionality. This avoids confusion and reduces the risk of them wandering into areas they
+shouldn’t even if backend would stop them.
+Mobile for Vendors: If a vendor is regularly using it (like a contractor always coming to multiple
+buildings), they might use the mobile app. We will allow them to login with OTP same as others. The
+app will detect their role and present the vendor-specific UI (maybe the app is the same but sections
+hidden). If the vendor is only ever using the web (e.g., to print a visitor pass), they can do that too.
+Support: Vendors/Guests typically won’t contact us directly if they have login issues; they’ll go
+through building staff or hosts. But if needed, our support can handle vendor account issues similar
+to staff. Guests issues are more on-site problem (like “I didn’t get the text” – front desk would just
+verify manually).
+```
+## Parity with BuildingLink Features
+
+Throughout these personas, we’ve ensured parity with BuildingLink’s key authentication-related features:
+
+```
+Login Letters & Initial Credentials: We provide a mechanism for sending login instructions (via
+email or print) to new users, analogous to BuildingLink’s login letter which includes username/
+password for first login. In our case this is tailored to OTP usage, but can include temporary
+passwords if needed for offline users. The content of these communications is customizable by
+management , just as BuildingLink allows editing the template of resident login instructions.
+Forgot Username/Password: Our platform offers self-service retrieval similar to BuildingLink’s.
+Users can reset passwords via email link , and if their email isn’t recognized, they’re prompted to
+contact management – exactly how BuildingLink defers to building staff for unregistered emails.
+Username recovery is de-emphasized since we use emails, but if needed, support can assist or the
+system can send an email reminding the user of their username (like BuildingLink emailing the
+username in reset emails ).
+Password Optionality (“Password Track”): We allow users to operate entirely with OTP if they
+prefer (no need to ever set a password), fulfilling a passwordless experience. However, for those who
+want or need passwords (older habits or certain access scenarios), we fully support them. This dual
+approach covers BuildingLink’s traditional password model while offering a modern alternative.
+Multi-Property Access: Staff and admins can manage multiple properties with one login, which is
+noted as a critical feature in comparative reviews. Our implementation ensures one account can
+have scope over many buildings, and the UI allows quick switching, something that BuildingLink’s
+competitors highlight and which we include for parity and improvement.
+Board Member Access: We incorporate the concept of board members having enhanced access to
+their building’s information and management tools, matching BuildingLink’s support for board
+portals within the resident site. Board members use the same login with elevated rights, and we
+support processes around assigning and removing board roles easily.
+External Guest Access: BuildingLink has features for visitor management (like LobbyLink for front
+desk, guest invitations, etc.). Our guest access tokens and vendor accounts align with those
+capabilities, ensuring that the platform can handle visitors and third-party access without
+compromising security or needing full accounts for each.
+```
+#### •
+
+#### •
+
+#### •
+
+#### •
+
+```
+1 2
+```
+```
+3
+```
+-
+    7
+9
+
+```
+38
+```
+-
+
+#### •
+
+```
+15
+```
+#### •
+
+#### •
+
+
+```
+Mobile and Modern Auth: BuildingLink has mobile apps but historically relied on passwords. Our
+design leapfrogs that by using OTPs that integrate well with mobile (autofill, deep links) and includes
+biometrics, push notifications for OTP – features that are becoming standard and give our platform
+an edge while still being compatible with older methods (password, email links).
+```
+Finally, every persona’s workflow and access have been documented in a structured way so that engineers
+can implement according to spec and support agents can understand the user journeys. The flowcharts
+provided illustrate the step-by-step processes, and our description of backend endpoints and front-end
+behavior offers a clear blueprint for development. By following this design, we maintain all the functionality
+users expect from a system like BuildingLink, while improving user experience and security through OTP-
+first authentication and comprehensive role-based access control.
+
+**Sources:**
+
+```
+BuildingLink Resident Onboarding Guide (Login letters, initial setup)
+BuildingLink Implementation FAQ (Customizing login letters, emailing/printing credentials)
+BuildingLink Resident Help: Password Reset Process (forgot password via email, contact
+management if email not on file)
+Industry Comparison – Multi-property Management Feature (importance of single account for
+multiple properties)
+CloudSuites API Documentation (Authentication endpoints for OTP, refresh, registration by role)
+```
+Getting Started With BuildingLink : Staff Help Site
+https://help-staff.buildinglink.com/en/support/solutions/articles/42000098168-getting-started-with-buildinglink
+
+Implementation FAQ : Staff Help Site
+https://help-staff.buildinglink.com/en/support/solutions/articles/42000100029-implementation-faq
+
+CloudSuites api-docs.json
+file://file-URWZbzKueRgZi2YAXr8Pig
+
+One-Time Passwords: The good, the bad, and how to avoid the ugly
+https://www.scworld.com/perspective/one-time-passwords-the-good-bad-and-how-to-avoid-the-ugly
+
+How Do I Reset My Password? : Resident Help Site
+https://help-resident.buildinglink.com/en/support/solutions/articles/42000098659-how-do-i-reset-my-password-
+
+Building Link vs. Monscierge: Which is a Better Fit?
+https://hoteltechreport.com/compare/buildinglink-vs-monscierge-connect-staff
+
+BuildingLink.com
+https://secure.buildinglink.com/
+
+BuildingLink vs Tellus - Property Management Software - SelectHub
+https://www.selecthub.com/property-management-software/buildinglink-vs-tellus-app/
+
+Getting Started With BuildingLink : Resident Help Site - Support
+https://help-resident.buildinglink.com/en/support/solutions/articles/42000098168-getting-started-with-buildinglink
+
+#### •
+
+#### •^15
+
+#### •^23
+
+#### •
+
+```
+7 9
+```
+-^15
+-^4
+    28
+
+```
+1 5 14 16
+```
+```
+2 3 23 31 37
+```
+```
+4 10 11 12 13 18 19 20 21 24 26 27 28 29 32 33 34 35 36
+```
+```
+6
+```
+```
+7 8 9 22
+```
+```
+15 17
+```
+```
+25
+```
+```
+30
+```
+```
+38
+```
+
