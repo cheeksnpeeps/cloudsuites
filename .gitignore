@@ -5,8 +5,9 @@
 **/generated-test-sources/
 **/test-classes/
 
-# Maven wrapper
-.mvn/wrapper/maven-wrapper.jar
+# Maven wrapper JAR (but keep other wrapper files)
+# Note: maven-wrapper.jar should be included for GitHub Actions
+# .mvn/wrapper/maven-wrapper.jar
 
 # Java compilation outputs
 *.class
