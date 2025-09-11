@@ -90,7 +90,7 @@ public class OtpCode {
     @Column(name = "max_attempts", nullable = false)
     private Integer maxAttempts = 3;
 
-    @Column(name = "ip_address", columnDefinition = "inet")
+    @Column(name = "ip_address")
     private String ipAddress;
 
     @Size(max = 1000, message = "User agent must not exceed 1000 characters")

@@ -73,7 +73,7 @@ public class AuthAuditEvent {
     private Integer riskScore = 0;
 
     // Request context
-    @Column(name = "ip_address", columnDefinition = "inet")
+    @Column(name = "ip_address")
     private String ipAddress;
 
     @Size(max = 1000, message = "User agent must not exceed 1000 characters")
@@ -119,7 +119,7 @@ public class AuthAuditEvent {
     private String timezone;
 
     // Additional context
-    @Column(name = "additional_data", columnDefinition = "jsonb")
+    @Column(name = "additional_data")
     private String additionalData; // JSON as string
 
     @Size(max = 200, message = "Failure reason must not exceed 200 characters")
