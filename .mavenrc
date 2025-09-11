@@ -1,0 +1,4 @@
+# Maven configuration for CloudSuites project
+# Force Java 21 to avoid Lombok compatibility issues with Java 24
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/temurin-21.jdk/Contents/Home
+export PATH=$JAVA_HOME/bin:$PATH
