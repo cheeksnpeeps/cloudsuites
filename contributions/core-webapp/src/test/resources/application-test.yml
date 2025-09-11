@@ -1,4 +1,4 @@
-# Test Profile Configuration
+# Test Profile Configuration  
 # Overrides for testing environment
 # =================================================================
 
@@ -11,6 +11,10 @@ logging:
     org.springframework.jdbc: DEBUG
     root: WARN  # Reduce noise in tests
 
+# Test Server Configuration
+server:
+  port: ${SERVER_PORT:8080}
+
 spring:
   # Test Database Configuration (localhost for test containers)
   datasource:
@@ -20,12 +24,14 @@ spring:
 
   # Test R2DBC Configuration  
   r2dbc:
-    url: ${TEST_R2DBC_URL:r2dbc:postgresql://localhost:59665/cloudsuites_test}
-    username: ${TEST_DATABASE_USERNAME:csuser}
-    password: ${TEST_DATABASE_PASSWORD:csPassw0rd}
-    pool:
-      initial-size: 2
-      max-size: 5
+    host: ${DB_HOST:localhost}
+    port: ${DB_PORT:59665}
+    database: ${DB_NAME:cloudsuites_test}
+    username: ${DB_USERNAME:csuser}
+    password: ${DB_PASSWORD:csPassw0rd}
+    pools:
+      initial-size: ${SPRING_R2DBC_POOL_INITIAL_SIZE:2}
+      max-size: ${SPRING_R2DBC_POOL_MAX_SIZE:5}
 
   # Test Flyway Configuration
   flyway:
@@ -45,9 +51,37 @@ spring:
           auto: validate  # Use Flyway for tests too
         show_sql: false      # Reduce test output noise
 
+  # Test Security Configuration
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${AUTH0_ISSUER_URI:https://test.auth0.com/}
+
+# Test Auth0 Configuration
+auth0:
+  audience: ${AUTH0_AUDIENCE:test-audience}
+
+# Test CORS Configuration
+cors:
+  cloudsuites:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:8080}
+
 # Test-specific external services (mock values)
 twilio:
   accountSid: ${TEST_TWILIO_ACCOUNT_SID:test-account-sid}
+  serviceSid: ${TWILIO_SERVICE_SID:test-service-sid}
+  authToken: ${TWILIO_AUTH_TOKEN:test-auth-token}
+  phoneNumber: ${TWILIO_PHONE_NUMBER:+1234567890}
+
+# Test CloudSuites Configuration  
+cloudsuites:
+  app:
+    name: CloudSuites Property Management
+    version: 'test-version'
+  storage:
+    upload-path: ${UPLOAD_PATH:/tmp/test-uploads}
+    max-file-size: ${MAX_FILE_SIZE:10MB}
   serviceSid: ${TEST_TWILIO_SERVICE_SID:test-service-sid}
   authToken: ${TEST_TWILIO_AUTH_TOKEN:test-auth-token}
   phoneNumber: ${TEST_TWILIO_PHONE_NUMBER:+1234567890}
@@ -64,7 +98,4 @@ management:
       exposure:
         include: health,info
 
-# Test storage
-cloudsuites:
-  storage:
-    upload-path: /tmp/test-uploads
+# Test storage configuration already defined above
