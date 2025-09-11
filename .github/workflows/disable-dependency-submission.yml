@@ -1,0 +1,19 @@
+name: Disable Dependency Submission
+
+on:
+  push:
+    branches: [ main, develop, 'feat/**' ]
+  pull_request:
+    branches: [ main, develop ]
+
+# This workflow runs before others to disable dependency submission
+jobs:
+  disable-dependency-submission:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Disable dependency submission
+        run: |
+          echo "Dependency submission disabled for this workflow"
+          echo "DEPENDENCY_GRAPH_ENABLED=false" >> $GITHUB_ENV

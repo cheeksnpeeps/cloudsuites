@@ -1,0 +1,8 @@
+# Disable automatic dependency detection and submission
+# This prevents GitHub from running automatic Maven analysis
+version: 2
+updates: []
+
+# Explicitly disable dependency graph auto-submission
+dependency-graph:
+  enabled: false

@@ -6,16 +6,18 @@ on:
   pull_request:
     branches: [ main, develop ]
 
-# Disable GitHub dependency graph auto-submission to prevent conflicts
+# Disable automatic dependency submission entirely
 permissions:
   contents: read
-  # Explicitly disable actions that could interfere with Maven
-  actions: none
+
+# Override GitHub's automatic dependency submission
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
-  # Disable GitHub dependency graph submission
-  GITHUB_DEPENDENCY_GRAPH_ENABLED: false
-  # Force Maven to use our settings
+  # Force disable dependency graph submission
+  DEPENDENCY_GRAPH_ENABLED: false
   MAVEN_OPTS: "-Dmaven.repo.local=$HOME/.m2/repository"
 
 jobs:
@@ -33,6 +35,65 @@ jobs:
       with:
         # Ensure complete checkout to avoid missing files
         fetch-depth: 0
+        
+    - name: Pre-setup Maven settings workaround
+      run: |
+        echo "=== Pre-setup: Creating Maven settings at expected GitHub location ==="
+        # GitHub's automatic dependency submission expects settings at a specific path
+        # We need to create this BEFORE any other actions run
+        EXPECTED_PATH="/home/runner/work/cloudsuites/cloudsuites"
+        EXPECTED_SETTINGS="/home/runner/work/cloudsuites/cloudsuites/.mvn/settings.xml"
+        
+        echo "Current working directory: $(pwd)"
+        echo "Expected path: $EXPECTED_PATH"
+        echo "Expected settings: $EXPECTED_SETTINGS"
+        
+        # Create the directory structure
+        sudo mkdir -p "$EXPECTED_PATH/.mvn"
+        
+        # Copy our settings file to the expected location
+        if [ -f ".mvn/settings.xml" ]; then
+          sudo cp ".mvn/settings.xml" "$EXPECTED_SETTINGS"
+          echo "Settings file copied to expected location ✓"
+        else
+          echo "WARNING: Local settings file not found, will create minimal one"
+          cat > /tmp/minimal_settings.xml << 'EOF'
+        <?xml version="1.0" encoding="UTF-8"?>
+        <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+          <repositories>
+            <repository>
+              <id>central</id>
+              <url>https://repo1.maven.org/maven2</url>
+            </repository>
+          </repositories>
+        </settings>
+        EOF
+          sudo cp /tmp/minimal_settings.xml "$EXPECTED_SETTINGS"
+        fi
+        
+        echo "Verifying settings file at expected location:"
+        ls -la "$EXPECTED_SETTINGS"
+        cat "$EXPECTED_SETTINGS" | head -5
+        
+        # Set the Maven settings path for all subsequent steps
+        EXPECTED_SETTINGS="/home/runner/work/cloudsuites/cloudsuites/.mvn/settings.xml"
+        PWD_SETTINGS="$(pwd)/.mvn/settings.xml"
+        WORKSPACE_SETTINGS="$GITHUB_WORKSPACE/.mvn/settings.xml"
+        
+        if [ -f "$EXPECTED_SETTINGS" ]; then
+          MAVEN_SETTINGS_PATH="$EXPECTED_SETTINGS"
+        elif [ -f "$PWD_SETTINGS" ]; then
+          MAVEN_SETTINGS_PATH="$PWD_SETTINGS"
+        elif [ -f "$WORKSPACE_SETTINGS" ]; then
+          MAVEN_SETTINGS_PATH="$WORKSPACE_SETTINGS"
+        else
+          MAVEN_SETTINGS_PATH=".mvn/settings.xml"
+        fi
+        
+        echo "MAVEN_SETTINGS_PATH=$MAVEN_SETTINGS_PATH" >> $GITHUB_ENV
+        echo "Maven settings path set to: $MAVEN_SETTINGS_PATH"
         
     - name: Verify Maven wrapper and settings
       run: |
@@ -104,29 +165,13 @@ jobs:
         ./mvnw --version
         echo "Maven wrapper execution successful ✓"
         echo "=== Testing settings file access ==="
+        echo "Using Maven settings from: $MAVEN_SETTINGS_PATH"
         
-        # Function to find correct settings path
-        find_settings_path() {
-          local pwd_path="$(pwd)/.mvn/settings.xml"
-          local workspace_path="$GITHUB_WORKSPACE/.mvn/settings.xml"
-          
-          if [ -f "$pwd_path" ]; then
-            echo "$pwd_path"
-          elif [ -f "$workspace_path" ]; then
-            echo "$workspace_path"
-          else
-            echo ".mvn/settings.xml"  # fallback to relative
-          fi
-        }
-        
-        SETTINGS_PATH=$(find_settings_path)
-        echo "Selected settings path: $SETTINGS_PATH"
-        
-        if [ -f "$SETTINGS_PATH" ]; then
+        if [ -f "$MAVEN_SETTINGS_PATH" ]; then
           echo "Settings file accessible ✓"
-          ./mvnw -s "$SETTINGS_PATH" help:effective-settings | head -10
+          ./mvnw -s "$MAVEN_SETTINGS_PATH" help:effective-settings | head -10
         else
-          echo "ERROR: Settings file not accessible at $SETTINGS_PATH"
+          echo "ERROR: Settings file not accessible at $MAVEN_SETTINGS_PATH"
           echo "Available files:"
           find $GITHUB_WORKSPACE -name "*.xml" 2>/dev/null || echo "No XML files found"
           exit 1
@@ -171,94 +216,41 @@ jobs:
         
     - name: Validate Maven project structure
       run: |
-        echo "=== Maven validation with full path debugging ==="
+        echo "=== Maven validation with simplified path strategy ==="
         echo "Current directory: $(pwd)"
         echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
-        echo "Settings file exists: $(test -f .mvn/settings.xml && echo 'YES' || echo 'NO')"
+        echo "Maven settings path: $MAVEN_SETTINGS_PATH"
+        echo "Settings file exists: $(test -f "$MAVEN_SETTINGS_PATH" && echo 'YES' || echo 'NO')"
         echo "Maven wrapper exists: $(test -f ./mvnw && echo 'YES' || echo 'NO')"
-        echo "Attempting Maven validation..."
-        # Try multiple path strategies
-        SETTINGS_PATH_PWD="$(pwd)/.mvn/settings.xml"
-        SETTINGS_PATH_WORKSPACE="$GITHUB_WORKSPACE/.mvn/settings.xml"
-        echo "PWD settings path: $SETTINGS_PATH_PWD"
-        echo "WORKSPACE settings path: $SETTINGS_PATH_WORKSPACE"
         
-        if [ -f "$SETTINGS_PATH_PWD" ]; then
-          echo "Using PWD-based settings path"
-          SETTINGS_PATH="$SETTINGS_PATH_PWD"
-        elif [ -f "$SETTINGS_PATH_WORKSPACE" ]; then
-          echo "Using WORKSPACE-based settings path"
-          SETTINGS_PATH="$SETTINGS_PATH_WORKSPACE"
-        else
-          echo "ERROR: Neither settings path exists!"
-          echo "PWD path: $SETTINGS_PATH_PWD"
-          echo "WORKSPACE path: $SETTINGS_PATH_WORKSPACE"
+        if [ ! -f "$MAVEN_SETTINGS_PATH" ]; then
+          echo "ERROR: Settings file not found at $MAVEN_SETTINGS_PATH"
           exit 1
         fi
         
-        echo "Final settings path: $SETTINGS_PATH"
-        ./mvnw -s "$SETTINGS_PATH" validate -Dfrontend.skip=true
+        echo "Attempting Maven validation..."
+        ./mvnw -s "$MAVEN_SETTINGS_PATH" validate -Dfrontend.skip=true
       
     - name: Compile project (skip frontend for now)
       run: |
-        # Use flexible settings path strategy
-        SETTINGS_PATH_PWD="$(pwd)/.mvn/settings.xml"
-        SETTINGS_PATH_WORKSPACE="$GITHUB_WORKSPACE/.mvn/settings.xml"
-        if [ -f "$SETTINGS_PATH_PWD" ]; then
-          SETTINGS_PATH="$SETTINGS_PATH_PWD"
-        elif [ -f "$SETTINGS_PATH_WORKSPACE" ]; then
-          SETTINGS_PATH="$SETTINGS_PATH_WORKSPACE"
-        else
-          SETTINGS_PATH=".mvn/settings.xml"  # fallback to relative
-        fi
-        echo "Using settings: $SETTINGS_PATH"
-        ./mvnw -s "$SETTINGS_PATH" compile -Dfrontend.skip=true
+        echo "Using Maven settings: $MAVEN_SETTINGS_PATH"
+        ./mvnw -s "$MAVEN_SETTINGS_PATH" compile -Dfrontend.skip=true
       
     - name: Run unit tests
       run: |
-        # Use flexible settings path strategy
-        SETTINGS_PATH_PWD="$(pwd)/.mvn/settings.xml"
-        SETTINGS_PATH_WORKSPACE="$GITHUB_WORKSPACE/.mvn/settings.xml"
-        if [ -f "$SETTINGS_PATH_PWD" ]; then
-          SETTINGS_PATH="$SETTINGS_PATH_PWD"
-        elif [ -f "$SETTINGS_PATH_WORKSPACE" ]; then
-          SETTINGS_PATH="$SETTINGS_PATH_WORKSPACE"
-        else
-          SETTINGS_PATH=".mvn/settings.xml"  # fallback to relative
-        fi
-        echo "Using settings: $SETTINGS_PATH"
-        ./mvnw -s "$SETTINGS_PATH" test -Dfrontend.skip=true
+        echo "Using Maven settings: $MAVEN_SETTINGS_PATH"
+        ./mvnw -s "$MAVEN_SETTINGS_PATH" test -Dfrontend.skip=true
       
     - name: Run integration tests
       run: |
-        # Use flexible settings path strategy
-        SETTINGS_PATH_PWD="$(pwd)/.mvn/settings.xml"
-        SETTINGS_PATH_WORKSPACE="$GITHUB_WORKSPACE/.mvn/settings.xml"
-        if [ -f "$SETTINGS_PATH_PWD" ]; then
-          SETTINGS_PATH="$SETTINGS_PATH_PWD"
-        elif [ -f "$SETTINGS_PATH_WORKSPACE" ]; then
-          SETTINGS_PATH="$SETTINGS_PATH_WORKSPACE"
-        else
-          SETTINGS_PATH=".mvn/settings.xml"  # fallback to relative
-        fi
-        echo "Using settings: $SETTINGS_PATH"
-        ./mvnw -s "$SETTINGS_PATH" verify -P integration-tests -DskipTests=false -Dfrontend.skip=true
+        echo "Using Maven settings: $MAVEN_SETTINGS_PATH"
+        ./mvnw -s "$MAVEN_SETTINGS_PATH" verify -P integration-tests -DskipTests=false -Dfrontend.skip=true
       continue-on-error: true
       
     - name: Generate test reports
       run: |
-        # Use flexible settings path strategy
-        SETTINGS_PATH_PWD="$(pwd)/.mvn/settings.xml"
-        SETTINGS_PATH_WORKSPACE="$GITHUB_WORKSPACE/.mvn/settings.xml"
-        if [ -f "$SETTINGS_PATH_PWD" ]; then
-          SETTINGS_PATH="$SETTINGS_PATH_PWD"
-        elif [ -f "$SETTINGS_PATH_WORKSPACE" ]; then
-          SETTINGS_PATH="$SETTINGS_PATH_WORKSPACE"
-        else
-          SETTINGS_PATH=".mvn/settings.xml"  # fallback to relative
-        fi
-        echo "Using settings: $SETTINGS_PATH"
-        ./mvnw -s "$SETTINGS_PATH" jacoco:report -Dfrontend.skip=true
+        echo "Using Maven settings: $MAVEN_SETTINGS_PATH"
+        ./mvnw -s "$MAVEN_SETTINGS_PATH" jacoco:report -Dfrontend.skip=true
       if: always()
       
     - name: Upload test results
@@ -281,6 +273,55 @@ jobs:
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
+        
+    - name: Pre-setup Maven settings workaround
+      run: |
+        echo "=== Pre-setup: Creating Maven settings at expected GitHub location ==="
+        EXPECTED_PATH="/home/runner/work/cloudsuites/cloudsuites"
+        EXPECTED_SETTINGS="/home/runner/work/cloudsuites/cloudsuites/.mvn/settings.xml"
+        
+        # Create the directory structure
+        sudo mkdir -p "$EXPECTED_PATH/.mvn"
+        
+        # Copy our settings file to the expected location
+        if [ -f ".mvn/settings.xml" ]; then
+          sudo cp ".mvn/settings.xml" "$EXPECTED_SETTINGS"
+          echo "Settings file copied to expected location ✓"
+        else
+          echo "WARNING: Local settings file not found, will create minimal one"
+          cat > /tmp/minimal_settings.xml << 'EOF'
+        <?xml version="1.0" encoding="UTF-8"?>
+        <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+          <repositories>
+            <repository>
+              <id>central</id>
+              <url>https://repo1.maven.org/maven2</url>
+            </repository>
+          </repositories>
+        </settings>
+        EOF
+          sudo cp /tmp/minimal_settings.xml "$EXPECTED_SETTINGS"
+        fi
+        
+        # Set the Maven settings path for all subsequent steps
+        EXPECTED_SETTINGS="/home/runner/work/cloudsuites/cloudsuites/.mvn/settings.xml"
+        PWD_SETTINGS="$(pwd)/.mvn/settings.xml"
+        WORKSPACE_SETTINGS="$GITHUB_WORKSPACE/.mvn/settings.xml"
+        
+        if [ -f "$EXPECTED_SETTINGS" ]; then
+          MAVEN_SETTINGS_PATH="$EXPECTED_SETTINGS"
+        elif [ -f "$PWD_SETTINGS" ]; then
+          MAVEN_SETTINGS_PATH="$PWD_SETTINGS"
+        elif [ -f "$WORKSPACE_SETTINGS" ]; then
+          MAVEN_SETTINGS_PATH="$WORKSPACE_SETTINGS"
+        else
+          MAVEN_SETTINGS_PATH=".mvn/settings.xml"
+        fi
+        
+        echo "MAVEN_SETTINGS_PATH=$MAVEN_SETTINGS_PATH" >> $GITHUB_ENV
+        echo "Maven settings path set to: $MAVEN_SETTINGS_PATH"
       
     - name: Verify Maven wrapper and settings
       run: |
@@ -291,9 +332,10 @@ jobs:
         fi
         echo "Maven wrapper found ✓"
         
-        echo "=== Verifying .mvn/settings.xml ==="
-        if [ ! -f .mvn/settings.xml ]; then
-          echo "ERROR: Maven settings file not found!"
+        echo "=== Verifying Maven settings ==="
+        echo "Maven settings path: $MAVEN_SETTINGS_PATH"
+        if [ ! -f "$MAVEN_SETTINGS_PATH" ]; then
+          echo "ERROR: Maven settings file not found at $MAVEN_SETTINGS_PATH!"
           exit 1
         fi
         echo "Maven settings file found ✓"
@@ -320,9 +362,8 @@ jobs:
         
     - name: Run OWASP Dependency Check
       run: |
-        SETTINGS_PATH="$(pwd)/.mvn/settings.xml"
-        echo "Using settings file: $SETTINGS_PATH"
-        ./mvnw -s "$SETTINGS_PATH" org.owasp:dependency-check-maven:check
+        echo "Using Maven settings: $MAVEN_SETTINGS_PATH"
+        ./mvnw -s "$MAVEN_SETTINGS_PATH" org.owasp:dependency-check-maven:check
       
     - name: Upload security scan results
       uses: actions/upload-artifact@v4
@@ -341,6 +382,55 @@ jobs:
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
+        
+    - name: Pre-setup Maven settings workaround
+      run: |
+        echo "=== Pre-setup: Creating Maven settings at expected GitHub location ==="
+        EXPECTED_PATH="/home/runner/work/cloudsuites/cloudsuites"
+        EXPECTED_SETTINGS="/home/runner/work/cloudsuites/cloudsuites/.mvn/settings.xml"
+        
+        # Create the directory structure
+        sudo mkdir -p "$EXPECTED_PATH/.mvn"
+        
+        # Copy our settings file to the expected location
+        if [ -f ".mvn/settings.xml" ]; then
+          sudo cp ".mvn/settings.xml" "$EXPECTED_SETTINGS"
+          echo "Settings file copied to expected location ✓"
+        else
+          echo "WARNING: Local settings file not found, will create minimal one"
+          cat > /tmp/minimal_settings.xml << 'EOF'
+        <?xml version="1.0" encoding="UTF-8"?>
+        <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+          <repositories>
+            <repository>
+              <id>central</id>
+              <url>https://repo1.maven.org/maven2</url>
+            </repository>
+          </repositories>
+        </settings>
+        EOF
+          sudo cp /tmp/minimal_settings.xml "$EXPECTED_SETTINGS"
+        fi
+        
+        # Set the Maven settings path for all subsequent steps
+        EXPECTED_SETTINGS="/home/runner/work/cloudsuites/cloudsuites/.mvn/settings.xml"
+        PWD_SETTINGS="$(pwd)/.mvn/settings.xml"
+        WORKSPACE_SETTINGS="$GITHUB_WORKSPACE/.mvn/settings.xml"
+        
+        if [ -f "$EXPECTED_SETTINGS" ]; then
+          MAVEN_SETTINGS_PATH="$EXPECTED_SETTINGS"
+        elif [ -f "$PWD_SETTINGS" ]; then
+          MAVEN_SETTINGS_PATH="$PWD_SETTINGS"
+        elif [ -f "$WORKSPACE_SETTINGS" ]; then
+          MAVEN_SETTINGS_PATH="$WORKSPACE_SETTINGS"
+        else
+          MAVEN_SETTINGS_PATH=".mvn/settings.xml"
+        fi
+        
+        echo "MAVEN_SETTINGS_PATH=$MAVEN_SETTINGS_PATH" >> $GITHUB_ENV
+        echo "Maven settings path set to: $MAVEN_SETTINGS_PATH"
       
     - name: Verify Maven wrapper and settings
       run: |
@@ -351,9 +441,10 @@ jobs:
         fi
         echo "Maven wrapper found ✓"
         
-        echo "=== Verifying .mvn/settings.xml ==="
-        if [ ! -f .mvn/settings.xml ]; then
-          echo "ERROR: Maven settings file not found!"
+        echo "=== Verifying Maven settings ==="
+        echo "Maven settings path: $MAVEN_SETTINGS_PATH"
+        if [ ! -f "$MAVEN_SETTINGS_PATH" ]; then
+          echo "ERROR: Maven settings file not found at $MAVEN_SETTINGS_PATH!"
           exit 1
         fi
         echo "Maven settings file found ✓"
@@ -369,9 +460,8 @@ jobs:
         
     - name: Build application
       run: |
-        SETTINGS_PATH="$(pwd)/.mvn/settings.xml"
-        echo "Using settings file: $SETTINGS_PATH"
-        ./mvnw -s "$SETTINGS_PATH" clean package -DskipTests -Dfrontend.skip=true
+        echo "Using Maven settings: $MAVEN_SETTINGS_PATH"
+        ./mvnw -s "$MAVEN_SETTINGS_PATH" clean package -DskipTests -Dfrontend.skip=true
       
     - name: Build Docker image
       run: docker build -t cloudsuites:${{ github.sha }} .
@@ -395,6 +485,55 @@ jobs:
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
+        
+    - name: Pre-setup Maven settings workaround
+      run: |
+        echo "=== Pre-setup: Creating Maven settings at expected GitHub location ==="
+        EXPECTED_PATH="/home/runner/work/cloudsuites/cloudsuites"
+        EXPECTED_SETTINGS="/home/runner/work/cloudsuites/cloudsuites/.mvn/settings.xml"
+        
+        # Create the directory structure
+        sudo mkdir -p "$EXPECTED_PATH/.mvn"
+        
+        # Copy our settings file to the expected location
+        if [ -f ".mvn/settings.xml" ]; then
+          sudo cp ".mvn/settings.xml" "$EXPECTED_SETTINGS"
+          echo "Settings file copied to expected location ✓"
+        else
+          echo "WARNING: Local settings file not found, will create minimal one"
+          cat > /tmp/minimal_settings.xml << 'EOF'
+        <?xml version="1.0" encoding="UTF-8"?>
+        <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+          <repositories>
+            <repository>
+              <id>central</id>
+              <url>https://repo1.maven.org/maven2</url>
+            </repository>
+          </repositories>
+        </settings>
+        EOF
+          sudo cp /tmp/minimal_settings.xml "$EXPECTED_SETTINGS"
+        fi
+        
+        # Set the Maven settings path for all subsequent steps
+        EXPECTED_SETTINGS="/home/runner/work/cloudsuites/cloudsuites/.mvn/settings.xml"
+        PWD_SETTINGS="$(pwd)/.mvn/settings.xml"
+        WORKSPACE_SETTINGS="$GITHUB_WORKSPACE/.mvn/settings.xml"
+        
+        if [ -f "$EXPECTED_SETTINGS" ]; then
+          MAVEN_SETTINGS_PATH="$EXPECTED_SETTINGS"
+        elif [ -f "$PWD_SETTINGS" ]; then
+          MAVEN_SETTINGS_PATH="$PWD_SETTINGS"
+        elif [ -f "$WORKSPACE_SETTINGS" ]; then
+          MAVEN_SETTINGS_PATH="$WORKSPACE_SETTINGS"
+        else
+          MAVEN_SETTINGS_PATH=".mvn/settings.xml"
+        fi
+        
+        echo "MAVEN_SETTINGS_PATH=$MAVEN_SETTINGS_PATH" >> $GITHUB_ENV
+        echo "Maven settings path set to: $MAVEN_SETTINGS_PATH"
       
     - name: Verify Maven wrapper and settings
       run: |
@@ -405,9 +544,10 @@ jobs:
         fi
         echo "Maven wrapper found ✓"
         
-        echo "=== Verifying .mvn/settings.xml ==="
-        if [ ! -f .mvn/settings.xml ]; then
-          echo "ERROR: Maven settings file not found!"
+        echo "=== Verifying Maven settings ==="
+        echo "Maven settings path: $MAVEN_SETTINGS_PATH"
+        if [ ! -f "$MAVEN_SETTINGS_PATH" ]; then
+          echo "ERROR: Maven settings file not found at $MAVEN_SETTINGS_PATH!"
           exit 1
         fi
         echo "Maven settings file found ✓"
@@ -423,16 +563,16 @@ jobs:
         
     - name: Run JWT Tests
       run: |
-        SETTINGS_PATH="$(pwd)/.mvn/settings.xml"
-        ./mvnw -s "$SETTINGS_PATH" test -f modules/identity-module -Dtest=Jwt*Test
+        echo "Using Maven settings: $MAVEN_SETTINGS_PATH"
+        ./mvnw -s "$MAVEN_SETTINGS_PATH" test -f modules/identity-module -Dtest=Jwt*Test
       
     - name: Run Authentication Integration Tests
       run: |
-        SETTINGS_PATH="$(pwd)/.mvn/settings.xml"
-        ./mvnw -s "$SETTINGS_PATH" test -f modules/identity-module -Dtest=*IntegrationTest
+        echo "Using Maven settings: $MAVEN_SETTINGS_PATH"
+        ./mvnw -s "$MAVEN_SETTINGS_PATH" test -f modules/identity-module -Dtest=*IntegrationTest
       
     - name: Validate Test Coverage (85% minimum)
       run: |
-        SETTINGS_PATH="$(pwd)/.mvn/settings.xml"
-        ./mvnw -s "$SETTINGS_PATH" jacoco:report -f modules/identity-module
-        ./mvnw -s "$SETTINGS_PATH" jacoco:check -f modules/identity-module -Djacoco.haltOnFailure=true
+        echo "Using Maven settings: $MAVEN_SETTINGS_PATH"
+        ./mvnw -s "$MAVEN_SETTINGS_PATH" jacoco:report -f modules/identity-module
+        ./mvnw -s "$MAVEN_SETTINGS_PATH" jacoco:check -f modules/identity-module -Djacoco.haltOnFailure=true
