@@ -1,73 +1,81 @@
 import React from 'react';
-import { UserProvider, useUser } from './components/UserContext';
-import { TopNav } from './components/navigation/TopNav';
-import { Navigation } from './components/navigation/Navigation';
-import { MobileNav } from './components/navigation/MobileNav';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import { LoginPage } from './components/auth/LoginPage';
+import { RegisterPage } from './components/auth/RegisterPage';
 import { AdminDashboard } from './components/dashboards/AdminDashboard';
 import { OwnerDashboard } from './components/dashboards/OwnerDashboard';
 import { StaffDashboard } from './components/dashboards/StaffDashboard';
 import { TenantDashboard } from './components/dashboards/TenantDashboard';
-import { Demo } from './components/Demo';
-import { useMobile } from './components/ui/use-mobile';
 
-function AppContent() {
-  const { user } = useUser();
-  const isMobile = useMobile();
-  const [showDemo, setShowDemo] = React.useState(false);
-
-  if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">PropertyManager</h1>
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  const renderDashboard = () => {
-    switch (user.persona) {
-      case 'admin':
-        return <AdminDashboard />;
-      case 'owner':
-        return <OwnerDashboard />;
-      case 'staff':
-        return <StaffDashboard />;
-      case 'tenant':
-        return <TenantDashboard />;
-      default:
-        return <TenantDashboard />;
-    }
-  };
-
-  // Show demo overview first, then allow navigation to actual dashboards
-  if (showDemo) {
-    return (
+function App() {
+  return (
+    <AuthProvider>
       <div className="min-h-screen bg-background">
-        <Demo />
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          
+          {/* Protected Routes */}
+          <Route
+            path="/admin/*"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN']}>
+                <Routes>
+                  <Route path="dashboard" element={<AdminDashboard />} />
+                  <Route path="" element={<Navigate to="dashboard" replace />} />
+                </Routes>
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/staff/*"
+            element={
+              <ProtectedRoute allowedRoles={['STAFF']}>
+                <Routes>
+                  <Route path="dashboard" element={<StaffDashboard />} />
+                  <Route path="" element={<Navigate to="dashboard" replace />} />
+                </Routes>
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/tenant/*"
+            element={
+              <ProtectedRoute allowedRoles={['TENANT']}>
+                <Routes>
+                  <Route path="dashboard" element={<TenantDashboard />} />
+                  <Route path="" element={<Navigate to="dashboard" replace />} />
+                </Routes>
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/owner/*"
+            element={
+              <ProtectedRoute allowedRoles={['OWNER']}>
+                <Routes>
+                  <Route path="dashboard" element={<OwnerDashboard />} />
+                  <Route path="" element={<Navigate to="dashboard" replace />} />
+                </Routes>
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Default route - redirect to appropriate dashboard or login */}
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          
+          {/* Catch all route */}
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
       </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-background">
-      <TopNav />
-      <div className="flex">
-        {!isMobile && <Navigation />}
-        <main className={`flex-1 overflow-auto ${isMobile ? 'pb-16' : ''}`}>
-          {renderDashboard()}
-        </main>
-      </div>
-      {isMobile && <MobileNav />}
-    </div>
+    </AuthProvider>
   );
 }
 
-export default function App() {
-  return (
-    <UserProvider>
-      <AppContent />
-    </UserProvider>
-  );
-}
+export default App;
