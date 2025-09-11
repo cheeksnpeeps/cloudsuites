@@ -117,11 +117,20 @@ twilio:
   authToken: ${TWILIO_AUTH_TOKEN}
   phoneNumber: ${TWILIO_PHONE_NUMBER}
 
-# JWT Configuration
+# JWT Configuration (Enhanced with RSA-256)
 jwt:
-  secretKey: ${JWT_SECRET_KEY}
-  accessTokenValidityMs: ${JWT_ACCESS_TOKEN_VALIDITY_MS}
-  refreshTokenValidityMs: ${JWT_REFRESH_TOKEN_VALIDITY_MS}
+  # RSA-256 signing (replaces HMAC for enhanced security)
+  issuer: ${JWT_ISSUER:cloudsuites}
+  audience: ${JWT_AUDIENCE:CloudSuites}
+  
+  # Enhanced token validity periods (REQ-003)
+  access-token-validity-minutes: ${JWT_ACCESS_TOKEN_VALIDITY_MINUTES:15}   # 15 minutes
+  refresh-token-validity-days: ${JWT_REFRESH_TOKEN_VALIDITY_DAYS:30}       # 30 days
+  
+  # Backward compatibility (deprecated - use RSA keys instead)
+  secretKey: ${JWT_SECRET_KEY:deprecated_use_rsa_keys}
+  accessTokenValidityMs: ${JWT_ACCESS_TOKEN_VALIDITY_MS:900000}    # 15 minutes  
+  refreshTokenValidityMs: ${JWT_REFRESH_TOKEN_VALIDITY_MS:2592000000}  # 30 days
 
 # Google Cloud Platform
 gcp:
