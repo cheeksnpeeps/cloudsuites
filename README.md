@@ -141,11 +141,21 @@ For more details, see the CONCEPT: [CONCEPT - LATE Partition Management Migratio
 
 Cloud Suites is built using **Java**, **Spring Boot**, **JavaScript**, and **React**, with **Maven** and **npm** managing dependencies. Follow the instructions below to get started:
 
+### Prerequisites
+
+- **Java 21** (OpenJDK 21.0.8 or later recommended)
+- **Maven 3.6+**
+- **Node.js 18+** and **npm**
+- **PostgreSQL 17**
+
+> **⚠️ Important**: This project requires **Java 21**. Java 24 is not compatible due to Lombok annotation processor limitations. The project includes a `.mavenrc` file to ensure Maven uses Java 21.
+
 ### Server-Side Setup
 
 1. Navigate to the project directory.
-2. Run `mvn clean install` to install dependencies.
-3. Run `mvn spring-boot:run` to start the server.
+2. Verify Java version: `java -version` (should show Java 21)
+3. Run `mvn clean install` to install dependencies.
+4. Run `mvn spring-boot:run` to start the server.
 
 ### Client-Side Setup
 
