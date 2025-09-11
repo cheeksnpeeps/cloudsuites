@@ -8,11 +8,17 @@ on:
 
 permissions:
   contents: read
-  actions: none
+
+env:
+  GHAS_DISABLE_DEPENDENCY_SUBMISSION: "true"
+  ACTIONS_DEPENDENCY_SUBMISSION_DISABLED: "true"
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
     
     strategy:
       matrix:
