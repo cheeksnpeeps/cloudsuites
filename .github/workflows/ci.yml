@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ main, develop ]
 
+# Disable GitHub dependency graph auto-submission to prevent conflicts
+permissions:
+  contents: read
+
 jobs:
   test:
     name: Test Suite
@@ -18,9 +22,41 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        # Ensure complete checkout to avoid missing files
+        fetch-depth: 0
+        
+    - name: Verify Maven wrapper and settings
+      run: |
+        echo "=== Verifying Maven wrapper existence ==="
+        if [ ! -f ./mvnw ]; then
+          echo "ERROR: Maven wrapper not found!"
+          exit 1
+        fi
+        echo "Maven wrapper found ✓"
+        
+        echo "=== Verifying .mvn/settings.xml ==="
+        if [ ! -f .mvn/settings.xml ]; then
+          echo "ERROR: Maven settings file not found!"
+          exit 1
+        fi
+        echo "Maven settings file found ✓"
+        
+        echo "=== Current working directory ==="
+        pwd
+        echo "=== Directory contents ==="
+        ls -la
+        echo "=== .mvn directory contents ==="
+        ls -la .mvn/
       
     - name: Make Maven wrapper executable
       run: chmod +x ./mvnw
+      
+    - name: Test Maven wrapper execution
+      run: |
+        echo "=== Testing Maven wrapper execution ==="
+        ./mvnw --version
+        echo "Maven wrapper execution successful ✓"
       
     - name: Set up JDK ${{ matrix.java-version }}
       uses: actions/setup-java@v4
@@ -83,6 +119,24 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+      
+    - name: Verify Maven wrapper and settings
+      run: |
+        echo "=== Verifying Maven wrapper existence ==="
+        if [ ! -f ./mvnw ]; then
+          echo "ERROR: Maven wrapper not found!"
+          exit 1
+        fi
+        echo "Maven wrapper found ✓"
+        
+        echo "=== Verifying .mvn/settings.xml ==="
+        if [ ! -f .mvn/settings.xml ]; then
+          echo "ERROR: Maven settings file not found!"
+          exit 1
+        fi
+        echo "Maven settings file found ✓"
       
     - name: Make Maven wrapper executable
       run: chmod +x ./mvnw
@@ -122,6 +176,24 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+      
+    - name: Verify Maven wrapper and settings
+      run: |
+        echo "=== Verifying Maven wrapper existence ==="
+        if [ ! -f ./mvnw ]; then
+          echo "ERROR: Maven wrapper not found!"
+          exit 1
+        fi
+        echo "Maven wrapper found ✓"
+        
+        echo "=== Verifying .mvn/settings.xml ==="
+        if [ ! -f .mvn/settings.xml ]; then
+          echo "ERROR: Maven settings file not found!"
+          exit 1
+        fi
+        echo "Maven settings file found ✓"
       
     - name: Make Maven wrapper executable
       run: chmod +x ./mvnw
@@ -155,6 +227,24 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+      
+    - name: Verify Maven wrapper and settings
+      run: |
+        echo "=== Verifying Maven wrapper existence ==="
+        if [ ! -f ./mvnw ]; then
+          echo "ERROR: Maven wrapper not found!"
+          exit 1
+        fi
+        echo "Maven wrapper found ✓"
+        
+        echo "=== Verifying .mvn/settings.xml ==="
+        if [ ! -f .mvn/settings.xml ]; then
+          echo "ERROR: Maven settings file not found!"
+          exit 1
+        fi
+        echo "Maven settings file found ✓"
       
     - name: Make Maven wrapper executable
       run: chmod +x ./mvnw

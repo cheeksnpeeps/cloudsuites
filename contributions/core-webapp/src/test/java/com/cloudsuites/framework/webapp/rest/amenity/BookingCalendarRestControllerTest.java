@@ -29,6 +29,7 @@ import com.cloudsuites.framework.webapp.rest.amenity.dto.AmenityBookingCalendarD
 import com.cloudsuites.framework.webapp.rest.amenity.dto.AmenityBookingDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -113,18 +114,19 @@ class BookingCalendarRestControllerTest {
     @BeforeEach
     void setUp() throws Exception {
         logger.info("Setting up test with TaskExecutor: " + taskExecutor.getClass().getName());
-        userRoleRepository.deleteAll();
-        staffRepository.deleteAll();
-        bookingRepository.deleteAll();
-        tenantRepository.deleteAll();
-        buildingRepository.deleteAll();
-        ownerRepository.deleteAll();
-        companyRepository.deleteAll();
-        companyRepository.deleteAll();
-        companyRepository.deleteAll();
-        amenityRepository.deleteAll();
-        unitRepository.deleteAll();
-        userRepository.deleteAll();
+        // Delete in correct order to avoid foreign key constraint violations
+        userRoleRepository.deleteAll();    // Delete user roles first (dependent table)
+        bookingRepository.deleteAll();     // Delete bookings (references users/amenities)
+        amenityBookingRepository.deleteAll(); // Delete amenity bookings
+        availabilityRepository.deleteAll(); // Delete availability records
+        staffRepository.deleteAll();       // Delete staff (references identity)
+        tenantRepository.deleteAll();      // Delete tenants (references identity)
+        ownerRepository.deleteAll();       // Delete owners (references identity)
+        amenityRepository.deleteAll();     // Delete amenities
+        unitRepository.deleteAll();        // Delete units
+        buildingRepository.deleteAll();    // Delete buildings
+        companyRepository.deleteAll();     // Delete companies
+        userRepository.deleteAll();        // Delete identity table LAST
 
         validBuildingId = createBuilding("BuildingA").getBuildingId();
         validUnitId = createUnit(validBuildingId).getUnitId();
@@ -155,6 +157,37 @@ class BookingCalendarRestControllerTest {
         bookingRepository.save(booking);
         adminTestHelper = new AdminTestHelper(mockMvc, objectMapper, null, null);
         accessToken = adminTestHelper.registerAdminAndGetToken("testRegisterAdmin", "+14166024668");
+    }
+
+    @AfterEach
+    void tearDown() {
+        logger.debug("Starting test cleanup - @AfterEach tearDown()");
+        try {
+            // Count entities before cleanup
+            long userCount = userRepository.count();
+            logger.debug("Users count before cleanup: {}", userCount);
+            
+            // Cleanup database after each test to ensure no state leakage
+            userRoleRepository.deleteAll();
+            bookingRepository.deleteAll();
+            amenityBookingRepository.deleteAll();
+            availabilityRepository.deleteAll();
+            staffRepository.deleteAll();
+            tenantRepository.deleteAll();
+            ownerRepository.deleteAll();
+            amenityRepository.deleteAll();
+            unitRepository.deleteAll();
+            buildingRepository.deleteAll();
+            companyRepository.deleteAll();
+            userRepository.deleteAll();
+            
+            // Verify cleanup
+            long finalUserCount = userRepository.count();
+            logger.debug("Users count after cleanup: {}", finalUserCount);
+            logger.debug("Test cleanup completed successfully");
+        } catch (Exception e) {
+            logger.warn("Error during test cleanup: {}", e.getMessage(), e);
+        }
     }
 
     private MockHttpServletRequestBuilder withAuth(MockHttpServletRequestBuilder requestBuilder) {
@@ -319,7 +352,13 @@ class BookingCalendarRestControllerTest {
 
     private Tenant createUser(String username, String phoneNumber) {
         Identity identity = new Identity();
-        identity.setEmail("tenantA@gmail.com");
+        // Generate email with absolute uniqueness: current time + random + process + thread
+        String randomSuffix = String.valueOf(new java.util.Random().nextInt(100000));
+        String uniqueEmail = "tenant." + System.nanoTime() + "." + randomSuffix + "." + 
+                           java.util.UUID.randomUUID().toString().replace("-", "") + "." + 
+                           Thread.currentThread().getName().replace("-", "") + "@gmail.com";
+        logger.debug("Creating tenant with email: {}", uniqueEmail);
+        identity.setEmail(uniqueEmail);
         identity = userRepository.save(identity);
         Tenant tenant = new Tenant();
         tenant.setIdentity(identity);
@@ -333,7 +372,13 @@ class BookingCalendarRestControllerTest {
 
     private Staff createStaff(String username, String phoneNumber) {
         Identity identity = new Identity();
-        identity.setEmail("staff@gmail.com");
+        // Generate email with absolute uniqueness: current time + random + process + thread
+        String randomSuffix = String.valueOf(new java.util.Random().nextInt(100000));
+        String uniqueEmail = "staff." + System.nanoTime() + "." + randomSuffix + "." + 
+                           java.util.UUID.randomUUID().toString().replace("-", "") + "." + 
+                           Thread.currentThread().getName().replace("-", "") + "@gmail.com";
+        logger.debug("Creating staff with email: {}", uniqueEmail);
+        identity.setEmail(uniqueEmail);
         identity = userRepository.save(identity);
         validUserId = identity.getUserId();
         Staff staff = new Staff();
