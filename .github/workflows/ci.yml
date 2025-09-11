@@ -41,6 +41,13 @@ jobs:
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
         
+    - name: Debug working directory and files
+      run: |
+        pwd
+        ls -la
+        ls -la .mvn/
+        cat .mvn/settings.xml | head -5
+        
     - name: Validate Maven project structure
       run: ./mvnw -s .mvn/settings.xml validate -Dfrontend.skip=true
       
@@ -90,6 +97,12 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '20'
+        
+    - name: Debug working directory and files
+      run: |
+        pwd
+        ls -la
+        ls -la .mvn/
         
     - name: Run OWASP Dependency Check
       run: ./mvnw -s .mvn/settings.xml org.owasp:dependency-check-maven:check
