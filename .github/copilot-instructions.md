@@ -2,13 +2,24 @@
 
 ## Project Overview
 
-CloudSuites is a **property management platform** (Java 21 + Spring # Example with custom token:
-./test-all-apis.sh "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJBRE0tMDFLM1o0TkgxVkdHVlBWUjFaNThFTjJNS0YiLCJhdWQiOlsiQ2xvdWRTdWl0ZXMiXSwidHlwZSI6IkFETUlOIiwidXNlcklkIjoiSUQtMDFLM1o0TkgxVEZFRzEyTjlUOVBNRjlRWEoiLCJpc3MiOiJjbG91ZHN1aXRlcyIsImlhdCI6MTc1NzI5Njg5MCwiZXhwIjoxNzg4ODMyODkwfQ.ycFZdWAYfTts6VrmJ714eTbIjyHJIgkeVGteMghJc18Jaq_7nnKJIxh5-kFZRq7dQAhDlqrI1qtawmYFPAkOdw"ot 3.3.2) with a **multi-module Maven architecture**:
+CloudSuites is a **property management platform** (Java 21 + Spring Boot 3.3.2) with a **multi-module Maven architecture**:
 - `modules/` - JPA entities and core domain logic
 - `services/` - Business services and DTOs  
 - `contributions/core-webapp/` - REST controllers and web layer
 
 **Critical pattern**: Services import from modules, webapp imports from services. Never reverse this dependency flow.
+
+## 🔐 Authentication Implementation (Active Development)
+
+**When working on authentication features**, reference the comprehensive implementation plan:
+
+- **Master Documentation**: `plan/backend-authentication-onboarding-platform-1.md` - Requirements, constraints, gap analysis
+- **Implementation Roadmap**: `plan/auth-implementation-roadmap.md` - 6-week sprint plan with 50+ PRs
+- **Daily Task Tracker**: `plan/auth-implementation-tracker.md` - Current sprint status and agent tasks
+- **Agent Usage Guide**: `plan/auth-agent-guide.md` - How to use the documentation system
+- **Copilot Addendum**: `.github/auth-copilot-instructions.md` - Authentication-specific development rules
+
+**ALWAYS check the tracker first** for current sprint status before starting authentication work.
 
 ## Development Environment
 
