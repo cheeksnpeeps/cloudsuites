@@ -9,6 +9,14 @@ on:
 # Disable GitHub dependency graph auto-submission to prevent conflicts
 permissions:
   contents: read
+  # Explicitly disable actions that could interfere with Maven
+  actions: none
+
+env:
+  # Disable GitHub dependency graph submission
+  GITHUB_DEPENDENCY_GRAPH_ENABLED: false
+  # Force Maven to use our settings
+  MAVEN_OPTS: "-Dmaven.repo.local=$HOME/.m2/repository"
 
 jobs:
   test:
@@ -50,9 +58,35 @@ jobs:
         fi
         echo "Maven settings file found ✓"
         
+        echo "=== GitHub Actions Workspace Environment ==="
+        echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+        echo "PWD: $(pwd)"
+        echo "Runner home: $HOME"
+        echo "Runner workspace: $RUNNER_WORKSPACE"
+        
+        echo "=== Creating workaround for duplicate path issue ==="
+        # GitHub Actions seems to expect settings at /home/runner/work/cloudsuites/cloudsuites/.mvn/settings.xml
+        # Let's create the expected directory structure if it doesn't exist
+        EXPECTED_PATH="/home/runner/work/cloudsuites/cloudsuites"
+        if [ ! -d "$EXPECTED_PATH" ]; then
+          echo "Creating expected directory structure: $EXPECTED_PATH"
+          sudo mkdir -p "$EXPECTED_PATH"
+          sudo ln -sf "$(pwd)" "$EXPECTED_PATH"
+        fi
+        
+        # Also ensure the settings file exists at the expected location
+        EXPECTED_SETTINGS="/home/runner/work/cloudsuites/cloudsuites/.mvn/settings.xml"
+        if [ ! -f "$EXPECTED_SETTINGS" ] && [ -f ".mvn/settings.xml" ]; then
+          echo "Creating symbolic link for settings file"
+          sudo mkdir -p "$(dirname "$EXPECTED_SETTINGS")"
+          sudo ln -sf "$(pwd)/.mvn/settings.xml" "$EXPECTED_SETTINGS"
+        fi
+        
         echo "=== Full path information ==="
         echo "Maven wrapper path: $(readlink -f ./mvnw)"
         echo "Settings file path: $(readlink -f .mvn/settings.xml)"
+        echo "Expected settings path: $EXPECTED_SETTINGS"
+        echo "Expected settings exists: $(test -f "$EXPECTED_SETTINGS" && echo 'YES' || echo 'NO')"
         
         echo "=== Current working directory ==="
         pwd
