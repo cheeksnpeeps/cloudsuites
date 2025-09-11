@@ -29,8 +29,12 @@ jobs:
     - name: Verify Maven wrapper and settings
       run: |
         echo "=== Verifying Maven wrapper existence ==="
+        echo "Current working directory: $(pwd)"
+        echo "Full working directory path: $(readlink -f .)"
         if [ ! -f ./mvnw ]; then
           echo "ERROR: Maven wrapper not found!"
+          echo "Contents of current directory:"
+          ls -la
           exit 1
         fi
         echo "Maven wrapper found ✓"
@@ -38,9 +42,17 @@ jobs:
         echo "=== Verifying .mvn/settings.xml ==="
         if [ ! -f .mvn/settings.xml ]; then
           echo "ERROR: Maven settings file not found!"
+          echo "Contents of .mvn directory:"
+          ls -la .mvn/ || echo ".mvn directory does not exist"
+          echo "Contents of current directory:"
+          ls -la
           exit 1
         fi
         echo "Maven settings file found ✓"
+        
+        echo "=== Full path information ==="
+        echo "Maven wrapper path: $(readlink -f ./mvnw)"
+        echo "Settings file path: $(readlink -f .mvn/settings.xml)"
         
         echo "=== Current working directory ==="
         pwd
@@ -57,6 +69,16 @@ jobs:
         echo "=== Testing Maven wrapper execution ==="
         ./mvnw --version
         echo "Maven wrapper execution successful ✓"
+        echo "=== Testing settings file access ==="
+        SETTINGS_PATH="$(pwd)/.mvn/settings.xml"
+        echo "Full settings path: $SETTINGS_PATH"
+        if [ -f "$SETTINGS_PATH" ]; then
+          echo "Settings file accessible ✓"
+          ./mvnw -s "$SETTINGS_PATH" help:effective-settings | head -10
+        else
+          echo "ERROR: Settings file not accessible at $SETTINGS_PATH"
+          exit 1
+        fi
       
     - name: Set up JDK ${{ matrix.java-version }}
       uses: actions/setup-java@v4
@@ -83,22 +105,42 @@ jobs:
         ls -la
         ls -la .mvn/
         cat .mvn/settings.xml | head -5
+        echo "=== Full path verification ==="
+        echo "Working directory: $(pwd)"
+        echo "Settings file full path: $(readlink -f .mvn/settings.xml)"
+        echo "Maven wrapper full path: $(readlink -f ./mvnw)"
         
     - name: Validate Maven project structure
-      run: ./mvnw -s .mvn/settings.xml validate -Dfrontend.skip=true
+      run: |
+        echo "=== Maven validation with full path debugging ==="
+        echo "Current directory: $(pwd)"
+        echo "Settings file exists: $(test -f .mvn/settings.xml && echo 'YES' || echo 'NO')"
+        echo "Maven wrapper exists: $(test -f ./mvnw && echo 'YES' || echo 'NO')"
+        echo "Attempting Maven validation..."
+        SETTINGS_PATH="$(pwd)/.mvn/settings.xml"
+        echo "Using settings file: $SETTINGS_PATH"
+        ./mvnw -s "$SETTINGS_PATH" validate -Dfrontend.skip=true
       
     - name: Compile project (skip frontend for now)
-      run: ./mvnw -s .mvn/settings.xml compile -Dfrontend.skip=true
+      run: |
+        SETTINGS_PATH="$(pwd)/.mvn/settings.xml"
+        ./mvnw -s "$SETTINGS_PATH" compile -Dfrontend.skip=true
       
     - name: Run unit tests
-      run: ./mvnw -s .mvn/settings.xml test -Dfrontend.skip=true
+      run: |
+        SETTINGS_PATH="$(pwd)/.mvn/settings.xml"
+        ./mvnw -s "$SETTINGS_PATH" test -Dfrontend.skip=true
       
     - name: Run integration tests
-      run: ./mvnw -s .mvn/settings.xml verify -P integration-tests -DskipTests=false -Dfrontend.skip=true
+      run: |
+        SETTINGS_PATH="$(pwd)/.mvn/settings.xml"
+        ./mvnw -s "$SETTINGS_PATH" verify -P integration-tests -DskipTests=false -Dfrontend.skip=true
       continue-on-error: true
       
     - name: Generate test reports
-      run: ./mvnw -s .mvn/settings.xml jacoco:report -Dfrontend.skip=true
+      run: |
+        SETTINGS_PATH="$(pwd)/.mvn/settings.xml"
+        ./mvnw -s "$SETTINGS_PATH" jacoco:report -Dfrontend.skip=true
       if: always()
       
     - name: Upload test results
@@ -159,7 +201,10 @@ jobs:
         ls -la .mvn/
         
     - name: Run OWASP Dependency Check
-      run: ./mvnw -s .mvn/settings.xml org.owasp:dependency-check-maven:check
+      run: |
+        SETTINGS_PATH="$(pwd)/.mvn/settings.xml"
+        echo "Using settings file: $SETTINGS_PATH"
+        ./mvnw -s "$SETTINGS_PATH" org.owasp:dependency-check-maven:check
       
     - name: Upload security scan results
       uses: actions/upload-artifact@v4
@@ -205,7 +250,10 @@ jobs:
         distribution: 'temurin'
         
     - name: Build application
-      run: ./mvnw -s .mvn/settings.xml clean package -DskipTests -Dfrontend.skip=true
+      run: |
+        SETTINGS_PATH="$(pwd)/.mvn/settings.xml"
+        echo "Using settings file: $SETTINGS_PATH"
+        ./mvnw -s "$SETTINGS_PATH" clean package -DskipTests -Dfrontend.skip=true
       
     - name: Build Docker image
       run: docker build -t cloudsuites:${{ github.sha }} .
@@ -256,12 +304,17 @@ jobs:
         distribution: 'temurin'
         
     - name: Run JWT Tests
-      run: ./mvnw -s .mvn/settings.xml test -f modules/identity-module -Dtest=Jwt*Test
+      run: |
+        SETTINGS_PATH="$(pwd)/.mvn/settings.xml"
+        ./mvnw -s "$SETTINGS_PATH" test -f modules/identity-module -Dtest=Jwt*Test
       
     - name: Run Authentication Integration Tests
-      run: ./mvnw -s .mvn/settings.xml test -f modules/identity-module -Dtest=*IntegrationTest
+      run: |
+        SETTINGS_PATH="$(pwd)/.mvn/settings.xml"
+        ./mvnw -s "$SETTINGS_PATH" test -f modules/identity-module -Dtest=*IntegrationTest
       
     - name: Validate Test Coverage (85% minimum)
       run: |
-        ./mvnw -s .mvn/settings.xml jacoco:report -f modules/identity-module
-        ./mvnw -s .mvn/settings.xml jacoco:check -f modules/identity-module -Djacoco.haltOnFailure=true
+        SETTINGS_PATH="$(pwd)/.mvn/settings.xml"
+        ./mvnw -s "$SETTINGS_PATH" jacoco:report -f modules/identity-module
+        ./mvnw -s "$SETTINGS_PATH" jacoco:check -f modules/identity-module -Djacoco.haltOnFailure=true
