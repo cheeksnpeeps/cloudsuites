@@ -8,14 +8,14 @@
 
 | Sprint | Focus Area | Progress | PRs | Status |
 |--------|------------|----------|-----|--------|
-| Sprint 1 | Foundation | 1/10 PRs | 1/10 | � In Progress |
+| Sprint 1 | Foundation | 1.5/10 PRs | 1✅ 1🔄 | 🟡 In Progress |
 | Sprint 2 | Core Services | 0/10 PRs | 0/10 | ⚪ Pending |
 | Sprint 3 | API Layer | 0/10 PRs | 0/10 | ⚪ Pending |
 | Sprint 4 | Frontend | 0/10 PRs | 0/10 | ⚪ Pending |
 | Sprint 5 | Advanced | 0/5 PRs | 0/5 | ⚪ Pending |
 | Sprint 6 | Testing | 0/5 PRs | 0/5 | ⚪ Pending |
 
-**Overall Progress: 1/50 PRs (2%)**
+**Overall Progress: 1.5/50 PRs (3%)**
 
 ---
 
@@ -59,31 +59,43 @@ contributions/core-webapp/src/main/resources/db/migration/
 - [ ] Performance indexes created
 - [ ] Compatible with existing schema
 
-#### ✅ PR #2: Authentication Entities
-**Branch:** `feat/auth-entities-foundation`  
-**Status:** 🔴 Not Started  
+#### 🔄 PR #2: Authentication Entities
+**Branch:** `feat/auth-entities`  
+**Status:** � **IN PROGRESS**  
 **Assignee:** Copilot Agent  
-**Estimated Time:** 2-3 hours
+**Started:** September 11, 2025  
+**Progress:** 50% Complete
 
-**Files to Create:**
+**Files Created/Modified:**
 ```
-modules/auth-module/src/main/java/com/cloudsuites/framework/modules/auth/
-├── entity/
-│   ├── OtpCode.java
-│   ├── UserSession.java
-│   └── AuditEvent.java
-└── repository/
-    ├── OtpCodeRepository.java
-    ├── UserSessionRepository.java
-    └── AuditEventRepository.java
+services/identity-service/src/main/java/com/cloudsuites/framework/services/user/entities/
+├── Identity.java ✅ Enhanced with authentication fields
+└── RiskProfile.java ✅ Created enum for user risk assessment
+
+Project Configuration:
+├── .mavenrc ✅ Java 21 enforcement for Lombok compatibility
+└── README.md ✅ Updated with Java version requirements
 ```
 
 **Key Tasks:**
-- [ ] Create JPA entities following CloudSuites patterns
-- [ ] Implement proper audit fields
-- [ ] Create repository interfaces with custom queries
-- [ ] Add validation annotations
-- [ ] Write unit tests
+- [x] ✅ Create RiskProfile enum (LOW, NORMAL, ELEVATED, HIGH)
+- [x] ✅ Enhance existing Identity entity with authentication fields
+- [x] ✅ Add password management fields (hash, salt, changed_at, expires_at)
+- [x] ✅ Add MFA fields (enabled, secret, backup_codes, enrolled_at)
+- [x] ✅ Add account security fields (failed_attempts, locked_at, last_login)
+- [x] ✅ Resolve Java 24/Lombok compatibility issues
+- [ ] Create OtpCode entity for V2 migration table
+- [ ] Create UserSession entity for V3 migration table  
+- [ ] Create AuthAuditEvent entity for V4 migration table
+- [ ] Create corresponding repository interfaces
+- [ ] Add comprehensive validation annotations
+- [ ] Write unit tests for all entities
+
+**Recent Progress:**
+- Enhanced Identity entity with 20+ authentication fields from V5 migration
+- Fixed Java version compatibility (Java 21 vs Java 24 Lombok issue)
+- All authentication fields properly mapped with JPA annotations
+- Created RiskProfile enum for adaptive authentication
 
 **Dependencies:** PR #1  
 **Acceptance Criteria:**
