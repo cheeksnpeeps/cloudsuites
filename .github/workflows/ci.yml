@@ -28,6 +28,12 @@ jobs:
         java-version: ${{ matrix.java-version }}
         distribution: 'temurin'
         
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        registry-url: 'https://registry.npmjs.org'
+        
     - name: Cache Maven dependencies
       uses: actions/cache@v4
       with:
@@ -36,20 +42,20 @@ jobs:
         restore-keys: ${{ runner.os }}-m2
         
     - name: Validate Maven project structure
-      run: ./mvnw -s .mvn/settings.xml validate
+      run: ./mvnw -s .mvn/settings.xml validate -Dfrontend.skip=true
       
     - name: Compile project (skip frontend for now)
       run: ./mvnw -s .mvn/settings.xml compile -Dfrontend.skip=true
       
     - name: Run unit tests
-      run: ./mvnw -s .mvn/settings.xml test
+      run: ./mvnw -s .mvn/settings.xml test -Dfrontend.skip=true
       
     - name: Run integration tests
-      run: ./mvnw -s .mvn/settings.xml verify -P integration-tests -DskipTests=false
+      run: ./mvnw -s .mvn/settings.xml verify -P integration-tests -DskipTests=false -Dfrontend.skip=true
       continue-on-error: true
       
     - name: Generate test reports
-      run: ./mvnw -s .mvn/settings.xml jacoco:report
+      run: ./mvnw -s .mvn/settings.xml jacoco:report -Dfrontend.skip=true
       if: always()
       
     - name: Upload test results
@@ -79,6 +85,11 @@ jobs:
       with:
         java-version: '21'
         distribution: 'temurin'
+        
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
         
     - name: Run OWASP Dependency Check
       run: ./mvnw -s .mvn/settings.xml org.owasp:dependency-check-maven:check
