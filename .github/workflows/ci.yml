@@ -15,6 +15,21 @@ jobs:
     permissions:
       contents: read
     
+    env:
+      # Test Database Configuration (matches application-test.yml)
+      TEST_DATABASE_URL: jdbc:postgresql://localhost:5432/cloudsuites_dev
+      TEST_DATABASE_USERNAME: cloudsuites_user
+      TEST_DATABASE_PASSWORD: cloudsuites_dev
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_NAME: cloudsuites_dev
+      DB_USERNAME: cloudsuites_user
+      DB_PASSWORD: cloudsuites_dev
+      # Production Database Configuration (fallback)
+      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/cloudsuites_dev
+      SPRING_DATASOURCE_USERNAME: cloudsuites_user
+      SPRING_DATASOURCE_PASSWORD: cloudsuites_dev
+    
     strategy:
       matrix:
         java-version: [21]
