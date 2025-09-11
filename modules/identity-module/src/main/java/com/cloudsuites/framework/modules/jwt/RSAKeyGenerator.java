@@ -15,7 +15,7 @@ import java.util.Base64;
  * Generates RSA-2048 key pairs for enhanced security over HMAC.
  * Supports key persistence and loading for production environments.
  */
-@Component
+@Component("rsaKeyGenerator")
 public class RSAKeyGenerator {
 
     private static final Logger logger = LoggerFactory.getLogger(RSAKeyGenerator.class);
