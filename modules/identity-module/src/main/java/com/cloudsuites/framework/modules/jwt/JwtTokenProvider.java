@@ -125,7 +125,7 @@ public class JwtTokenProvider {
             .issuedAt(new Date())
             .expiration(new Date(System.currentTimeMillis() + refreshTokenValidityMs))
             .claim(CLAIM_SESSION_ID, sessionId)
-            .claim("type", "refresh")
+            .claim(CLAIM_TOKEN_TYPE, "refresh")
             .signWith(jwtSigningKey)
             .compact();
             
@@ -293,7 +293,7 @@ public class JwtTokenProvider {
                 return false;
             }
             
-            String tokenType = extractClaim(token, claims -> claims.get("type", String.class));
+            String tokenType = extractClaim(token, claims -> claims.get(CLAIM_TOKEN_TYPE, String.class));
             boolean typeMatches = expectedType.equals(tokenType);
             
             if (!typeMatches) {
