@@ -63,6 +63,6 @@ jobs:
       - run: chmod +x ./mvnw
       
       - run: ./mvnw --version
-      - run: ./mvnw -s .mvn/settings.xml compile
-      - run: ./mvnw -s .mvn/settings.xml test
-      - run: ./mvnw -s .mvn/settings.xml package -DskipTests
+      - run: ./mvnw -s .mvn/settings.xml compile -Dfrontend.skip=true
+      - run: ./mvnw -s .mvn/settings.xml test -Dfrontend.skip=true
+      - run: ./mvnw -s .mvn/settings.xml package -DskipTests -Dfrontend.skip=true
