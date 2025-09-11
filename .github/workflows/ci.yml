@@ -78,22 +78,28 @@ jobs:
         cat "$EXPECTED_SETTINGS" | head -5
         
         # Set the Maven settings path for all subsequent steps
-        EXPECTED_SETTINGS="/home/runner/work/cloudsuites/cloudsuites/.mvn/settings.xml"
-        PWD_SETTINGS="$(pwd)/.mvn/settings.xml"
-        WORKSPACE_SETTINGS="$GITHUB_WORKSPACE/.mvn/settings.xml"
-        
-        if [ -f "$EXPECTED_SETTINGS" ]; then
-          MAVEN_SETTINGS_PATH="$EXPECTED_SETTINGS"
-        elif [ -f "$PWD_SETTINGS" ]; then
-          MAVEN_SETTINGS_PATH="$PWD_SETTINGS"
-        elif [ -f "$WORKSPACE_SETTINGS" ]; then
-          MAVEN_SETTINGS_PATH="$WORKSPACE_SETTINGS"
+        # Use the expected location as priority since we just created it
+        if [ -f "/home/runner/work/cloudsuites/cloudsuites/.mvn/settings.xml" ]; then
+          MAVEN_SETTINGS_PATH="/home/runner/work/cloudsuites/cloudsuites/.mvn/settings.xml"
+          echo "Using expected GitHub location for Maven settings"
+        elif [ -f "$(pwd)/.mvn/settings.xml" ]; then
+          MAVEN_SETTINGS_PATH="$(pwd)/.mvn/settings.xml"
+          echo "Using PWD location for Maven settings"
+        elif [ -f "$GITHUB_WORKSPACE/.mvn/settings.xml" ]; then
+          MAVEN_SETTINGS_PATH="$GITHUB_WORKSPACE/.mvn/settings.xml"
+          echo "Using WORKSPACE location for Maven settings"
         else
           MAVEN_SETTINGS_PATH=".mvn/settings.xml"
+          echo "Using relative location for Maven settings"
         fi
         
         echo "MAVEN_SETTINGS_PATH=$MAVEN_SETTINGS_PATH" >> $GITHUB_ENV
         echo "Maven settings path set to: $MAVEN_SETTINGS_PATH"
+        
+        # Verify the path was set correctly
+        echo "Verifying final path selection:"
+        echo "Selected path: $MAVEN_SETTINGS_PATH"
+        echo "File exists at selected path: $(test -f "$MAVEN_SETTINGS_PATH" && echo 'YES' || echo 'NO')"
         
     - name: Verify Maven wrapper and settings
       run: |
@@ -249,6 +255,27 @@ jobs:
       
     - name: Generate test reports
       run: |
+        echo "=== Generate test reports - Debug Maven Settings ==="
+        echo "MAVEN_SETTINGS_PATH environment variable: '$MAVEN_SETTINGS_PATH'"
+        echo "Length of MAVEN_SETTINGS_PATH: ${#MAVEN_SETTINGS_PATH}"
+        echo "File exists check: $(test -f "$MAVEN_SETTINGS_PATH" && echo 'YES' || echo 'NO')"
+        
+        if [ -z "$MAVEN_SETTINGS_PATH" ]; then
+          echo "ERROR: MAVEN_SETTINGS_PATH is empty!"
+          echo "Fallback to expected location..."
+          MAVEN_SETTINGS_PATH="/home/runner/work/cloudsuites/cloudsuites/.mvn/settings.xml"
+        fi
+        
+        echo "Final Maven settings path: '$MAVEN_SETTINGS_PATH'"
+        echo "Final file check: $(test -f "$MAVEN_SETTINGS_PATH" && echo 'YES' || echo 'NO')"
+        
+        if [ ! -f "$MAVEN_SETTINGS_PATH" ]; then
+          echo "ERROR: Settings file still not found!"
+          echo "Available settings files:"
+          find /home/runner/work -name "settings.xml" -type f 2>/dev/null || echo "No settings.xml found"
+          exit 1
+        fi
+        
         echo "Using Maven settings: $MAVEN_SETTINGS_PATH"
         ./mvnw -s "$MAVEN_SETTINGS_PATH" jacoco:report -Dfrontend.skip=true
       if: always()
