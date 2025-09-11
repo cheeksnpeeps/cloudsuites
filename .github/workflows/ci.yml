@@ -70,13 +70,31 @@ jobs:
         ./mvnw --version
         echo "Maven wrapper execution successful ✓"
         echo "=== Testing settings file access ==="
-        SETTINGS_PATH="$(pwd)/.mvn/settings.xml"
-        echo "Full settings path: $SETTINGS_PATH"
+        
+        # Function to find correct settings path
+        find_settings_path() {
+          local pwd_path="$(pwd)/.mvn/settings.xml"
+          local workspace_path="$GITHUB_WORKSPACE/.mvn/settings.xml"
+          
+          if [ -f "$pwd_path" ]; then
+            echo "$pwd_path"
+          elif [ -f "$workspace_path" ]; then
+            echo "$workspace_path"
+          else
+            echo ".mvn/settings.xml"  # fallback to relative
+          fi
+        }
+        
+        SETTINGS_PATH=$(find_settings_path)
+        echo "Selected settings path: $SETTINGS_PATH"
+        
         if [ -f "$SETTINGS_PATH" ]; then
           echo "Settings file accessible ✓"
           ./mvnw -s "$SETTINGS_PATH" help:effective-settings | head -10
         else
           echo "ERROR: Settings file not accessible at $SETTINGS_PATH"
+          echo "Available files:"
+          find $GITHUB_WORKSPACE -name "*.xml" 2>/dev/null || echo "No XML files found"
           exit 1
         fi
       
@@ -109,37 +127,103 @@ jobs:
         echo "Working directory: $(pwd)"
         echo "Settings file full path: $(readlink -f .mvn/settings.xml)"
         echo "Maven wrapper full path: $(readlink -f ./mvnw)"
+        echo "=== GitHub Actions workspace structure ==="
+        echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+        echo "Runner workspace: $(dirname $(pwd))"
+        ls -la $(dirname $(pwd))
+        echo "=== Checking for nested directories ==="
+        find $GITHUB_WORKSPACE -name "settings.xml" -type f 2>/dev/null || echo "No settings.xml found in workspace"
+        find $GITHUB_WORKSPACE -name "mvnw" -type f 2>/dev/null || echo "No mvnw found in workspace"
         
     - name: Validate Maven project structure
       run: |
         echo "=== Maven validation with full path debugging ==="
         echo "Current directory: $(pwd)"
+        echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
         echo "Settings file exists: $(test -f .mvn/settings.xml && echo 'YES' || echo 'NO')"
         echo "Maven wrapper exists: $(test -f ./mvnw && echo 'YES' || echo 'NO')"
         echo "Attempting Maven validation..."
-        SETTINGS_PATH="$(pwd)/.mvn/settings.xml"
-        echo "Using settings file: $SETTINGS_PATH"
+        # Try multiple path strategies
+        SETTINGS_PATH_PWD="$(pwd)/.mvn/settings.xml"
+        SETTINGS_PATH_WORKSPACE="$GITHUB_WORKSPACE/.mvn/settings.xml"
+        echo "PWD settings path: $SETTINGS_PATH_PWD"
+        echo "WORKSPACE settings path: $SETTINGS_PATH_WORKSPACE"
+        
+        if [ -f "$SETTINGS_PATH_PWD" ]; then
+          echo "Using PWD-based settings path"
+          SETTINGS_PATH="$SETTINGS_PATH_PWD"
+        elif [ -f "$SETTINGS_PATH_WORKSPACE" ]; then
+          echo "Using WORKSPACE-based settings path"
+          SETTINGS_PATH="$SETTINGS_PATH_WORKSPACE"
+        else
+          echo "ERROR: Neither settings path exists!"
+          echo "PWD path: $SETTINGS_PATH_PWD"
+          echo "WORKSPACE path: $SETTINGS_PATH_WORKSPACE"
+          exit 1
+        fi
+        
+        echo "Final settings path: $SETTINGS_PATH"
         ./mvnw -s "$SETTINGS_PATH" validate -Dfrontend.skip=true
       
     - name: Compile project (skip frontend for now)
       run: |
-        SETTINGS_PATH="$(pwd)/.mvn/settings.xml"
+        # Use flexible settings path strategy
+        SETTINGS_PATH_PWD="$(pwd)/.mvn/settings.xml"
+        SETTINGS_PATH_WORKSPACE="$GITHUB_WORKSPACE/.mvn/settings.xml"
+        if [ -f "$SETTINGS_PATH_PWD" ]; then
+          SETTINGS_PATH="$SETTINGS_PATH_PWD"
+        elif [ -f "$SETTINGS_PATH_WORKSPACE" ]; then
+          SETTINGS_PATH="$SETTINGS_PATH_WORKSPACE"
+        else
+          SETTINGS_PATH=".mvn/settings.xml"  # fallback to relative
+        fi
+        echo "Using settings: $SETTINGS_PATH"
         ./mvnw -s "$SETTINGS_PATH" compile -Dfrontend.skip=true
       
     - name: Run unit tests
       run: |
-        SETTINGS_PATH="$(pwd)/.mvn/settings.xml"
+        # Use flexible settings path strategy
+        SETTINGS_PATH_PWD="$(pwd)/.mvn/settings.xml"
+        SETTINGS_PATH_WORKSPACE="$GITHUB_WORKSPACE/.mvn/settings.xml"
+        if [ -f "$SETTINGS_PATH_PWD" ]; then
+          SETTINGS_PATH="$SETTINGS_PATH_PWD"
+        elif [ -f "$SETTINGS_PATH_WORKSPACE" ]; then
+          SETTINGS_PATH="$SETTINGS_PATH_WORKSPACE"
+        else
+          SETTINGS_PATH=".mvn/settings.xml"  # fallback to relative
+        fi
+        echo "Using settings: $SETTINGS_PATH"
         ./mvnw -s "$SETTINGS_PATH" test -Dfrontend.skip=true
       
     - name: Run integration tests
       run: |
-        SETTINGS_PATH="$(pwd)/.mvn/settings.xml"
+        # Use flexible settings path strategy
+        SETTINGS_PATH_PWD="$(pwd)/.mvn/settings.xml"
+        SETTINGS_PATH_WORKSPACE="$GITHUB_WORKSPACE/.mvn/settings.xml"
+        if [ -f "$SETTINGS_PATH_PWD" ]; then
+          SETTINGS_PATH="$SETTINGS_PATH_PWD"
+        elif [ -f "$SETTINGS_PATH_WORKSPACE" ]; then
+          SETTINGS_PATH="$SETTINGS_PATH_WORKSPACE"
+        else
+          SETTINGS_PATH=".mvn/settings.xml"  # fallback to relative
+        fi
+        echo "Using settings: $SETTINGS_PATH"
         ./mvnw -s "$SETTINGS_PATH" verify -P integration-tests -DskipTests=false -Dfrontend.skip=true
       continue-on-error: true
       
     - name: Generate test reports
       run: |
-        SETTINGS_PATH="$(pwd)/.mvn/settings.xml"
+        # Use flexible settings path strategy
+        SETTINGS_PATH_PWD="$(pwd)/.mvn/settings.xml"
+        SETTINGS_PATH_WORKSPACE="$GITHUB_WORKSPACE/.mvn/settings.xml"
+        if [ -f "$SETTINGS_PATH_PWD" ]; then
+          SETTINGS_PATH="$SETTINGS_PATH_PWD"
+        elif [ -f "$SETTINGS_PATH_WORKSPACE" ]; then
+          SETTINGS_PATH="$SETTINGS_PATH_WORKSPACE"
+        else
+          SETTINGS_PATH=".mvn/settings.xml"  # fallback to relative
+        fi
+        echo "Using settings: $SETTINGS_PATH"
         ./mvnw -s "$SETTINGS_PATH" jacoco:report -Dfrontend.skip=true
       if: always()
       
