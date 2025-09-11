@@ -5,9 +5,25 @@
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
+    <!-- Content Security Policy - Relaxed for Development -->
+    <meta 
+      http-equiv="Content-Security-Policy" 
+      content="
+        default-src 'self';
+        script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:* https://vercel.live;
+        style-src 'self' 'unsafe-inline' http://localhost:*;
+        img-src 'self' data: https: http://localhost:*;
+        font-src 'self' data: http://localhost:*;
+        connect-src 'self' http://localhost:* https://api.cloudsuites.com ws://localhost:* wss://localhost:*;
+        base-uri 'self';
+        form-action 'self';
+        frame-ancestors 'none';
+        object-src 'none';
+      "
+    />
     <meta
       name="description"
-      content="Web site created using create-react-app"
+      content="CloudSuites - Property Management Platform for condominiums and apartments"
     />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <!--
@@ -24,7 +40,7 @@
       work correctly both with client-side routing and a non-root public URL.
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
-    <title>React App</title>
+    <title>CloudSuites - Property Management</title>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

@@ -1,7 +1,6 @@
-import { Bell, Search, Moon, Sun, Settings } from 'lucide-react';
+import { Bell, LogOut, Settings, User } from 'lucide-react';
 import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { Avatar, AvatarFallback } from '../ui/avatar';
 import { Badge } from '../ui/badge';
 import { 
   DropdownMenu, 
@@ -10,25 +9,45 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from '../ui/dropdown-menu';
-import { PersonaSwitcher } from './PersonaSwitcher';
-import { useUser } from '../UserContext';
-import { PersonaType } from '../types';
+import { useAuthContext } from '../../contexts/AuthContext';
+import { useLogout } from '../../hooks/useAuth';
+import { RoleType } from '../../api/auth';
 
 // Define tabs for each persona
-const personaTabs = {
-  admin: ['Overview', 'Buildings', 'Users & Roles', 'Integrations', 'Billing', 'Reports', 'Audit'],
-  owner: ['Dashboard', 'Units', 'Payments', 'Documents', 'Requests', 'Messages'],
-  staff: ['Overview', 'Residents', 'Units', 'Tickets', 'Amenities', 'Calendar', 'Incidents', 'Inventory', 'Reports', 'Settings'],
-  tenant: ['Home', 'Bookings', 'Requests', 'Payments', 'Deliveries & Visitors', 'Documents', 'Messages']
+const personaTabs: Record<RoleType, string[]> = {
+  ADMIN: ['Overview', 'Companies', 'Buildings', 'Users & Roles', 'Analytics', 'System Settings'],
+  STAFF: ['Overview', 'Residents', 'Units', 'Tickets', 'Amenities', 'Calendar', 'Reports'],
+  OWNER: ['Dashboard', 'Units', 'Payments', 'Documents', 'Requests', 'Messages'],
+  TENANT: ['Home', 'Bookings', 'Requests', 'Payments', 'Deliveries', 'Documents', 'Messages']
 };
 
 export function TopNav() {
-  const { user, darkMode, toggleDarkMode } = useUser();
+  const { user, getUserRole } = useAuthContext();
+  const logout = useLogout();
 
   if (!user) return null;
 
-  const currentTabs = personaTabs[user.persona as PersonaType] || [];
+  const userRole = getUserRole();
+  const currentTabs = userRole ? personaTabs[userRole] : [];
   const activeTab = 'Overview'; // Default active tab
+
+  const handleLogout = () => {
+    logout.mutate();
+  };
+
+  const getUserInitials = (firstName: string, lastName: string) => {
+    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+  };
+
+  const getRoleDisplayName = (role: RoleType) => {
+    const roleNames = {
+      ADMIN: 'Administrator',
+      STAFF: 'Staff Member',
+      OWNER: 'Property Owner',
+      TENANT: 'Tenant'
+    };
+    return roleNames[role] || role;
+  };
 
   return (
     <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -36,9 +55,9 @@ export function TopNav() {
         {/* Left: Logo */}
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-sm">PM</span>
+            <span className="text-primary-foreground font-bold text-sm">CS</span>
           </div>
-          <span className="font-semibold">PropertyManager</span>
+          <span className="font-semibold">CloudSuites</span>
         </div>
 
         {/* Center: Navigation Tabs */}
@@ -48,8 +67,8 @@ export function TopNav() {
               key={tab}
               variant="ghost"
               className={`h-8 px-4 text-sm ${
-                tab === activeTab 
-                  ? 'text-foreground border-b-2 border-primary rounded-none bg-transparent hover:bg-transparent' 
+                activeTab === tab
+                  ? 'text-primary border-b-2 border-primary rounded-none'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -60,10 +79,6 @@ export function TopNav() {
 
         {/* Right: Actions and user */}
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={toggleDarkMode}>
-            {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-          </Button>
-
           <Button variant="ghost" size="sm" className="relative">
             <Bell className="w-4 h-4" />
             <Badge 
@@ -78,27 +93,33 @@ export function TopNav() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="flex items-center gap-2 px-2">
                 <Avatar className="w-8 h-8">
-                  <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback>{user.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                  <AvatarFallback>
+                    {getUserInitials(user.firstName, user.lastName)}
+                  </AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-64">
               <div className="px-3 py-2">
-                <div className="font-medium">{user.name}</div>
+                <div className="font-medium">{user.firstName} {user.lastName}</div>
                 <div className="text-sm text-muted-foreground">{user.email}</div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  {userRole && getRoleDisplayName(userRole)}
+                </div>
               </div>
               <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <User className="w-4 h-4 mr-2" />
+                Profile
+              </DropdownMenuItem>
               <DropdownMenuItem>
                 <Settings className="w-4 h-4 mr-2" />
                 Settings
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                Profile
-              </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                Sign out
+              <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

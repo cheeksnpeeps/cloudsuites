@@ -256,9 +256,12 @@ export function AmenityBooking() {
                   </div>
 
                   <div>
-                    <Label>Number of Guests</Label>
+                    <Label htmlFor="guest-count">Number of Guests</Label>
                     <Input
+                      id="guest-count"
+                      name="guests"
                       type="number"
+                      autoComplete="off"
                       min="1"
                       max={selectedAmenity.capacity}
                       value={guests}
@@ -267,8 +270,11 @@ export function AmenityBooking() {
                   </div>
 
                   <div>
-                    <Label>Notes (Optional)</Label>
+                    <Label htmlFor="booking-notes">Notes (Optional)</Label>
                     <Textarea
+                      id="booking-notes"
+                      name="notes"
+                      autoComplete="off"
                       placeholder="Any special requests or notes..."
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
