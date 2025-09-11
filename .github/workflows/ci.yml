@@ -19,6 +19,9 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       
+    - name: Make Maven wrapper executable
+      run: chmod +x ./mvnw
+      
     - name: Set up JDK ${{ matrix.java-version }}
       uses: actions/setup-java@v4
       with:
@@ -33,19 +36,19 @@ jobs:
         restore-keys: ${{ runner.os }}-m2
         
     - name: Validate Maven project structure
-      run: mvn -s .mvn/settings.xml validate
+      run: ./mvnw -s .mvn/settings.xml validate
       
     - name: Compile project
-      run: mvn -s .mvn/settings.xml compile
+      run: ./mvnw -s .mvn/settings.xml compile
       
     - name: Run unit tests
-      run: mvn -s .mvn/settings.xml test
+      run: ./mvnw -s .mvn/settings.xml test
       
     - name: Run integration tests
-      run: mvn -s .mvn/settings.xml verify -P integration-tests
+      run: ./mvnw -s .mvn/settings.xml verify -P integration-tests
       
     - name: Generate test reports
-      run: mvn -s .mvn/settings.xml jacoco:report
+      run: ./mvnw -s .mvn/settings.xml jacoco:report
       if: always()
       
     - name: Upload test results
@@ -67,6 +70,9 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       
+    - name: Make Maven wrapper executable
+      run: chmod +x ./mvnw
+      
     - name: Set up JDK 21
       uses: actions/setup-java@v4
       with:
@@ -74,7 +80,7 @@ jobs:
         distribution: 'temurin'
         
     - name: Run OWASP Dependency Check
-      run: mvn -s .mvn/settings.xml org.owasp:dependency-check-maven:check
+      run: ./mvnw -s .mvn/settings.xml org.owasp:dependency-check-maven:check
       
     - name: Upload security scan results
       uses: actions/upload-artifact@v4
@@ -92,6 +98,9 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       
+    - name: Make Maven wrapper executable
+      run: chmod +x ./mvnw
+      
     - name: Set up JDK 21
       uses: actions/setup-java@v4
       with:
@@ -99,7 +108,7 @@ jobs:
         distribution: 'temurin'
         
     - name: Build application
-      run: mvn -s .mvn/settings.xml clean package -DskipTests
+      run: ./mvnw -s .mvn/settings.xml clean package -DskipTests
       
     - name: Build Docker image
       run: docker build -t cloudsuites:${{ github.sha }} .
@@ -122,6 +131,9 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       
+    - name: Make Maven wrapper executable
+      run: chmod +x ./mvnw
+      
     - name: Set up JDK 21
       uses: actions/setup-java@v4
       with:
@@ -129,12 +141,12 @@ jobs:
         distribution: 'temurin'
         
     - name: Run JWT Tests
-      run: mvn -s .mvn/settings.xml test -f modules/identity-module -Dtest=Jwt*Test
+      run: ./mvnw -s .mvn/settings.xml test -f modules/identity-module -Dtest=Jwt*Test
       
     - name: Run Authentication Integration Tests
-      run: mvn -s .mvn/settings.xml test -f modules/identity-module -Dtest=*IntegrationTest
+      run: ./mvnw -s .mvn/settings.xml test -f modules/identity-module -Dtest=*IntegrationTest
       
     - name: Validate Test Coverage (85% minimum)
       run: |
-        mvn -s .mvn/settings.xml jacoco:report -f modules/identity-module
-        mvn -s .mvn/settings.xml jacoco:check -f modules/identity-module -Djacoco.haltOnFailure=true
+        ./mvnw -s .mvn/settings.xml jacoco:report -f modules/identity-module
+        ./mvnw -s .mvn/settings.xml jacoco:check -f modules/identity-module -Djacoco.haltOnFailure=true
