@@ -1,4 +1,78 @@
-# CloudSuites Copilot Instructions - Authentication Implementation Addendum
+# CloudSuites Copilot Instructi### Authentication-Specific Development Rules
+
+### Before Starting Any Authentication Work
+
+1. **ALWAYS** check `plan/auth-implementation-tracker.md` first to understand:
+   - Current sprint and week
+   - Today's assigned tasks
+   - PR dependencies and status
+   - Quality requirements
+
+2. **Reference requirements** from `plan/backend-authentication-onboarding-platform-1.md` for:
+   - Business rules (REQ-XXX references)
+   - Security constraints (SEC-XXX references) 
+   - Technical constraints (CON-XXX references)
+   - Gap analysis findings
+
+3. **Follow implementation details** from `plan/auth-implementation-roadmap.md` for:
+   - Specific PR acceptance criteria
+   - File structures and naming conventions
+   - Integration patterns with existing code
+   - Testing requirements
+
+### 📝 MANDATORY: Documentation Update Requirements
+
+**CRITICAL**: Every authentication PR MUST update documentation. This is not optional.
+
+#### After Completing ANY Authentication Task:
+
+1. **ALWAYS update `plan/auth-implementation-tracker.md`**:
+   - ✅ Mark completed tasks as done
+   - Update PR status: 🔄 IN PROGRESS → ✅ COMPLETED
+   - Add completion date and commit hash
+   - Update overall progress percentage
+   - Update files created/modified section
+   - Add implementation highlights
+
+2. **Update progress tracking**:
+   - Change PR status from "Not Started" to "Completed"
+   - Update sprint progress counters
+   - Verify all task checkboxes are marked
+   - Commit the documentation updates
+
+3. **Required information in tracker updates**:
+   ```markdown
+   **Status:** ✅ **COMPLETED**
+   **Completed:** [Current Date]
+   **Commit:** `[commit-hash]`
+   **Implementation Highlights:**
+   - [Key achievements]
+   - [Lines of code added]
+   - [Security features implemented]
+   ```
+
+#### Documentation Update Checklist (Per PR):
+- [ ] Tracker status updated to COMPLETED
+- [ ] All task checkboxes marked as done
+- [ ] Files created/modified section updated
+- [ ] Commit hash added to tracker
+- [ ] Progress percentage recalculated
+- [ ] Implementation highlights added
+- [ ] Documentation changes committed to git
+
+#### Enforcement:
+**No PR is considered complete without tracker updates.** Agents must include documentation updates in their final commit for each authentication task.
+
+#### Example Commands:
+```bash
+# After completing authentication work
+git add plan/auth-implementation-tracker.md
+git commit -m "docs: Update tracker - PR #X [Feature] completed
+
+- [Task completion summary]
+- [Key implementation details]
+- Progress: X/50 PRs completed"
+```n Implementation Addendum
 
 ## Authentication Implementation Context
 
@@ -135,6 +209,9 @@ When user requests authentication work, structure your response:
 - [ ] Rate limiting considered
 - [ ] JWT token handling secure
 - [ ] Tests written and passing
+- [ ] **MANDATORY: Tracker documentation updated**
+- [ ] **MANDATORY: PR status marked as COMPLETED**
+- [ ] **MANDATORY: Progress percentage recalculated**
 ```
 
 ### Integration Points to Remember
