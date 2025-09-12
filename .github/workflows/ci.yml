@@ -17,18 +17,18 @@ jobs:
     
     env:
       # Test Database Configuration (matches application-test.yml)
-      TEST_DATABASE_URL: jdbc:postgresql://localhost:5432/cloudsuites_dev
-      TEST_DATABASE_USERNAME: cloudsuites_user
-      TEST_DATABASE_PASSWORD: cloudsuites_dev
+      TEST_DATABASE_URL: jdbc:postgresql://localhost:5432/cloudsuites_test
+      TEST_DATABASE_USERNAME: csuser
+      TEST_DATABASE_PASSWORD: csPassw0rd
       DB_HOST: localhost
       DB_PORT: 5432
-      DB_NAME: cloudsuites_dev
-      DB_USERNAME: cloudsuites_user
-      DB_PASSWORD: cloudsuites_dev
+      DB_NAME: cloudsuites_test
+      DB_USERNAME: csuser
+      DB_PASSWORD: csPassw0rd
       # Production Database Configuration (fallback)
-      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/cloudsuites_dev
-      SPRING_DATASOURCE_USERNAME: cloudsuites_user
-      SPRING_DATASOURCE_PASSWORD: cloudsuites_dev
+      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/cloudsuites_test
+      SPRING_DATASOURCE_USERNAME: csuser
+      SPRING_DATASOURCE_PASSWORD: csPassw0rd
     
     strategy:
       matrix:
@@ -38,9 +38,9 @@ jobs:
       postgres:
         image: postgres:17
         env:
-          POSTGRES_PASSWORD: cloudsuites_dev
-          POSTGRES_USER: cloudsuites_user
-          POSTGRES_DB: cloudsuites_dev
+          POSTGRES_PASSWORD: csPassw0rd
+          POSTGRES_USER: csuser
+          POSTGRES_DB: cloudsuites
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -53,11 +53,39 @@ jobs:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
         
+      - name: Setup Database Roles and Test Database
+        run: |
+          # Wait for PostgreSQL to be ready
+          until pg_isready -h localhost -p 5432 -U csuser; do
+            echo "Waiting for PostgreSQL to be ready..."
+            sleep 2
+          done
+          
+          # Create required roles and test database
+          PGPASSWORD=csPassw0rd psql -h localhost -p 5432 -U csuser -d cloudsuites -c "
+            -- Create root role if it doesn't exist (for admin operations)
+            DO \$\$ 
+            BEGIN
+                IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'root') THEN
+                    CREATE ROLE root WITH LOGIN PASSWORD 'root' SUPERUSER;
+                END IF;
+            END \$\$;
+            
+            -- Create the test database for integration tests
+            SELECT 'CREATE DATABASE cloudsuites_test' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'cloudsuites_test')\\gexec
+            
+            -- Grant permissions on test database to csuser
+            GRANT ALL PRIVILEGES ON DATABASE cloudsuites_test TO csuser;
+            GRANT CREATE ON DATABASE cloudsuites_test TO csuser;
+            GRANT CONNECT ON DATABASE cloudsuites_test TO csuser;
+          "
+          
+          echo "Database setup completed successfully"
+        
       - uses: actions/setup-java@v4
         with:
           java-version: ${{ matrix.java-version }}
           distribution: temurin
-          dependency-submission: disabled   # <-- key change
         
       - uses: actions/setup-node@v4
         with:
