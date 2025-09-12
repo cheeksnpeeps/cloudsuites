@@ -60,21 +60,28 @@ jobs:
             echo "Waiting for PostgreSQL to be ready..."
             sleep 2
           done
-          
-          # Create required roles and test database
+
+          # Create the root role if it doesn't exist
           PGPASSWORD=csPassw0rd psql -h localhost -p 5432 -U csuser -d cloudsuites -c "
-            -- Create root role if it doesn't exist (for admin operations)
-            DO \$\$ 
+            DO \$\$
             BEGIN
                 IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'root') THEN
                     CREATE ROLE root WITH LOGIN PASSWORD 'root' SUPERUSER;
                 END IF;
-            END \$\$;
-            
-            -- Create the test database for integration tests
-            SELECT 'CREATE DATABASE cloudsuites_test' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'cloudsuites_test')\\gexec
-            
-            -- Grant permissions on test database to csuser
+            END
+            \$\$;
+          "
+
+          # Create the test database if it doesn't exist (using shell logic instead of \gexec)
+          if ! PGPASSWORD=csPassw0rd psql -h localhost -p 5432 -U csuser -lqt | cut -d \| -f 1 | grep -qw cloudsuites_test; then
+            PGPASSWORD=csPassw0rd createdb -h localhost -p 5432 -U csuser cloudsuites_test
+            echo "Created cloudsuites_test database"
+          else
+            echo "cloudsuites_test database already exists"
+          fi
+
+          # Grant permissions on test database to csuser
+          PGPASSWORD=csPassw0rd psql -h localhost -p 5432 -U csuser -d cloudsuites_test -c "
             GRANT ALL PRIVILEGES ON DATABASE cloudsuites_test TO csuser;
             GRANT CREATE ON DATABASE cloudsuites_test TO csuser;
             GRANT CONNECT ON DATABASE cloudsuites_test TO csuser;
