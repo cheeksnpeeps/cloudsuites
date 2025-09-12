@@ -131,7 +131,7 @@ public class Identity {
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
 	private LocalDateTime lastFailedLoginAt;
 	
-	@Column(name = "last_password_change_ip", columnDefinition = "inet")
+	@Column(name = "last_password_change_ip")
 	private String lastPasswordChangeIp;
 
 	// Email/Phone verification for OTP channels
@@ -164,7 +164,7 @@ public class Identity {
 	@Column(name = "biometric_enabled")
 	private Boolean biometricEnabled = false;
 	
-	@Column(name = "notification_preferences", columnDefinition = "jsonb")
+	@Column(name = "notification_preferences")
 	private String notificationPreferences; // JSON object as string
 	
 	@Column(name = "login_notification_enabled")

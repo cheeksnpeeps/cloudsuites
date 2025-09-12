@@ -123,6 +123,7 @@
                 <nodeVersion>v20.16.0</nodeVersion>  <!-- small bump; still LTS -->
                 <npmVersion>10.8.2</npmVersion>
                 <workingDirectory>../property-management-web</workingDirectory>
+                <skip>${frontend.skip}</skip>
                 <environmentVariables>
                 <!-- force public npm when building off VPN -->
                 <npm_config_registry>https://registry.npmjs.org/</npm_config_registry>
@@ -141,7 +142,7 @@
                 <phase>generate-resources</phase>
                 <goals><goal>npm</goal></goals>
                 <configuration>
-                    <arguments>run install-or-ci</arguments>
+                    <arguments>ci --no-fund --no-audit --prefer-offline --no-optional</arguments>
                 </configuration>
                 </execution>
                 <execution>

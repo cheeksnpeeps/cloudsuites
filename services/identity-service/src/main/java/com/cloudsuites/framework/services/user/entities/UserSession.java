@@ -71,7 +71,7 @@ public class UserSession {
     @Column(name = "user_agent", columnDefinition = "TEXT")
     private String userAgent;
 
-    @Column(name = "ip_address", columnDefinition = "inet")
+    @Column(name = "ip_address")
     private String ipAddress;
 
     @Size(max = 200, message = "Location must not exceed 200 characters")

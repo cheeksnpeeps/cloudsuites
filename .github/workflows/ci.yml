@@ -1,0 +1,118 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    
+    env:
+      # Test Database Configuration (matches application-test.yml)
+      TEST_DATABASE_URL: jdbc:postgresql://localhost:5432/cloudsuites_test
+      TEST_DATABASE_USERNAME: csuser
+      TEST_DATABASE_PASSWORD: csPassw0rd
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_NAME: cloudsuites_test
+      DB_USERNAME: csuser
+      DB_PASSWORD: csPassw0rd
+      # Production Database Configuration (fallback)
+      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/cloudsuites_test
+      SPRING_DATASOURCE_USERNAME: csuser
+      SPRING_DATASOURCE_PASSWORD: csPassw0rd
+    
+    strategy:
+      matrix:
+        java-version: [21]
+    
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: csPassw0rd
+          POSTGRES_USER: csuser
+          POSTGRES_DB: cloudsuites
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+        
+      - name: Setup Database Roles and Test Database
+        run: |
+          # Wait for PostgreSQL to be ready
+          until pg_isready -h localhost -p 5432 -U csuser; do
+            echo "Waiting for PostgreSQL to be ready..."
+            sleep 2
+          done
+
+          # Create the root role if it doesn't exist
+          PGPASSWORD=csPassw0rd psql -h localhost -p 5432 -U csuser -d cloudsuites -c "
+            DO \$\$
+            BEGIN
+                IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'root') THEN
+                    CREATE ROLE root WITH LOGIN PASSWORD 'root' SUPERUSER;
+                END IF;
+            END
+            \$\$;
+          "
+
+          # Create the test database if it doesn't exist (using shell logic instead of \gexec)
+          if ! PGPASSWORD=csPassw0rd psql -h localhost -p 5432 -U csuser -lqt | cut -d \| -f 1 | grep -qw cloudsuites_test; then
+            PGPASSWORD=csPassw0rd createdb -h localhost -p 5432 -U csuser cloudsuites_test
+            echo "Created cloudsuites_test database"
+          else
+            echo "cloudsuites_test database already exists"
+          fi
+
+          # Grant permissions on test database to csuser
+          PGPASSWORD=csPassw0rd psql -h localhost -p 5432 -U csuser -d cloudsuites_test -c "
+            GRANT ALL PRIVILEGES ON DATABASE cloudsuites_test TO csuser;
+            GRANT CREATE ON DATABASE cloudsuites_test TO csuser;
+            GRANT CONNECT ON DATABASE cloudsuites_test TO csuser;
+          "
+          
+          echo "Database setup completed successfully"
+        
+      - uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java-version }}
+          distribution: temurin
+        
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+        
+      - uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+        
+      - name: Verify Maven wrapper and settings
+        run: |
+          test -f ./mvnw || { echo "mvnw missing"; exit 1; }
+          test -f .mvn/settings.xml || { echo ".mvn/settings.xml missing"; exit 1; }
+      
+      - run: chmod +x ./mvnw
+      
+      - run: ./mvnw --version
+      - run: ./mvnw -s .mvn/settings.xml compile -Dfrontend.skip=true
+      - run: ./mvnw -s .mvn/settings.xml test -Dfrontend.skip=true
+      - run: ./mvnw -s .mvn/settings.xml package -DskipTests -Dfrontend.skip=true

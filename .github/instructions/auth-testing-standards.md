@@ -11,6 +11,7 @@ status: "MANDATORY"
 ## 🎯 **Core Testing Principles**
 
 ### **1. Test-Driven Development (TDD)**
+
 - **RED-GREEN-REFACTOR**: Write failing test → Make it pass → Improve code
 - **Test First**: No production code without corresponding tests
 - **Coverage Requirement**: Minimum 85% code coverage for all authentication components
@@ -30,6 +31,7 @@ status: "MANDATORY"
 ### **3. Authentication-Specific Test Categories**
 
 #### **🔸 Unit Tests (70% of test suite)**
+
 - **JWT Token Provider**: All methods with edge cases
 - **RSA Key Generation**: Key validity, security properties
 - **Custom Claims**: All 8 claim types extraction and validation
@@ -37,6 +39,7 @@ status: "MANDATORY"
 - **Security Utilities**: Cryptographic functions
 
 #### **🔹 Integration Tests (20% of test suite)**
+
 - **Spring Security Integration**: Full authentication flows
 - **Database Integration**: Identity persistence and retrieval
 - **External Service Integration**: Twilio OTP service
@@ -44,6 +47,7 @@ status: "MANDATORY"
 - **Reactive Stack Integration**: WebFlux + R2DBC authentication
 
 #### **🔺 End-to-End Tests (10% of test suite)**
+
 - **Complete Authentication Flows**: Login → OTP → Token → Access
 - **API Security**: Protected endpoints with real JWT tokens
 - **Multi-Role Scenarios**: Different user personas and permissions
@@ -53,6 +57,7 @@ status: "MANDATORY"
 ## 📋 **Testing Checklist for Authentication PRs**
 
 ### **✅ Pre-Commit Requirements**
+
 - [ ] All unit tests written and passing
 - [ ] Integration tests for new components
 - [ ] Security edge cases covered
@@ -60,6 +65,7 @@ status: "MANDATORY"
 - [ ] Error handling tests for all failure scenarios
 
 ### **✅ PR Requirements**  
+
 - [ ] Test coverage report showing ≥85%
 - [ ] All existing tests still passing
 - [ ] New tests documented with clear purpose
@@ -67,6 +73,7 @@ status: "MANDATORY"
 - [ ] Security validation tests included
 
 ### **✅ Pre-Merge Requirements**
+
 - [ ] Full integration test suite passing
 - [ ] End-to-end authentication flows validated
 - [ ] Load testing for JWT generation/validation
@@ -76,6 +83,7 @@ status: "MANDATORY"
 ## 🧪 **Specific Test Implementation Standards**
 
 ### **1. JWT Token Testing**
+
 ```java
 @Test
 @DisplayName("Should generate valid RSA-256 signed access token with all custom claims")
@@ -108,6 +116,7 @@ void testCompleteAccessTokenGeneration() {
 ```
 
 ### **2. Integration Testing with Spring Context**
+
 ```java
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource(locations = "classpath:application-test.yml")
@@ -134,6 +143,7 @@ class AuthenticationIntegrationTest {
 ```
 
 ### **3. Performance Testing**
+
 ```java
 @Test
 @DisplayName("RSA-256 token generation should meet performance requirements")
@@ -158,18 +168,21 @@ void testJWTPerformance() {
 ## 🚀 **Implementation Action Items**
 
 ### **📅 Immediate (This Sprint)**
+
 1. **Create Integration Test Suite**: Spring Boot tests with Testcontainers
 2. **Add Performance Benchmarks**: JWT generation/validation performance tests  
 3. **Security Test Suite**: Comprehensive security edge case testing
 4. **CI/CD Integration**: Add test execution to GitHub Actions workflow
 
 ### **📅 Short Term (Next Sprint)**
+
 1. **End-to-End Test Suite**: Full authentication flow testing
 2. **Load Testing**: High-volume JWT operations testing
 3. **Security Penetration Testing**: Automated security validation
 4. **Test Data Management**: Fixtures and test data generation
 
 ### **📅 Long Term (Ongoing)**
+
 1. **Mutation Testing**: Code quality validation through mutation testing
 2. **Property-Based Testing**: Randomized input validation
 3. **Chaos Engineering**: Fault tolerance testing
@@ -178,6 +191,7 @@ void testJWTPerformance() {
 ## 🔧 **Tools and Dependencies**
 
 ### **Testing Framework Stack**
+
 - **JUnit 5**: Core testing framework
 - **Mockito**: Mocking and stubbing
 - **AssertJ**: Fluent assertions
@@ -186,6 +200,7 @@ void testJWTPerformance() {
 - **WireMock**: External service mocking
 
 ### **Performance and Security Testing**
+
 - **JMH (Java Microbenchmark Harness)**: Performance benchmarking  
 - **OWASP Dependency Check**: Security vulnerability scanning
 - **SonarQube**: Code quality and security analysis
@@ -194,18 +209,21 @@ void testJWTPerformance() {
 ## 📊 **Quality Metrics and Monitoring**
 
 ### **Coverage Requirements**
+
 - **Unit Test Coverage**: ≥85% line coverage, ≥80% branch coverage
 - **Integration Test Coverage**: ≥70% of integration paths
 - **Performance Tests**: All critical authentication paths benchmarked
 - **Security Tests**: 100% of attack vectors covered
 
 ### **Performance Targets**
+
 - **JWT Generation**: <10ms average (RSA-256)
 - **JWT Validation**: <5ms average  
 - **Database Operations**: <50ms for identity operations
 - **Full Authentication Flow**: <500ms end-to-end
 
 ### **Security Validation**
+
 - **Token Tampering Detection**: 100% detection rate
 - **Expired Token Rejection**: 100% rejection rate
 - **Invalid Signature Detection**: 100% detection rate
@@ -214,6 +232,7 @@ void testJWTPerformance() {
 ## 🎯 **Success Criteria**
 
 ### **Definition of Done for Authentication Features**
+
 1. **✅ All unit tests written and passing (≥85% coverage)**
 2. **✅ Integration tests covering Spring integration**  
 3. **✅ Performance tests meeting benchmarks**
@@ -223,6 +242,7 @@ void testJWTPerformance() {
 7. **✅ Peer review of test quality**
 
 ### **Continuous Quality Gates**
+
 - **Pre-Commit**: Unit tests + linting
 - **Pre-PR**: Integration tests + coverage report
 - **Pre-Merge**: Full test suite + security scan

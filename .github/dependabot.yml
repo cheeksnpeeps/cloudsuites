@@ -1,0 +1,10 @@
+# Disable automatic dependency detection and submission
+# This prevents GitHub from running automatic Maven analysis
+version: 2
+updates:
+  # Disable automatic dependency updates but keep minimal config
+  - package-ecosystem: "maven"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0  # Disable automatic PRs

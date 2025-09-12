@@ -4,14 +4,20 @@ import com.cloudsuites.framework.modules.common.utils.IdGenerator;
 import com.cloudsuites.framework.services.property.personas.entities.Owner;
 import com.cloudsuites.framework.services.property.personas.entities.Tenant;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(onlyExplicitlyIncluded = true)
 @Entity
 @Table(name = "unit")
 public class Unit {
@@ -20,6 +26,8 @@ public class Unit {
 
 	@Id
 	@Column(name = "unit_id", unique = true, nullable = false)
+	@EqualsAndHashCode.Include
+	@ToString.Include
 	private String unitId;
 
 	@OneToMany(mappedBy = "unit", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -38,12 +46,15 @@ public class Unit {
 	private Building building;
 
 	@Column(name = "unit_number")
+	@ToString.Include
 	private Integer unitNumber;
 
 	@Column(name = "square_footage")
+	@ToString.Include
 	private Double squareFootage;
 
 	@Column(name = "number_of_bedrooms")
+	@ToString.Include
 	private Integer numberOfBedrooms;
 
 	@PrePersist
