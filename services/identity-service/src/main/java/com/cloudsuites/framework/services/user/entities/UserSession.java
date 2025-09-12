@@ -155,6 +155,13 @@ public class UserSession {
     }
 
     /**
+     * Checks if the session is active.
+     */
+    public boolean isActive() {
+        return Boolean.TRUE.equals(this.isActive);
+    }
+
+    /**
      * Updates the last activity timestamp to current time.
      */
     public void updateLastActivity() {
