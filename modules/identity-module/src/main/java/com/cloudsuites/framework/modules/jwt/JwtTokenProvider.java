@@ -173,6 +173,25 @@ public class JwtTokenProvider {
         return generateAccessToken(userId, customClaims);
     }
 
+    /**
+     * Generates an access token with just subject and session ID.
+     * Convenience method for simple token rotation scenarios.
+     * 
+     * @param subject the token subject (user ID)
+     * @param sessionId the session identifier
+     * @return signed JWT access token
+     */
+    public String generateAccessToken(String subject, String sessionId) {
+        logger.debug("Generating simple access token for subject: {} session: {}", subject, sessionId);
+        
+        Map<String, Object> customClaims = Map.of(
+            CLAIM_SESSION_ID, sessionId,
+            "tokenType", "access"
+        );
+        
+        return generateAccessToken(subject, customClaims);
+    }
+
     @Deprecated
     public String generateToken(JwtBuilder jwtBuilder) {
         logger.warn("Deprecated generateToken(JwtBuilder) method called. Use generateAccessToken() instead.");
@@ -305,6 +324,18 @@ public class JwtTokenProvider {
             logger.error("Token type validation failed: {}", e.getMessage());
             return false;
         }
+    }
+
+    /**
+     * Validates a refresh token specifically.
+     * Convenience method that checks for "refresh" token type.
+     * 
+     * @param refreshToken JWT refresh token string
+     * @return true if token is valid and is a refresh token
+     */
+    public boolean validateRefreshToken(String refreshToken) {
+        logger.debug("Validating refresh token");
+        return validateTokenWithType(refreshToken, "refresh");
     }
 
     /**
