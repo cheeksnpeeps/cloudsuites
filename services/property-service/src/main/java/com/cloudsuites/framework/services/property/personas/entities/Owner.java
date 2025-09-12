@@ -6,7 +6,10 @@ import com.cloudsuites.framework.services.user.entities.Identity;
 import com.cloudsuites.framework.services.user.entities.UserRole;
 import com.cloudsuites.framework.services.user.entities.UserType;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.GrantedAuthority;
@@ -17,7 +20,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-@Data
+@Getter
+@Setter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(onlyExplicitlyIncluded = true)
 @Entity
 @Table(name = "owner")
 public class Owner {
@@ -26,6 +32,8 @@ public class Owner {
 
     @Id
     @Column(name = "owner_id", unique = true, nullable = false)
+    @EqualsAndHashCode.Include
+    @ToString.Include
     private String ownerId;
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -36,12 +44,15 @@ public class Owner {
     private Identity identity;
 
     @Column(name = "is_primary_tenant")
+    @ToString.Include
     private Boolean isPrimaryTenant;
 
     @Enumerated(EnumType.STRING)
+    @ToString.Include
     private OwnerStatus status;
 
     @Enumerated(EnumType.STRING)
+    @ToString.Include
     private OwnerRole role;
 
     public Owner() {
@@ -55,7 +66,7 @@ public class Owner {
 
     public UserRole getUserRole() {
         UserRole userRole = new UserRole();
-        userRole.setIdentityId(this.getIdentity().getUserId());
+        userRole.setIdentityId(this.identity.getUserId());
         userRole.setPersonaId(this.ownerId);
         userRole.setUserType(UserType.OWNER);
         userRole.setRole(Objects.requireNonNullElse(role, OwnerRole.DEFAULT).name());
@@ -77,10 +88,10 @@ public class Owner {
         unit.setOwner(this);
     }
 
-    public void updateOwner(Owner owner) {
-        if (this.isPrimaryTenant != owner.getIsPrimaryTenant()) {
-            logger.debug("Updating isPrimaryTenant from {} to {}", this.isPrimaryTenant, owner.getIsPrimaryTenant());
-            this.isPrimaryTenant = owner.getIsPrimaryTenant();
-        }
-    }
+	public void updateOwner(Owner owner) {
+		if (this.isPrimaryTenant != owner.isPrimaryTenant) {
+			logger.debug("Updating isPrimaryTenant from {} to {}", this.isPrimaryTenant, owner.isPrimaryTenant);
+			this.isPrimaryTenant = owner.isPrimaryTenant;
+		}
+	}
 }
