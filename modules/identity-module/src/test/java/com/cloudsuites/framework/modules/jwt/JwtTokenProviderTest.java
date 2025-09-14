@@ -2,10 +2,6 @@ package com.cloudsuites.framework.modules.jwt;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
@@ -18,28 +14,21 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Enhanced JWT Token Provider Tests.
  * Validates RSA-256 token generation, custom claims, and comprehensive validation.
+ * 
+ * Note: Uses real RSA keys for integration testing to avoid Java 24 Mockito/ByteBuddy issues.
  */
-@ExtendWith(MockitoExtension.class)
 class JwtTokenProviderTest {
 
-    @Mock
-    private RSAPrivateKey mockSigningKey;
-    
-    @Mock
-    private RSAPublicKey mockVerificationKey;
-    
-    @InjectMocks
     private JwtTokenProvider jwtTokenProvider;
-
     private RSAKeyGenerator realKeyGenerator;
     
     @BeforeEach
     void setUp() {
-        // Use real RSA keys for integration testing
+        // Use real RSA keys for integration testing (avoids Java 24 Mockito/ByteBuddy issues)
         realKeyGenerator = new RSAKeyGenerator();
         realKeyGenerator.generateKeyPair();
         
-        // Inject real keys for testing
+        // Create real JWT provider instance
         jwtTokenProvider = new JwtTokenProvider();
         
         // Use reflection to set private fields for testing
@@ -69,7 +58,7 @@ class JwtTokenProviderTest {
             audienceField.set(jwtTokenProvider, "CloudSuites");
             
         } catch (Exception e) {
-            fail("Failed to setup test: " + e.getMessage());
+            fail("Failed to initialize JWT token provider: " + e.getMessage());
         }
     }
 
