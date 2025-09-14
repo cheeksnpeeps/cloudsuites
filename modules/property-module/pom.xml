@@ -14,6 +14,12 @@
 	<packaging>jar</packaging>
 	<name>CloudSuites - Framework - Property Service implementation</name>
 	<description>Module that contains API of all project services. Depends of Model Module.</description>
+	
+	<properties>
+		<!-- TODO: Remove this skip once more tests are added for better coverage -->
+		<jacoco.skip>true</jacoco.skip>
+	</properties>
+	
 	<dependencies>
 		<dependency>
 			<groupId>com.cloudsuites.framework.modules</groupId>

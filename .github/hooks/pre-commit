@@ -1,0 +1,27 @@
+#!/bin/sh
+# Pre-commit hook to prevent direct commits to main branch
+# Place this file in .git/hooks/pre-commit and make it executable
+
+# Get current branch name
+current_branch=$(git rev-parse --abbrev-ref HEAD)
+
+# Check if we're on main or master branch
+if [ "$current_branch" = "main" ] || [ "$current_branch" = "master" ]; then
+    echo "🚨 ERROR: Direct commits to main/master branch are not allowed!"
+    echo ""
+    echo "Please create a feature branch:"
+    echo "  git checkout -b feat/your-feature-name"
+    echo ""
+    echo "Or if you have changes to preserve:"
+    echo "  git stash"
+    echo "  git checkout -b feat/your-feature-name" 
+    echo "  git stash pop"
+    echo ""
+    echo "Current branch: $current_branch"
+    echo "Commit blocked for safety."
+    exit 1
+fi
+
+# Allow commit on feature branches
+echo "✅ Committing to feature branch: $current_branch"
+exit 0

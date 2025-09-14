@@ -165,6 +165,34 @@ Cloud Suites is built using **Java**, **Spring Boot**, **JavaScript**, and **Rea
 
 ---
 
+## Development Workflow
+
+### Git Branch Strategy
+
+**🚨 IMPORTANT**: All development must be done on feature branches. **Never commit directly to main branch.**
+
+- **Feature Branches**: `feat/feature-name` for new features
+- **Bug Fixes**: `fix/bug-description` for bug fixes  
+- **Documentation**: `docs/topic` for documentation updates
+
+See [Git Workflow Standards](.github/git-workflow-standards.md) for complete guidelines.
+
+#### Quick Safety Check
+```bash
+# Run this before committing to verify proper workflow
+./.github/scripts/check-branch-safety.sh
+```
+
+### Pre-commit Hook Setup (Recommended)
+```bash
+# Easy installation of all git safety tools
+./.github/scripts/install-git-safety.sh
+
+# Or manual setup:
+cp .github/hooks/pre-commit .git/hooks/
+chmod +x .git/hooks/pre-commit
+```
+
 ## Contributing and License
 
 Contributions are welcome via issues or pull requests.  
