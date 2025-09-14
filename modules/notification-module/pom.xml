@@ -14,7 +14,7 @@
     <packaging>jar</packaging>
     <name>CloudSuites - Framework - Notification Service implementation</name>
     <description>Module that contains API of all project services. Depends of Model Module.</description>
-    <dependencies>
+        <dependencies>
         <dependency>
             <groupId>com.cloudsuites.framework.modules</groupId>
             <artifactId>common-module</artifactId>
@@ -22,13 +22,18 @@
         </dependency>
         <dependency>
             <groupId>com.cloudsuites.framework.services</groupId>
-            <artifactId>parking-service</artifactId>
+            <artifactId>notification-service</artifactId>
             <version>${core.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.firebase</groupId>
             <artifactId>firebase-admin</artifactId>
             <version>9.3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>

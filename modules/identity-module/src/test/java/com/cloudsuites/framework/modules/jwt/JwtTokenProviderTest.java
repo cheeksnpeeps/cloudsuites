@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -156,7 +157,7 @@ class JwtTokenProviderTest {
     void testTokenValidation() {
         // Test token validation
         String userId = "USER-VALIDATION";
-        String token = jwtTokenProvider.generateAccessToken(userId, null);
+        String token = jwtTokenProvider.generateAccessToken(userId, Collections.emptyMap());
         
         assertTrue(jwtTokenProvider.validateToken(token));
         assertTrue(jwtTokenProvider.validateTokenWithType(token, "access"));
@@ -174,7 +175,7 @@ class JwtTokenProviderTest {
     void testTokenSecurity() {
         // Test that tokens are properly signed
         String userId = "USER-SECURITY";
-        String token = jwtTokenProvider.generateAccessToken(userId, null);
+        String token = jwtTokenProvider.generateAccessToken(userId, Collections.emptyMap());
         
         // Original token should be valid
         assertTrue(jwtTokenProvider.validateToken(token));

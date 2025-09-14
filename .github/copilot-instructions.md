@@ -1,5 +1,38 @@
 # GitHub Copilot Instructions for CloudSuites
 
+## 🚨 Git Workflow - CRITICAL REQUIREMENT
+
+**ALL DEVELOPMENT MUST BE DONE ON FEATURE BRANCHES. NEVER COMMIT DIRECTLY TO MAIN.**
+
+### Required Branch Strategy
+- **Feature Branches**: `feat/feature-name` for new features
+- **Bug Fixes**: `fix/bug-description` for bug fixes  
+- **Documentation**: `docs/topic` for documentation updates
+- **Refactoring**: `refactor/scope` for code improvements
+- **Testing**: `test/scope` for test enhancements
+
+### Before Any Commits
+```bash
+# 1. Verify you're on a feature branch (NOT main)
+git branch --show-current
+
+# 2. If on main, immediately create feature branch
+git checkout -b feat/your-feature-name
+
+# 3. Run safety check before committing
+./.github/scripts/check-branch-safety.sh
+```
+
+### Git Safety Rules
+- ✅ **Always check current branch before committing**
+- ✅ **Create descriptive branch names following conventions**
+- ✅ **Use atomic commits with clear messages**
+- ❌ **NEVER commit directly to main branch**
+- ❌ **NEVER force push to main branch**
+- ❌ **NEVER merge branches locally without PR review**
+
+See [Git Workflow Standards](.github/git-workflow-standards.md) for complete guidelines.
+
 ## Project Overview
 
 CloudSuites is a **property management platform** (Java 21 + Spring Boot 3.3.2) with a **multi-module Maven architecture**:
@@ -8,6 +41,10 @@ CloudSuites is a **property management platform** (Java 21 + Spring Boot 3.3.2) 
 - `contributions/core-webapp/` - REST controllers and web layer
 
 **Critical pattern**: Services import from modules, webapp imports from services. Never reverse this dependency flow.
+
+**Service Implementation Location**: All service implementations (classes ending in `*ServiceImpl`) belong in the `modules/` layer, NOT in the `services/` layer. The `services/` layer contains only interfaces and DTOs. This pattern ensures proper dependency separation where services define contracts and modules provide implementations.
+
+**Repository Location**: All repository interfaces (classes ending in `*Repository`) belong in the `modules/` layer, specifically in `modules/*/src/main/java/com/cloudsuites/framework/modules/*/repository/`. Repositories are data access components that should be implemented in the modules layer where the actual data access logic resides.
 
 ## 🔐 Authentication Implementation (Active Development)
 
@@ -115,6 +152,15 @@ OTHER > ALL_STAFF
 **Monitoring**: Structured logging with correlation IDs, connection pool metrics
 
 ## Common Workflows
+
+**Git workflow for any code changes**:
+1. ⚠️ **CRITICAL**: Verify you're on a feature branch with `git branch --show-current`
+2. If on main, immediately create feature branch: `git checkout -b feat/your-feature-name`
+3. Run safety check: `./.github/scripts/check-branch-safety.sh`
+4. Make your changes on the feature branch
+5. Commit with descriptive messages: `git commit -m "type: description"`
+6. Push feature branch: `git push origin feat/your-feature-name`
+7. Create Pull Request via GitHub UI
 
 **Adding new API endpoint**:
 1. Create/update entity in appropriate `modules/` 

@@ -14,5 +14,4 @@ public class FirebaseProperties {
      * @param serviceAccount the serviceAccount to set
      */
     private Resource serviceAccount;
-
 }
