@@ -21,6 +21,7 @@
 		<module>property-module</module>
 		<module>amenity-module</module>
         <module>announcements-module</module>
+		<module>auth-module</module>
 	</modules>
 </project>
 

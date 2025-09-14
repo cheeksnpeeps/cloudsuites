@@ -60,6 +60,11 @@
         </dependency>
         <dependency>
             <groupId>com.cloudsuites.framework.modules</groupId>
+            <artifactId>auth-module</artifactId>
+            <version>${core.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.cloudsuites.framework.modules</groupId>
             <artifactId>property-module</artifactId>
             <version>${core.version}</version>
         </dependency>
