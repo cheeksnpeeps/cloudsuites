@@ -185,7 +185,10 @@ See [Git Workflow Standards](.github/git-workflow-standards.md) for complete gui
 
 ### Pre-commit Hook Setup (Recommended)
 ```bash
-# Prevent accidental commits to main
+# Easy installation of all git safety tools
+./.github/scripts/install-git-safety.sh
+
+# Or manual setup:
 cp .github/hooks/pre-commit .git/hooks/
 chmod +x .git/hooks/pre-commit
 ```
