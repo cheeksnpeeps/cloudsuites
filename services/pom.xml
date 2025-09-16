@@ -21,6 +21,7 @@
 		<module>identity-service</module>
 		<module>amenity-service</module>
 		<module>announcements-service</module>
+		<module>auth-service</module>
 	</modules>
 </project>
 
