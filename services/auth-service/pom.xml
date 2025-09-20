@@ -23,6 +23,13 @@
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 		
+		<!-- Identity service for auth entities and enums -->
+		<dependency>
+			<groupId>com.cloudsuites.framework.services</groupId>
+			<artifactId>identity-service</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		
 		<!-- Validation annotations for DTOs -->
 		<dependency>
 			<groupId>jakarta.validation</groupId>
