@@ -18,7 +18,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @SpringBootApplication(scanBasePackages = "com.cloudsuites.framework")
 @ComponentScan({"com.cloudsuites.framework.modules", "com.cloudsuites.framework.services", "com.cloudsuites.framework.webapp"})
 @EnableJpaRepositories({"com.cloudsuites.framework.modules"})
-@EntityScan(basePackages = {"com.cloudsuites.framework.services"})
+@EntityScan(basePackages = {"com.cloudsuites.framework.services", "com.cloudsuites.framework.modules"})
 @EnableAsync
 public class CloudsuitesCoreApplication {
 
