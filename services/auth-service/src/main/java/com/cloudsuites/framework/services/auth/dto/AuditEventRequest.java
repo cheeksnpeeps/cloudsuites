@@ -1,9 +1,8 @@
 package com.cloudsuites.framework.services.auth.dto;
 
-import com.cloudsuites.framework.services.user.entities.AuthEventCategory;
-import com.cloudsuites.framework.services.user.entities.AuthEventType;
-import com.cloudsuites.framework.services.user.entities.AuthenticationMethod;
-import com.cloudsuites.framework.services.user.entities.RiskLevel;
+import com.cloudsuites.framework.services.auth.AuthEventCategory;
+import com.cloudsuites.framework.services.auth.AuthEventType;
+import com.cloudsuites.framework.services.auth.RiskLevel;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
@@ -21,40 +20,35 @@ public class AuditEventRequest {
     private AuthEventType eventType;
 
     @NotNull(message = "Event category is required")
-    private AuthEventCategory eventCategory;
-
-    @NotNull(message = "Event description is required")
-    @Size(max = 1000, message = "Event description must not exceed 1000 characters")
-    private String eventDescription;
+    private AuthEventCategory category;
 
     private String userId;
 
     @Size(max = 45, message = "IP address must not exceed 45 characters")
     private String ipAddress;
 
-    @Size(max = 1000, message = "User agent must not exceed 1000 characters")
+    @Size(max = 500, message = "User agent must not exceed 500 characters")
     private String userAgent;
-
-    @Size(max = 500, message = "Request path must not exceed 500 characters")
-    private String requestPath;
-
-    @Size(max = 10, message = "HTTP method must not exceed 10 characters")
-    private String httpMethod;
-
-    private AuthenticationMethod authenticationMethod;
 
     private String sessionId;
 
-    @Size(max = 500, message = "Device fingerprint must not exceed 500 characters")
-    private String deviceFingerprint;
-
-    private RiskLevel riskLevel;
-
-    private Integer riskScore;
+    @Size(max = 1000, message = "Description must not exceed 1000 characters")
+    private String description;
 
     private Boolean success;
 
+    @Size(max = 500, message = "Failure reason must not exceed 500 characters")
+    private String failureReason;
+
+    @Size(max = 100, message = "Geolocation must not exceed 100 characters")
+    private String geolocation;
+
+    @Size(max = 50, message = "Device type must not exceed 50 characters")
+    private String deviceType;
+
     private Map<String, Object> metadata;
+
+    private RiskLevel riskLevel;
 
     /**
      * Default constructor.
@@ -63,29 +57,17 @@ public class AuditEventRequest {
 
     /**
      * Constructor for basic audit event.
-     * 
-     * @param eventType the type of event
-     * @param eventCategory the category of event
-     * @param eventDescription description of the event
-     * @param userId user identifier (may be null)
-     * @param ipAddress client IP address
-     * @param userAgent client user agent
      */
-    public AuditEventRequest(AuthEventType eventType, AuthEventCategory eventCategory, 
-                            String eventDescription, String userId, String ipAddress, String userAgent) {
+    public AuditEventRequest(AuthEventType eventType, AuthEventCategory category, 
+                            String userId, String ipAddress, String description) {
         this.eventType = eventType;
-        this.eventCategory = eventCategory;
-        this.eventDescription = eventDescription;
+        this.category = category;
         this.userId = userId;
         this.ipAddress = ipAddress;
-        this.userAgent = userAgent;
-        this.riskLevel = RiskLevel.LOW;
-        this.riskScore = 0;
-        this.success = true;
+        this.description = description;
     }
 
-    // Getters and Setters
-
+    // Getters and setters
     public AuthEventType getEventType() {
         return eventType;
     }
@@ -94,20 +76,12 @@ public class AuditEventRequest {
         this.eventType = eventType;
     }
 
-    public AuthEventCategory getEventCategory() {
-        return eventCategory;
+    public AuthEventCategory getCategory() {
+        return category;
     }
 
-    public void setEventCategory(AuthEventCategory eventCategory) {
-        this.eventCategory = eventCategory;
-    }
-
-    public String getEventDescription() {
-        return eventDescription;
-    }
-
-    public void setEventDescription(String eventDescription) {
-        this.eventDescription = eventDescription;
+    public void setCategory(AuthEventCategory category) {
+        this.category = category;
     }
 
     public String getUserId() {
@@ -134,30 +108,6 @@ public class AuditEventRequest {
         this.userAgent = userAgent;
     }
 
-    public String getRequestPath() {
-        return requestPath;
-    }
-
-    public void setRequestPath(String requestPath) {
-        this.requestPath = requestPath;
-    }
-
-    public String getHttpMethod() {
-        return httpMethod;
-    }
-
-    public void setHttpMethod(String httpMethod) {
-        this.httpMethod = httpMethod;
-    }
-
-    public AuthenticationMethod getAuthenticationMethod() {
-        return authenticationMethod;
-    }
-
-    public void setAuthenticationMethod(AuthenticationMethod authenticationMethod) {
-        this.authenticationMethod = authenticationMethod;
-    }
-
     public String getSessionId() {
         return sessionId;
     }
@@ -166,28 +116,12 @@ public class AuditEventRequest {
         this.sessionId = sessionId;
     }
 
-    public String getDeviceFingerprint() {
-        return deviceFingerprint;
+    public String getDescription() {
+        return description;
     }
 
-    public void setDeviceFingerprint(String deviceFingerprint) {
-        this.deviceFingerprint = deviceFingerprint;
-    }
-
-    public RiskLevel getRiskLevel() {
-        return riskLevel;
-    }
-
-    public void setRiskLevel(RiskLevel riskLevel) {
-        this.riskLevel = riskLevel;
-    }
-
-    public Integer getRiskScore() {
-        return riskScore;
-    }
-
-    public void setRiskScore(Integer riskScore) {
-        this.riskScore = riskScore;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public Boolean getSuccess() {
@@ -198,6 +132,30 @@ public class AuditEventRequest {
         this.success = success;
     }
 
+    public String getFailureReason() {
+        return failureReason;
+    }
+
+    public void setFailureReason(String failureReason) {
+        this.failureReason = failureReason;
+    }
+
+    public String getGeolocation() {
+        return geolocation;
+    }
+
+    public void setGeolocation(String geolocation) {
+        this.geolocation = geolocation;
+    }
+
+    public String getDeviceType() {
+        return deviceType;
+    }
+
+    public void setDeviceType(String deviceType) {
+        this.deviceType = deviceType;
+    }
+
     public Map<String, Object> getMetadata() {
         return metadata;
     }
@@ -206,15 +164,22 @@ public class AuditEventRequest {
         this.metadata = metadata;
     }
 
+    public RiskLevel getRiskLevel() {
+        return riskLevel;
+    }
+
+    public void setRiskLevel(RiskLevel riskLevel) {
+        this.riskLevel = riskLevel;
+    }
+
     @Override
     public String toString() {
         return "AuditEventRequest{" +
                 "eventType=" + eventType +
-                ", eventCategory=" + eventCategory +
-                ", eventDescription='" + eventDescription + '\'' +
+                ", category=" + category +
                 ", userId='" + userId + '\'' +
                 ", ipAddress='" + ipAddress + '\'' +
-                ", riskLevel=" + riskLevel +
+                ", description='" + description + '\'' +
                 ", success=" + success +
                 '}';
     }

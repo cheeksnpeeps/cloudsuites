@@ -1,48 +1,41 @@
 package com.cloudsuites.framework.services.auth.dto;
 
-import com.cloudsuites.framework.services.user.entities.AuthEventCategory;
-import com.cloudsuites.framework.services.user.entities.AuthEventType;
-import com.cloudsuites.framework.services.user.entities.RiskLevel;
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.cloudsuites.framework.services.auth.AuthEventCategory;
+import com.cloudsuites.framework.services.auth.AuthEventType;
+import com.cloudsuites.framework.services.auth.RiskLevel;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Request DTO for querying audit events with complex filters.
+ * Request DTO for querying audit events.
  * 
  * @author CloudSuites Development Team
  * @since 1.0.0
  */
 public class AuditQueryRequest {
 
-    private List<String> userIds;
-    
+    private String userId;
     private List<AuthEventType> eventTypes;
-    
-    private List<AuthEventCategory> eventCategories;
-    
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime startDate;
-    
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime endDate;
-    
-    private List<String> ipAddresses;
-    
+    private List<AuthEventCategory> categories;
     private List<RiskLevel> riskLevels;
-    
-    private Integer minRiskScore;
-    
-    private Integer maxRiskScore;
-    
-    private Boolean success;
-    
+    private String ipAddress;
     private String sessionId;
-    
-    private String deviceFingerprint;
-    
-    private boolean includeMetadata = false;
+    private Boolean success;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
+
+    @Min(value = 0, message = "Page number must be 0 or greater")
+    private Integer page = 0;
+
+    @Min(value = 1, message = "Page size must be at least 1")
+    @Max(value = 100, message = "Page size must not exceed 100")
+    private Integer size = 20;
+
+    private String sortBy = "timestamp";
+    private String sortDirection = "DESC";
 
     /**
      * Default constructor.
@@ -50,24 +43,21 @@ public class AuditQueryRequest {
     public AuditQueryRequest() {}
 
     /**
-     * Constructor for basic filtering.
+     * Constructor with basic filters.
      */
-    public AuditQueryRequest(List<String> userIds, List<AuthEventType> eventTypes, 
-                            LocalDateTime startDate, LocalDateTime endDate) {
-        this.userIds = userIds;
-        this.eventTypes = eventTypes;
-        this.startDate = startDate;
-        this.endDate = endDate;
+    public AuditQueryRequest(String userId, LocalDateTime startTime, LocalDateTime endTime) {
+        this.userId = userId;
+        this.startTime = startTime;
+        this.endTime = endTime;
     }
 
-    // Getters and Setters
-
-    public List<String> getUserIds() {
-        return userIds;
+    // Getters and setters
+    public String getUserId() {
+        return userId;
     }
 
-    public void setUserIds(List<String> userIds) {
-        this.userIds = userIds;
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public List<AuthEventType> getEventTypes() {
@@ -78,36 +68,12 @@ public class AuditQueryRequest {
         this.eventTypes = eventTypes;
     }
 
-    public List<AuthEventCategory> getEventCategories() {
-        return eventCategories;
+    public List<AuthEventCategory> getCategories() {
+        return categories;
     }
 
-    public void setEventCategories(List<AuthEventCategory> eventCategories) {
-        this.eventCategories = eventCategories;
-    }
-
-    public LocalDateTime getStartDate() {
-        return startDate;
-    }
-
-    public void setStartDate(LocalDateTime startDate) {
-        this.startDate = startDate;
-    }
-
-    public LocalDateTime getEndDate() {
-        return endDate;
-    }
-
-    public void setEndDate(LocalDateTime endDate) {
-        this.endDate = endDate;
-    }
-
-    public List<String> getIpAddresses() {
-        return ipAddresses;
-    }
-
-    public void setIpAddresses(List<String> ipAddresses) {
-        this.ipAddresses = ipAddresses;
+    public void setCategories(List<AuthEventCategory> categories) {
+        this.categories = categories;
     }
 
     public List<RiskLevel> getRiskLevels() {
@@ -118,28 +84,12 @@ public class AuditQueryRequest {
         this.riskLevels = riskLevels;
     }
 
-    public Integer getMinRiskScore() {
-        return minRiskScore;
+    public String getIpAddress() {
+        return ipAddress;
     }
 
-    public void setMinRiskScore(Integer minRiskScore) {
-        this.minRiskScore = minRiskScore;
-    }
-
-    public Integer getMaxRiskScore() {
-        return maxRiskScore;
-    }
-
-    public void setMaxRiskScore(Integer maxRiskScore) {
-        this.maxRiskScore = maxRiskScore;
-    }
-
-    public Boolean getSuccess() {
-        return success;
-    }
-
-    public void setSuccess(Boolean success) {
-        this.success = success;
+    public void setIpAddress(String ipAddress) {
+        this.ipAddress = ipAddress;
     }
 
     public String getSessionId() {
@@ -150,31 +100,73 @@ public class AuditQueryRequest {
         this.sessionId = sessionId;
     }
 
-    public String getDeviceFingerprint() {
-        return deviceFingerprint;
+    public Boolean getSuccess() {
+        return success;
     }
 
-    public void setDeviceFingerprint(String deviceFingerprint) {
-        this.deviceFingerprint = deviceFingerprint;
+    public void setSuccess(Boolean success) {
+        this.success = success;
     }
 
-    public boolean isIncludeMetadata() {
-        return includeMetadata;
+    public LocalDateTime getStartTime() {
+        return startTime;
     }
 
-    public void setIncludeMetadata(boolean includeMetadata) {
-        this.includeMetadata = includeMetadata;
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
+    }
+
+    public Integer getPage() {
+        return page;
+    }
+
+    public void setPage(Integer page) {
+        this.page = page;
+    }
+
+    public Integer getSize() {
+        return size;
+    }
+
+    public void setSize(Integer size) {
+        this.size = size;
+    }
+
+    public String getSortBy() {
+        return sortBy;
+    }
+
+    public void setSortBy(String sortBy) {
+        this.sortBy = sortBy;
+    }
+
+    public String getSortDirection() {
+        return sortDirection;
+    }
+
+    public void setSortDirection(String sortDirection) {
+        this.sortDirection = sortDirection;
     }
 
     @Override
     public String toString() {
         return "AuditQueryRequest{" +
-                "userIds=" + userIds +
+                "userId='" + userId + '\'' +
                 ", eventTypes=" + eventTypes +
-                ", startDate=" + startDate +
-                ", endDate=" + endDate +
-                ", success=" + success +
-                ", includeMetadata=" + includeMetadata +
+                ", categories=" + categories +
+                ", riskLevels=" + riskLevels +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
+                ", page=" + page +
+                ", size=" + size +
                 '}';
     }
 }

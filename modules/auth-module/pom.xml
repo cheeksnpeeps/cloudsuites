@@ -23,10 +23,17 @@
             <version>0.0.1-SNAPSHOT</version>
 		</dependency>
 		
-		<!-- Authentication service interfaces -->
+		<!-- Identity service interfaces -->
 		<dependency>
 			<groupId>com.cloudsuites.framework.services</groupId>
 			<artifactId>identity-service</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		
+		<!-- Identity module for entities -->
+		<dependency>
+			<groupId>com.cloudsuites.framework.modules</groupId>
+			<artifactId>identity-module</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 		

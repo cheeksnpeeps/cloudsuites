@@ -1,52 +1,130 @@
-package com.cloudsuites.framework.services.auth.dto;
+package com.cloudsuites.framework.modules.auth.entity;
 
 import com.cloudsuites.framework.services.auth.AuthEventCategory;
 import com.cloudsuites.framework.services.auth.AuthEventType;
 import com.cloudsuites.framework.services.auth.RiskLevel;
-import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.time.LocalDateTime;
 import java.util.Map;
 
 /**
- * Response DTO for audit events.
+ * Entity representing an audit event for authentication and security monitoring.
+ * Stores comprehensive information about security-relevant events in the system.
  * 
  * @author CloudSuites Development Team
  * @since 1.0.0
  */
-public class AuditEventResponse {
+@Entity
+@Table(name = "auth_audit_events", indexes = {
+    @Index(name = "idx_audit_user_id", columnList = "user_id"),
+    @Index(name = "idx_audit_event_type", columnList = "event_type"),
+    @Index(name = "idx_audit_timestamp", columnList = "timestamp"),
+    @Index(name = "idx_audit_ip_address", columnList = "ip_address"),
+    @Index(name = "idx_audit_risk_level", columnList = "risk_level")
+})
+public class AuditEvent {
 
+    @Id
+    @Column(name = "event_id")
     private String eventId;
-    private String userId;
-    private AuthEventType eventType;
-    private AuthEventCategory category;
-    private RiskLevel riskLevel;
-    private String ipAddress;
-    private String userAgent;
-    private String sessionId;
-    private String description;
-    private Boolean success;
-    private String failureReason;
-    private String geolocation;
-    private String deviceType;
-    private Map<String, Object> metadata;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Column(name = "user_id")
+    private String userId;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "event_type", nullable = false)
+    private AuthEventType eventType;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "category", nullable = false)
+    private AuthEventCategory category;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "risk_level", nullable = false)
+    private RiskLevel riskLevel;
+
+    @NotNull
+    @Column(name = "timestamp", nullable = false)
     private LocalDateTime timestamp;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Size(max = 45)
+    @Column(name = "ip_address", length = 45)
+    private String ipAddress;
+
+    @Size(max = 500)
+    @Column(name = "user_agent", length = 500)
+    private String userAgent;
+
+    @Column(name = "session_id")
+    private String sessionId;
+
+    @Size(max = 1000)
+    @Column(name = "description", length = 1000)
+    private String description;
+
+    @Column(name = "success")
+    private Boolean success;
+
+    @Size(max = 500)
+    @Column(name = "failure_reason", length = 500)
+    private String failureReason;
+
+    @Size(max = 100)
+    @Column(name = "geolocation", length = 100)
+    private String geolocation;
+
+    @Size(max = 50)
+    @Column(name = "device_type", length = 50)
+    private String deviceType;
+
+    @Column(name = "metadata", columnDefinition = "jsonb")
+    private Map<String, Object> metadata;
+
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime lastModifiedAt;
-
+    @Column(name = "created_by")
     private String createdBy;
-    private String lastModifiedBy;
 
     /**
-     * Default constructor.
+     * Default constructor for JPA.
      */
-    public AuditEventResponse() {}
+    public AuditEvent() {
+        this.createdAt = LocalDateTime.now();
+    }
+
+    /**
+     * Constructor for creating audit events.
+     * 
+     * @param eventId unique event identifier
+     * @param userId user identifier (may be null)
+     * @param eventType type of authentication event
+     * @param category event category
+     * @param riskLevel risk level assessment
+     * @param ipAddress client IP address
+     * @param userAgent client user agent
+     * @param description event description
+     */
+    public AuditEvent(String eventId, String userId, AuthEventType eventType, 
+                     AuthEventCategory category, RiskLevel riskLevel,
+                     String ipAddress, String userAgent, String description) {
+        this();
+        this.eventId = eventId;
+        this.userId = userId;
+        this.eventType = eventType;
+        this.category = category;
+        this.riskLevel = riskLevel;
+        this.timestamp = LocalDateTime.now();
+        this.ipAddress = ipAddress;
+        this.userAgent = userAgent;
+        this.description = description;
+    }
 
     // Getters and setters
     public String getEventId() {
@@ -87,6 +165,14 @@ public class AuditEventResponse {
 
     public void setRiskLevel(RiskLevel riskLevel) {
         this.riskLevel = riskLevel;
+    }
+
+    public LocalDateTime getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(LocalDateTime timestamp) {
+        this.timestamp = timestamp;
     }
 
     public String getIpAddress() {
@@ -161,28 +247,12 @@ public class AuditEventResponse {
         this.metadata = metadata;
     }
 
-    public LocalDateTime getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(LocalDateTime timestamp) {
-        this.timestamp = timestamp;
-    }
-
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getLastModifiedAt() {
-        return lastModifiedAt;
-    }
-
-    public void setLastModifiedAt(LocalDateTime lastModifiedAt) {
-        this.lastModifiedAt = lastModifiedAt;
     }
 
     public String getCreatedBy() {
@@ -193,26 +263,17 @@ public class AuditEventResponse {
         this.createdBy = createdBy;
     }
 
-    public String getLastModifiedBy() {
-        return lastModifiedBy;
-    }
-
-    public void setLastModifiedBy(String lastModifiedBy) {
-        this.lastModifiedBy = lastModifiedBy;
-    }
-
     @Override
     public String toString() {
-        return "AuditEventResponse{" +
+        return "AuditEvent{" +
                 "eventId='" + eventId + '\'' +
                 ", userId='" + userId + '\'' +
                 ", eventType=" + eventType +
                 ", category=" + category +
                 ", riskLevel=" + riskLevel +
-                ", ipAddress='" + ipAddress + '\'' +
-                ", description='" + description + '\'' +
-                ", success=" + success +
                 ", timestamp=" + timestamp +
+                ", ipAddress='" + ipAddress + '\'' +
+                ", success=" + success +
                 '}';
     }
 }
