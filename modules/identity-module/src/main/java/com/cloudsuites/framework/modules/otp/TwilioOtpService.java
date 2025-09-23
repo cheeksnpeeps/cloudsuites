@@ -43,8 +43,9 @@ public class TwilioOtpService implements OtpService {
 
     public boolean verifyOtp(String twilioPhoneNumber, String otpCode) {
         try {
-            VerificationCheck verificationCheck = VerificationCheck.creator(serviceSid, otpCode)
+            VerificationCheck verificationCheck = VerificationCheck.creator(serviceSid)
                     .setTo(twilioPhoneNumber)
+                    .setCode(otpCode)
                     .create();
             boolean isApproved = verificationCheck.getStatus().equals("approved");
             logger.info("OTP verification for {}: {} {}", twilioPhoneNumber, isApproved ? "approved" : "denied");
