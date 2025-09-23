@@ -21,6 +21,11 @@
             <version>0.0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
+			<groupId>com.cloudsuites.framework.services</groupId>
+			<artifactId>identity-service</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-api</artifactId>
 			<version>0.12.6</version>
@@ -36,6 +41,12 @@
 			<artifactId>jjwt-jackson</artifactId> <!-- or jjwt-gson if Gson is preferred -->
 			<version>0.12.6</version>
 			<scope>runtime</scope>
+		</dependency>
+		<!-- Twilio SDK for SMS/OTP functionality -->
+		<dependency>
+			<groupId>com.twilio.sdk</groupId>
+			<artifactId>twilio</artifactId>
+			<version>10.5.1</version>
 		</dependency>
 	</dependencies>
 </project>

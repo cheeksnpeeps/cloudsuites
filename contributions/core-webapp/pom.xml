@@ -130,6 +130,8 @@
                 <workingDirectory>../property-management-web</workingDirectory>
                 <skip>${frontend.skip}</skip>
                 <environmentVariables>
+                <!-- Force JS impl; bypasses flaky native pkg -->
+                <ROLLUP_SKIP_NODEJS_NATIVE>1</ROLLUP_SKIP_NODEJS_NATIVE>
                 <!-- force public npm when building off VPN -->
                 <npm_config_registry>https://registry.npmjs.org/</npm_config_registry>
                 <npm_config_fund>false</npm_config_fund>
@@ -147,7 +149,7 @@
                 <phase>generate-resources</phase>
                 <goals><goal>npm</goal></goals>
                 <configuration>
-                    <arguments>ci --no-fund --no-audit --prefer-offline --no-optional</arguments>
+                    <arguments>install --no-fund --no-audit --prefer-offline</arguments>
                 </configuration>
                 </execution>
                 <execution>

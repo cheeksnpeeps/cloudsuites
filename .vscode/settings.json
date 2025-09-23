@@ -10,5 +10,6 @@
         "**/.classpath": true,
         "**/.project": true,
         "**/.factorypath": true
-    }
+    },
+    "java.debug.settings.onBuildFailureProceed": true
 }

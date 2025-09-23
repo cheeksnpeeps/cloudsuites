@@ -64,8 +64,11 @@
       },
       "scripts": {
             "dev": "vite",
-            "build": "vite build --mode production",
+            "build": "ROLLUP_SKIP_NODEJS_NATIVE=1 vite build --mode production",
             "preview": "vite preview",
             "install-or-ci": "npm ci --no-fund --no-audit --prefer-offline --no-optional"
+      },
+      "optionalDependencies": {
+            "@rollup/rollup-darwin-arm64": "^4.52.0"
       }
 }
