@@ -464,9 +464,39 @@ public class AmenityController {
 ## Development Environment
 
 **Docker-first development** - use `docker-compose up --build` for all development. The application requires:
-- PostgreSQL 17 on port 59665
+- **PostgreSQL 17** on port 59665 (primary database)
+- **Redis 7** on port 6379 (rate limiting, caching, sessions)
 - Environment variables loaded from `.env` file
 - Flyway migrations run automatically on startup
+
+### Redis Integration
+**Rate Limiting Service** - Redis-backed with in-memory fallback:
+- **Service Location**: `RedisRateLimitServiceImpl` in `modules/auth-module`
+- **Configuration**: See `cloudsuites.rate-limiting` in `application.yml`
+- **Docker Service**: `redis` container with password authentication
+- **Health Check**: Redis connection validated on startup
+- **Fallback**: Graceful degradation to in-memory when Redis unavailable
+
+### Redis Configuration
+```yaml
+spring.data.redis:
+  host: redis          # Docker service name
+  port: 6379          # Standard Redis port
+  database: 1         # Separate DB for rate limiting
+  password: csRedisPass123
+```
+
+### Environment Variables (`.env`)
+```bash
+# Redis Connection
+REDIS_HOST=redis
+REDIS_PASSWORD=csRedisPass123
+
+# Rate Limiting
+RATE_LIMITING_ENABLED=true
+RATE_LIMITING_REDIS_ENABLED=true
+RATE_LIMIT_LOGIN_ATTEMPTS=5
+```
 
 **Maven Configuration**: Always use the project's custom settings file in Maven commands:
 ```bash
@@ -584,6 +614,23 @@ OTHER > ALL_STAFF
 **Application won't start**: Check Docker logs and database connectivity
 **Database issues**: Reset with `docker-compose down -v && docker-compose up --build`
 **Configuration problems**: Verify all environment variables in `.env`
+
+### Redis-Specific Issues
+**Redis Connection Failed**: 
+- Check Redis container: `docker-compose logs redis`
+- Verify password: `REDIS_PASSWORD=csRedisPass123`
+- Test connection: `docker exec -it cloudsuites-redis redis-cli -a csRedisPass123 ping`
+
+**Rate Limiting Not Working**:
+- Check `RATE_LIMITING_ENABLED=true` in `.env`
+- Verify Redis service health: `docker-compose ps redis`
+- Monitor logs: `docker-compose logs cloudsuites-app | grep -i redis`
+- Fallback active: Look for "using in-memory fallback" in logs
+
+**Performance Issues**:
+- Monitor Redis memory: `docker exec cloudsuites-redis redis-cli -a csRedisPass123 INFO memory`
+- Check connection pool: Adjust `REDIS_POOL_MAX_ACTIVE` if needed
+- Review rate limit windows: Shorter windows = better performance
 
 ## Testing & API Validation
 
