@@ -92,6 +92,21 @@ spring:
     resources:
       static-locations: classpath:/static/
 
+  # Redis Configuration (for rate limiting and caching)
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      database: ${REDIS_DATABASE:1}  # Use database 1 for rate limiting
+      timeout: ${REDIS_TIMEOUT:2000ms}
+      lettuce:
+        pool:
+          max-active: ${REDIS_POOL_MAX_ACTIVE:8}
+          max-idle: ${REDIS_POOL_MAX_IDLE:8}
+          min-idle: ${REDIS_POOL_MIN_IDLE:0}
+          max-wait: ${REDIS_POOL_MAX_WAIT:-1ms}
+      password: ${REDIS_PASSWORD:}
+
 # =================================================================
 # EXTERNAL INTEGRATIONS
 # =================================================================
@@ -183,3 +198,52 @@ cloudsuites:
   storage:
     upload-path: ${UPLOAD_PATH}
     max-file-size: ${MAX_FILE_SIZE}
+  
+  # Rate Limiting Configuration
+  rate-limiting:
+    enabled: ${RATE_LIMITING_ENABLED:true}
+    redis-enabled: ${RATE_LIMITING_REDIS_ENABLED:true}
+    
+    # Default configurations for common operations
+    configurations:
+      login:
+        limit: ${RATE_LIMIT_LOGIN_ATTEMPTS:5}
+        window-minutes: ${RATE_LIMIT_LOGIN_WINDOW_MINUTES:15}
+        enable-lockout: ${RATE_LIMIT_LOGIN_ENABLE_LOCKOUT:true}
+        lockout-threshold: ${RATE_LIMIT_LOGIN_LOCKOUT_THRESHOLD:5}
+      
+      otp_send:
+        limit: ${RATE_LIMIT_OTP_SEND_ATTEMPTS:3}
+        window-minutes: ${RATE_LIMIT_OTP_SEND_WINDOW_MINUTES:5}
+        enable-lockout: ${RATE_LIMIT_OTP_SEND_ENABLE_LOCKOUT:false}
+        lockout-threshold: ${RATE_LIMIT_OTP_SEND_LOCKOUT_THRESHOLD:10}
+      
+      otp_verify:
+        limit: ${RATE_LIMIT_OTP_VERIFY_ATTEMPTS:5}
+        window-minutes: ${RATE_LIMIT_OTP_VERIFY_WINDOW_MINUTES:5}
+        enable-lockout: ${RATE_LIMIT_OTP_VERIFY_ENABLE_LOCKOUT:true}
+        lockout-threshold: ${RATE_LIMIT_OTP_VERIFY_LOCKOUT_THRESHOLD:5}
+      
+      password_reset:
+        limit: ${RATE_LIMIT_PASSWORD_RESET_ATTEMPTS:3}
+        window-minutes: ${RATE_LIMIT_PASSWORD_RESET_WINDOW_MINUTES:60}
+        enable-lockout: ${RATE_LIMIT_PASSWORD_RESET_ENABLE_LOCKOUT:false}
+        lockout-threshold: ${RATE_LIMIT_PASSWORD_RESET_LOCKOUT_THRESHOLD:5}
+      
+      registration:
+        limit: ${RATE_LIMIT_REGISTRATION_ATTEMPTS:3}
+        window-minutes: ${RATE_LIMIT_REGISTRATION_WINDOW_MINUTES:60}
+        enable-lockout: ${RATE_LIMIT_REGISTRATION_ENABLE_LOCKOUT:true}
+        lockout-threshold: ${RATE_LIMIT_REGISTRATION_LOCKOUT_THRESHOLD:3}
+    
+    # Lockout configuration
+    lockout:
+      # Exponential backoff durations in minutes
+      base-duration-minutes: ${RATE_LIMIT_LOCKOUT_BASE_DURATION_MINUTES:1}
+      max-duration-minutes: ${RATE_LIMIT_LOCKOUT_MAX_DURATION_MINUTES:1440}  # 24 hours
+      multiplier: ${RATE_LIMIT_LOCKOUT_MULTIPLIER:5}
+      
+    # Fallback configuration when Redis is unavailable
+    in-memory:
+      max-entries: ${RATE_LIMIT_IN_MEMORY_MAX_ENTRIES:10000}
+      cleanup-interval-minutes: ${RATE_LIMIT_IN_MEMORY_CLEANUP_INTERVAL_MINUTES:5}
