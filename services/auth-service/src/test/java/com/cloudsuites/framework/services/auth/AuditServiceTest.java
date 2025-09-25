@@ -60,10 +60,11 @@ class AuditServiceTest {
 
         // Then
         assertThat(response).isNotNull();
-        assertThat(response.getEventId()).isNotNull();
-        assertThat(response.getEventType()).isEqualTo(AuthEventType.LOGIN_SUCCESS);
-        assertThat(response.getCategory()).isEqualTo(AuthEventCategory.AUTHENTICATION);
-        assertThat(response.getSuccess()).isTrue();
+        assertThat(response.getAuditEvent()).isNotNull();
+        assertThat(response.getAuditEvent().getEventId()).isNotNull();
+        assertThat(response.getAuditEvent().getEventType()).isEqualTo(AuthEventType.LOGIN_SUCCESS);
+        assertThat(response.getAuditEvent().getCategory()).isEqualTo(AuthEventCategory.AUTHENTICATION);
+        assertThat(response.isSuccess()).isTrue();
     }
 
     @Test
@@ -76,8 +77,8 @@ class AuditServiceTest {
 
         // Then
         assertThat(response).isNotNull();
-        assertThat(response.getEventType()).isEqualTo(AuthEventType.LOGIN_SUCCESS);
-        assertThat(response.getSuccess()).isTrue();
+        assertThat(response.getAuditEvent().getEventType()).isEqualTo(AuthEventType.LOGIN_SUCCESS);
+        assertThat(response.isSuccess()).isTrue();
     }
 
     @Test
@@ -90,9 +91,9 @@ class AuditServiceTest {
 
         // Then
         assertThat(response).isNotNull();
-        assertThat(response.getEventType()).isEqualTo(AuthEventType.LOGIN_FAILURE);
-        assertThat(response.getSuccess()).isFalse();
-        assertThat(response.getFailureReason()).isEqualTo("Invalid credentials");
+        assertThat(response.getAuditEvent().getEventType()).isEqualTo(AuthEventType.LOGIN_FAILURE);
+        assertThat(response.isSuccess()).isFalse();
+        assertThat(response.getAuditEvent().getFailureReason()).isEqualTo("Invalid credentials");
     }
 
     @Test
@@ -105,7 +106,7 @@ class AuditServiceTest {
 
         // Then
         assertThat(response).isNotNull();
-        assertThat(response.getEventType()).isEqualTo(AuthEventType.PASSWORD_CHANGE);
+        assertThat(response.getAuditEvent().getEventType()).isEqualTo(AuthEventType.PASSWORD_CHANGE);
     }
 
     @Test
@@ -118,8 +119,8 @@ class AuditServiceTest {
 
         // Then
         assertThat(response).isNotNull();
-        assertThat(response.getEventType()).isEqualTo(AuthEventType.OTP_VERIFY_SUCCESS);
-        assertThat(response.getSuccess()).isTrue();
+        assertThat(response.getAuditEvent().getEventType()).isEqualTo(AuthEventType.OTP_VERIFY_SUCCESS);
+        assertThat(response.isSuccess()).isTrue();
     }
 
     @Test
@@ -139,8 +140,8 @@ class AuditServiceTest {
 
         // Then
         assertThat(response).isNotNull();
-        assertThat(response.getEventType()).isEqualTo(AuthEventType.SUSPICIOUS_ACTIVITY);
-        assertThat(response.getRiskLevel()).isIn(RiskLevel.HIGH, RiskLevel.CRITICAL);
+        assertThat(response.getAuditEvent().getEventType()).isEqualTo(AuthEventType.SUSPICIOUS_ACTIVITY);
+        assertThat(response.getAuditEvent().getRiskLevel()).isIn(RiskLevel.HIGH, RiskLevel.CRITICAL);
     }
 
     @Test
@@ -153,7 +154,7 @@ class AuditServiceTest {
 
         // Then
         assertThat(response).isNotNull();
-        assertThat(response.getEventType()).isEqualTo(AuthEventType.SESSION_EXPIRED);
+        assertThat(response.getAuditEvent().getEventType()).isEqualTo(AuthEventType.SESSION_EXPIRED);
     }
 
     @Test
@@ -181,10 +182,9 @@ class AuditServiceTest {
         // Given
         AuditQueryRequest request = new AuditQueryRequest();
         request.setUserId(testUserId.toString());
-        request.setEventTypes(List.of(AuthEventType.LOGIN_FAILURE));
-        request.setSuccess(false);
-        request.setStartTime(LocalDateTime.now().minusDays(1));
-        request.setEndTime(LocalDateTime.now());
+        request.setEventType(AuthEventType.LOGIN_FAILURE);
+        request.setStartDate(LocalDateTime.now().minusDays(1));
+        request.setEndDate(LocalDateTime.now());
         Pageable pageable = PageRequest.of(0, 20);
 
         // When
@@ -218,95 +218,132 @@ class AuditServiceTest {
         
         @Override
         public AuditEventResponse logAuthEvent(AuditEventRequest request) {
-            AuditEventResponse response = new AuditEventResponse();
-            response.setEventId(UUID.randomUUID().toString());
-            response.setEventType(request.getEventType());
-            response.setCategory(request.getCategory());
-            response.setUserId(request.getUserId());
-            response.setIpAddress(request.getIpAddress());
-            response.setUserAgent(request.getUserAgent());
-            response.setSessionId(request.getSessionId());
-            response.setDescription(request.getDescription());
-            response.setSuccess(request.getSuccess());
-            response.setFailureReason(request.getFailureReason());
-            response.setGeolocation(request.getGeolocation());
-            response.setDeviceType(request.getDeviceType());
-            response.setMetadata(request.getMetadata());
-            response.setRiskLevel(request.getRiskLevel() != null ? request.getRiskLevel() : RiskLevel.LOW);
-            response.setTimestamp(LocalDateTime.now());
-            response.setCreatedAt(LocalDateTime.now());
-            response.setLastModifiedAt(LocalDateTime.now());
-            response.setCreatedBy("SYSTEM");
-            response.setLastModifiedBy("SYSTEM");
-            return response;
+            AuditEvent auditEvent = new AuditEvent();
+            auditEvent.setEventId(UUID.randomUUID().toString());
+            auditEvent.setEventType(request.getEventType());
+            auditEvent.setCategory(request.getCategory());
+            auditEvent.setUserId(request.getUserId());
+            auditEvent.setIpAddress(request.getIpAddress());
+            auditEvent.setUserAgent(request.getUserAgent());
+            auditEvent.setSessionId(request.getSessionId());
+            auditEvent.setDescription(request.getDetails());
+            auditEvent.setSuccess(true); // Default success, override in specific methods
+            auditEvent.setGeolocation(request.getLocation());
+            auditEvent.setDeviceType("WEB"); // Default device type
+            auditEvent.setMetadata(request.getMetadata());
+            auditEvent.setRiskLevel(request.getRiskLevel() != null ? request.getRiskLevel() : RiskLevel.LOW);
+            auditEvent.setTimestamp(LocalDateTime.now());
+            auditEvent.setCreatedAt(LocalDateTime.now());
+            auditEvent.setCreatedBy("SYSTEM");
+            
+            return AuditEventResponse.success(auditEvent);
         }
 
         @Override
         public AuditEventResponse logSuccessfulLogin(String userId, String ipAddress, String userAgent, String sessionId) {
             AuditEventRequest request = new AuditEventRequest(
-                AuthEventType.LOGIN_SUCCESS, AuthEventCategory.AUTHENTICATION, userId, ipAddress, "Login successful"
+                AuthEventType.LOGIN_SUCCESS, AuthEventCategory.AUTHENTICATION, RiskLevel.LOW
             );
+            request.setUserId(userId);
+            request.setIpAddress(ipAddress);
             request.setUserAgent(userAgent);
             request.setSessionId(sessionId);
-            request.setSuccess(true);
+            request.setDetails("Login successful");
             return logAuthEvent(request);
         }
 
         @Override
         public AuditEventResponse logFailedLogin(String userId, String ipAddress, String userAgent, String reason) {
-            AuditEventRequest request = new AuditEventRequest(
-                AuthEventType.LOGIN_FAILURE, AuthEventCategory.AUTHENTICATION, userId, ipAddress, "Login failed"
-            );
-            request.setUserAgent(userAgent);
-            request.setSuccess(false);
-            request.setFailureReason(reason);
-            return logAuthEvent(request);
+            // Create audit event directly with failure info
+            AuditEvent auditEvent = new AuditEvent();
+            auditEvent.setEventId(UUID.randomUUID().toString());
+            auditEvent.setEventType(AuthEventType.LOGIN_FAILURE);
+            auditEvent.setCategory(AuthEventCategory.AUTHENTICATION);
+            auditEvent.setUserId(userId);
+            auditEvent.setIpAddress(ipAddress);
+            auditEvent.setUserAgent(userAgent);
+            auditEvent.setDescription("Login failed");
+            auditEvent.setSuccess(false);
+            auditEvent.setFailureReason(reason);
+            auditEvent.setRiskLevel(RiskLevel.MEDIUM);
+            auditEvent.setTimestamp(LocalDateTime.now());
+            auditEvent.setCreatedAt(LocalDateTime.now());
+            auditEvent.setCreatedBy("SYSTEM");
+            
+            // For failed operations, return a response that reflects the operation failure
+            return new AuditEventResponse(auditEvent, false);
         }
 
         @Override
         public AuditEventResponse logPasswordChange(String userId, String ipAddress, String userAgent, String sessionId) {
             AuditEventRequest request = new AuditEventRequest(
-                AuthEventType.PASSWORD_CHANGE, AuthEventCategory.AUTHENTICATION, userId, ipAddress, "Password changed"
+                AuthEventType.PASSWORD_CHANGE, AuthEventCategory.AUTHENTICATION, RiskLevel.LOW
             );
+            request.setUserId(userId);
+            request.setIpAddress(ipAddress);
             request.setUserAgent(userAgent);
             request.setSessionId(sessionId);
-            request.setSuccess(true);
+            request.setDetails("Password changed");
             return logAuthEvent(request);
         }
 
         @Override
         public AuditEventResponse logOtpVerification(String userId, String ipAddress, String userAgent, boolean success, String channel) {
             AuthEventType eventType = success ? AuthEventType.OTP_VERIFY_SUCCESS : AuthEventType.OTP_VERIFY_FAILURE;
-            AuditEventRequest request = new AuditEventRequest(
-                eventType, AuthEventCategory.AUTHENTICATION, userId, ipAddress, 
-                success ? "OTP verification successful" : "OTP verification failed"
-            );
-            request.setUserAgent(userAgent);
-            request.setSuccess(success);
-            request.setMetadata(Map.of("channel", channel));
-            return logAuthEvent(request);
+            AuditEvent auditEvent = new AuditEvent();
+            auditEvent.setEventId(UUID.randomUUID().toString());
+            auditEvent.setEventType(eventType);
+            auditEvent.setCategory(AuthEventCategory.AUTHENTICATION);
+            auditEvent.setUserId(userId);
+            auditEvent.setIpAddress(ipAddress);
+            auditEvent.setUserAgent(userAgent);
+            auditEvent.setDescription(success ? "OTP verification successful" : "OTP verification failed");
+            auditEvent.setSuccess(success);
+            auditEvent.setMetadata(Map.of("channel", channel));
+            auditEvent.setRiskLevel(RiskLevel.LOW);
+            auditEvent.setTimestamp(LocalDateTime.now());
+            auditEvent.setCreatedAt(LocalDateTime.now());
+            auditEvent.setCreatedBy("SYSTEM");
+            
+            return AuditEventResponse.success(auditEvent);
         }
 
         @Override
         public AuditEventResponse logSuspiciousActivity(String userId, String ipAddress, String userAgent, String description, Map<String, Object> metadata) {
-            AuditEventRequest request = new AuditEventRequest(
-                AuthEventType.SUSPICIOUS_ACTIVITY, AuthEventCategory.SECURITY, userId, ipAddress, description
-            );
-            request.setUserAgent(userAgent);
-            request.setSuccess(false);
-            request.setMetadata(metadata);
-            request.setRiskLevel(RiskLevel.HIGH);
-            return logAuthEvent(request);
+            AuditEvent auditEvent = new AuditEvent();
+            auditEvent.setEventId(UUID.randomUUID().toString());
+            auditEvent.setEventType(AuthEventType.SUSPICIOUS_ACTIVITY);
+            auditEvent.setCategory(AuthEventCategory.SECURITY);
+            auditEvent.setUserId(userId);
+            auditEvent.setIpAddress(ipAddress);
+            auditEvent.setUserAgent(userAgent);
+            auditEvent.setDescription(description);
+            auditEvent.setSuccess(false);
+            auditEvent.setMetadata(metadata);
+            auditEvent.setRiskLevel(RiskLevel.HIGH);
+            auditEvent.setTimestamp(LocalDateTime.now());
+            auditEvent.setCreatedAt(LocalDateTime.now());
+            auditEvent.setCreatedBy("SYSTEM");
+            
+            return AuditEventResponse.success(auditEvent);
         }
 
         @Override
         public AuditEventResponse logSessionExpiration(String userId, String sessionId, String reason) {
-            AuditEventRequest request = new AuditEventRequest(
-                AuthEventType.SESSION_EXPIRED, AuthEventCategory.SESSION_MANAGEMENT, userId, null, "Session expired"
-            );
-            request.setSessionId(sessionId);
-            request.setFailureReason(reason);
-            return logAuthEvent(request);
+            AuditEvent auditEvent = new AuditEvent();
+            auditEvent.setEventId(UUID.randomUUID().toString());
+            auditEvent.setEventType(AuthEventType.SESSION_EXPIRED);
+            auditEvent.setCategory(AuthEventCategory.SESSION_MANAGEMENT);
+            auditEvent.setUserId(userId);
+            auditEvent.setSessionId(sessionId);
+            auditEvent.setDescription("Session expired");
+            auditEvent.setFailureReason(reason);
+            auditEvent.setRiskLevel(RiskLevel.LOW);
+            auditEvent.setTimestamp(LocalDateTime.now());
+            auditEvent.setCreatedAt(LocalDateTime.now());
+            auditEvent.setCreatedBy("SYSTEM");
+            
+            return AuditEventResponse.success(auditEvent);
         }
 
         @Override
