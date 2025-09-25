@@ -247,3 +247,24 @@ cloudsuites:
     in-memory:
       max-entries: ${RATE_LIMIT_IN_MEMORY_MAX_ENTRIES:10000}
       cleanup-interval-minutes: ${RATE_LIMIT_IN_MEMORY_CLEANUP_INTERVAL_MINUTES:5}
+  
+  # Device Trust Configuration
+  device-trust:
+    enabled: ${DEVICE_TRUST_ENABLED:true}
+    default-expiration-days: ${DEVICE_TRUST_DEFAULT_EXPIRATION_DAYS:30}
+    max-devices-per-user: ${DEVICE_TRUST_MAX_DEVICES_PER_USER:10}
+    fingerprint-algorithm: ${DEVICE_TRUST_FINGERPRINT_ALGORITHM:SHA-256}
+    trusted-token-duration-minutes: ${DEVICE_TRUST_TOKEN_DURATION_MINUTES:43200}  # 30 days
+    risk-threshold: ${DEVICE_TRUST_RISK_THRESHOLD:70}
+    
+    # Cleanup configuration
+    cleanup:
+      enabled: ${DEVICE_TRUST_CLEANUP_ENABLED:true}
+      interval-hours: ${DEVICE_TRUST_CLEANUP_INTERVAL_HOURS:24}
+      inactive-threshold-days: ${DEVICE_TRUST_INACTIVE_THRESHOLD_DAYS:90}
+      
+    # Security settings
+    security:
+      require-mfa-for-high-risk: ${DEVICE_TRUST_REQUIRE_MFA_HIGH_RISK:true}
+      block-critical-risk: ${DEVICE_TRUST_BLOCK_CRITICAL_RISK:true}
+      track-ip-changes: ${DEVICE_TRUST_TRACK_IP_CHANGES:true}
