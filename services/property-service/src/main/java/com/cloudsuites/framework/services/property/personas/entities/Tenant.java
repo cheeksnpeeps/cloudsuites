@@ -57,7 +57,7 @@ public class Tenant {
 
     public UserRole getUserRole() {
         UserRole userRole = new UserRole();
-        userRole.setIdentityId(this.getIdentity().getUserId());
+        userRole.setUserId(this.getIdentity().getUserId());
         userRole.setPersonaId(this.tenantId);
         userRole.setUserType(UserType.TENANT);
         userRole.setRole(Objects.requireNonNullElse(role, TenantRole.DEFAULT).name());
