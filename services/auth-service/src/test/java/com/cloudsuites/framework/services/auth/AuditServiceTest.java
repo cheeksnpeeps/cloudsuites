@@ -1,8 +1,7 @@
 package com.cloudsuites.framework.services.auth;
 
-import com.cloudsuites.framework.services.auth.dto.AuditEventRequest;
-import com.cloudsuites.framework.services.auth.dto.AuditEventResponse;
-import com.cloudsuites.framework.services.auth.dto.AuditQueryRequest;
+import com.cloudsuites.framework.services.auth.entities.*;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -48,17 +47,14 @@ class AuditServiceTest {
     @DisplayName("Should log authentication events")
     void shouldLogAuthenticationEvents() {
         // Given
-        AuditEventRequest request = new AuditEventRequest(
-            AuthEventType.LOGIN_SUCCESS, 
-            AuthEventCategory.AUTHENTICATION, 
-            testUserId.toString(), 
-            testIpAddress, 
-            "User login successful"
-        );
+        AuditEventRequest request = new AuditEventRequest();
+        request.setEventType(AuthEventType.LOGIN_SUCCESS);
+        request.setCategory(AuthEventCategory.AUTHENTICATION);
+        request.setUserId(testUserId.toString());
+        request.setIpAddress(testIpAddress);
+        request.setDetails("User login successful");
         request.setUserAgent(testUserAgent);
         request.setSessionId(testSessionId.toString());
-        request.setSuccess(true);
-
         // When
         AuditEventResponse response = auditService.logAuthEvent(request);
 

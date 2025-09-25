@@ -39,7 +39,7 @@ public interface TokenRotationService {
      * @param userAgent Current user agent for session tracking
      * @return New token pair with updated refresh token
      */
-    TokenPairResponse rotateTokens(String refreshToken, String ipAddress, String userAgent);
+    TokenPairResponse rotateTokens(String refreshToken, String clientId, DeviceType deviceType, boolean isTrustedDevice);
 
     /**
      * Validates a refresh token and returns user session information.

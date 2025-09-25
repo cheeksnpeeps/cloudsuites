@@ -320,7 +320,7 @@ void testRefreshTokenLifecycle_CreateRotateValidateRevoke() {
                 .ipAddress(TEST_IP_ADDRESS)
                 .location(TEST_LOCATION)
                 .isTrustedDevice(false)
-                .isActive(true)
+                .active(true)
                 .expiresAt(LocalDateTime.now().plusDays(30))
                 .lastActivityAt(LocalDateTime.now())
                 .createdAt(LocalDateTime.now())
