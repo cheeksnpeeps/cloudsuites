@@ -1,0 +1,8 @@
+# JVM options for CloudSuites project
+# Force Java 21 compatibility and settings
+-Djava.version=21
+-Dmaven.compiler.source=21
+-Dmaven.compiler.target=21
+-Dmaven.compiler.release=21
+-Dfile.encoding=UTF-8
+-XX:+EnableDynamicAgentLoading
