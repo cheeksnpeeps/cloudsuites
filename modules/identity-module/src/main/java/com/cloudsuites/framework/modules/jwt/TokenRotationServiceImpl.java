@@ -79,7 +79,7 @@ public class TokenRotationServiceImpl implements TokenRotationService {
     }
 
     @Override
-    public TokenPairResponse rotateTokens(String refreshToken, String ipAddress, String userAgent) {
+    public TokenPairResponse rotateTokens(String refreshToken, String clientId, DeviceType deviceType, boolean isTrustedDevice) {
         log.debug("Rotating tokens for refresh token");
         
         // Validate refresh token first
@@ -104,11 +104,11 @@ public class TokenRotationServiceImpl implements TokenRotationService {
             newAccessTokenJti
         );
         
-        // Update session activity with current IP and user agent
+        // Update session activity with existing session data
         refreshTokenService.updateSessionActivity(
             updatedSession.getSessionId(), 
-            ipAddress, 
-            userAgent, 
+            session.getIpAddress(), 
+            session.getUserAgent(), 
             session.getLocation()
         );
         

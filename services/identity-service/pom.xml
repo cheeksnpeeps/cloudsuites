@@ -27,6 +27,7 @@
             <version>0.0.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
+
         <!-- Lombok for annotation processing -->
         <dependency>
             <groupId>org.projectlombok</groupId>

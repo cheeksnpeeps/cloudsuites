@@ -1,14 +1,14 @@
 package com.cloudsuites.framework.modules.auth.service.impl;
 
-import com.cloudsuites.framework.modules.auth.entity.AuditEvent;
+import com.cloudsuites.framework.services.auth.entities.AuditEvent;
 import com.cloudsuites.framework.modules.auth.repository.AuthAuditEventRepository;
 import com.cloudsuites.framework.services.auth.AuditService;
 import com.cloudsuites.framework.services.auth.AuthEventCategory;
 import com.cloudsuites.framework.services.auth.AuthEventType;
 import com.cloudsuites.framework.services.auth.RiskLevel;
-import com.cloudsuites.framework.services.auth.dto.AuditEventRequest;
-import com.cloudsuites.framework.services.auth.dto.AuditEventResponse;
-import com.cloudsuites.framework.services.auth.dto.AuditQueryRequest;
+import com.cloudsuites.framework.services.auth.entities.AuditEventRequest;
+import com.cloudsuites.framework.services.auth.entities.AuditEventResponse;
+import com.cloudsuites.framework.services.auth.entities.AuditQueryRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;

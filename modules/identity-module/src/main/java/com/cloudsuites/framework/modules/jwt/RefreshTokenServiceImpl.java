@@ -83,7 +83,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
                 .ipAddress(ipAddress)
                 .location(location)
                 .isTrustedDevice(isTrusted)
-                .isActive(true)
+                .active(true)
                 .expiresAt(expiresAt)
                 .lastActivityAt(LocalDateTime.now())
                 .createdBy(userId)

@@ -1,7 +1,7 @@
 package com.cloudsuites.framework.services.auth;
 
-import com.cloudsuites.framework.services.auth.dto.PasswordChangeRequest;
-import com.cloudsuites.framework.services.auth.dto.PasswordResetRequest;
+import com.cloudsuites.framework.services.auth.entities.PasswordChangeRequest;
+import com.cloudsuites.framework.services.auth.entities.PasswordResetRequest;
 
 /**
  * Service interface for password management operations.

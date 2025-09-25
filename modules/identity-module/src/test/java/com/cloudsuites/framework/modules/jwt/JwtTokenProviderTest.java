@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Enhanced JWT Token Provider Tests.
  * Validates RSA-256 token generation, custom claims, and comprehensive validation.
  * 
- * Note: Uses real RSA keys for integration testing to avoid Java 24 Mockito/ByteBuddy issues.
+ * Note: Uses real RSA keys for integration testing to ensure compatibility.
  */
 class JwtTokenProviderTest {
 
@@ -25,7 +25,7 @@ class JwtTokenProviderTest {
     
     @BeforeEach
     void setUp() {
-        // Use real RSA keys for integration testing (avoids Java 24 Mockito/ByteBuddy issues)
+        // Use real RSA keys for integration testing with Java 21
         realKeyGenerator = new RSAKeyGenerator();
         realKeyGenerator.generateKeyPair();
         

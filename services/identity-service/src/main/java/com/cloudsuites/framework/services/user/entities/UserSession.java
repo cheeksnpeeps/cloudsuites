@@ -82,9 +82,10 @@ public class UserSession {
     @Column(name = "is_trusted_device", nullable = false)
     private Boolean isTrustedDevice = false;
 
+    // IMPORTANT: Changed from isActive to active to match repository method findByUserIdAndActive
     @Builder.Default
     @Column(name = "is_active", nullable = false)
-    private Boolean isActive = true;
+    private Boolean active = true;
 
     @NotNull(message = "Last activity time is mandatory")
     @Column(name = "last_activity_at", nullable = false)
@@ -144,7 +145,7 @@ public class UserSession {
      * Checks if the session is still valid (active and not expired).
      */
     public boolean isValid() {
-        return isActive && expiresAt.isAfter(LocalDateTime.now());
+        return Boolean.TRUE.equals(active) && expiresAt.isAfter(LocalDateTime.now());
     }
 
     /**
@@ -158,7 +159,7 @@ public class UserSession {
      * Checks if the session is active.
      */
     public boolean isActive() {
-        return Boolean.TRUE.equals(this.isActive);
+        return Boolean.TRUE.equals(this.active);
     }
 
     /**
@@ -173,7 +174,7 @@ public class UserSession {
      * Deactivates the session.
      */
     public void deactivate() {
-        this.isActive = false;
+        this.active = false;
         this.lastModifiedAt = LocalDateTime.now();
         logger.debug("Deactivated session: {}", this.sessionId);
     }

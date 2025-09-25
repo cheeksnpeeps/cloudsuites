@@ -66,7 +66,7 @@ public class Owner {
 
     public UserRole getUserRole() {
         UserRole userRole = new UserRole();
-        userRole.setIdentityId(this.identity.getUserId());
+        userRole.setUserId(this.identity.getUserId());
         userRole.setPersonaId(this.ownerId);
         userRole.setUserType(UserType.OWNER);
         userRole.setRole(Objects.requireNonNullElse(role, OwnerRole.DEFAULT).name());

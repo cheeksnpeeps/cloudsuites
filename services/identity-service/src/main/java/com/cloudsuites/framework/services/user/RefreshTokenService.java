@@ -13,18 +13,8 @@ import java.util.Optional;
  */
 public interface RefreshTokenService {
 
-    /**
-     * Creates a new refresh token and session for a user.
-     * 
-     * @param userId The user identifier
-     * @param deviceFingerprint Unique device identifier
-     * @param deviceName Human-readable device name
-     * @param deviceType Type of device (WEB, MOBILE_IOS, MOBILE_ANDROID, etc.)
-     * @param userAgent Browser/app user agent string
-     * @param ipAddress Client IP address
-     * @param location Optional location information
-     * @param isTrusted Whether this is a trusted device
-     * @return New user session with refresh token
+        /**
+     * Creates a new refresh token session for a user.
      */
     UserSession createRefreshToken(String userId, 
                                  String deviceFingerprint,
@@ -37,21 +27,11 @@ public interface RefreshTokenService {
 
     /**
      * Rotates an existing refresh token to a new one.
-     * This is called every time a refresh token is used to get a new access token.
-     * 
-     * @param currentRefreshToken The current refresh token
-     * @param newRefreshToken The new refresh token to replace it
-     * @param accessTokenJti JTI of the new access token for tracking
-     * @return Updated user session with new refresh token
-     * @throws com.cloudsuites.framework.services.common.exception.ValidationException if token is invalid or expired
      */
     UserSession rotateRefreshToken(String currentRefreshToken, String newRefreshToken, String accessTokenJti);
 
     /**
      * Validates a refresh token and returns the associated session.
-     * 
-     * @param refreshToken The refresh token to validate
-     * @return User session if token is valid and active
      */
     Optional<UserSession> validateRefreshToken(String refreshToken);
 
@@ -81,22 +61,13 @@ public interface RefreshTokenService {
 
     /**
      * Gets all active sessions for a user.
-     * 
-     * @param userId The user identifier
-     * @return List of active user sessions
      */
     List<UserSession> getUserActiveSessions(String userId);
 
     /**
-     * Gets session information by access token JTI.
-     * Useful for logout operations when you have the access token.
-     * 
-     * @param accessTokenJti The JTI claim from the access token
-     * @return User session if found and active
+     * Gets a session by its access token JTI.
      */
-    Optional<UserSession> getSessionByAccessTokenJti(String accessTokenJti);
-
-    /**
+    Optional<UserSession> getSessionByAccessTokenJti(String accessTokenJti);    /**
      * Updates session activity timestamp and metadata.
      * Called when the user performs actions to track activity.
      * 

@@ -1,4 +1,7 @@
 # Maven configuration for CloudSuites project
-# Force Java 21 to avoid Lombok compatibility issues with Java 24
+# Force Java 21 for all Maven operations - CRITICAL for compatibility
 export JAVA_HOME=/Library/Java/JavaVirtualMachines/temurin-21.jdk/Contents/Home
 export PATH=$JAVA_HOME/bin:$PATH
+
+# Additional Java 21 enforcement
+export MAVEN_OPTS="-Djava.version=21 -Dmaven.compiler.source=21 -Dmaven.compiler.target=21"

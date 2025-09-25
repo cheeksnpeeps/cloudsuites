@@ -51,9 +51,16 @@ public enum DeviceType {
     }
 
     /**
-     * Determines if this device type typically supports long-term sessions.
+     * Determines if this device type is a tablet.
      */
-    public boolean supportsLongTermSessions() {
-        return this == MOBILE_IOS || this == MOBILE_ANDROID || this == TABLET;
+    public boolean isTablet() {
+        return this == TABLET;
+    }
+
+    /**
+     * Determines if this device type is desktop-based.
+     */
+    public boolean isDesktop() {
+        return this == DESKTOP || this == WEB;
     }
 }

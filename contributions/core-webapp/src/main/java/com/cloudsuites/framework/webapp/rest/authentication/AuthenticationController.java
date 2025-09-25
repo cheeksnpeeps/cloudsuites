@@ -60,14 +60,10 @@ public class AuthenticationController {
                 ? request.getIpAddress() 
                 : getClientIpAddress(httpRequest);
             
-            // Extract user agent if not provided
-            String userAgent = request.getUserAgent() != null 
-                ? request.getUserAgent() 
-                : httpRequest.getHeader("User-Agent");
-            
-            // Rotate tokens
+            // Rotate tokens (using WEB as default device type, assumed trusted for refresh)
             TokenRotationService.TokenPairResponse tokenPair = tokenRotationService.rotateTokens(
-                request.getRefreshToken(), ipAddress, userAgent
+                request.getRefreshToken(), ipAddress, 
+                com.cloudsuites.framework.services.user.entities.DeviceType.WEB, true
             );
             
             TokenResponse response = TokenResponse.from(tokenPair);
