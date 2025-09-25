@@ -1,9 +1,9 @@
 package com.cloudsuites.framework.services.auth;
 
-import com.cloudsuites.framework.services.auth.dto.OtpRequest;
-import com.cloudsuites.framework.services.auth.dto.OtpVerificationRequest;
-import com.cloudsuites.framework.services.auth.dto.OtpResponse;
-import com.cloudsuites.framework.services.auth.dto.OtpStatistics;
+import com.cloudsuites.framework.services.auth.entities.OtpRequest;
+import com.cloudsuites.framework.services.auth.entities.OtpVerificationRequest;
+import com.cloudsuites.framework.services.auth.entities.OtpResponse;
+import com.cloudsuites.framework.services.auth.entities.OtpStatistics;
 
 /**
  * Multi-channel OTP (One-Time Password) service interface.

@@ -1,32 +1,121 @@
 package com.cloudsuites.framework.services.user.entities;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
 
+/**
+ * Entity representing a user role in the system.
+ * Used to define the role a user has within a specific building or context.
+ */
+@Entity
+@Table(name = "user_roles", indexes = {
+    @Index(name = "idx_user_role_user_id", columnList = "user_id"),
+    @Index(name = "idx_user_role_user_building", columnList = "user_id, building_id"),
+    @Index(name = "idx_user_role_active", columnList = "is_active")
+})
 @Getter
 @Setter
-@Entity
-@Table(name = "user_roles", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"identity_id", "persona_id", "user_type", "role"})
-})
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserRole {
 
+    /**
+     * Unique identifier for this user role assignment.
+     */
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // Surrogate primary key
-    @Column(name = "user_role_id")
-    private Long userRoleId; // Surrogate key for uniqueness
+    @Column(name = "role_id", length = 36)
+    private String roleId;
 
-    @Column(name = "identity_id", nullable = false)
-    private String identityId; // Reference to the Identity table
+    /**
+     * The ID of the user this role is assigned to.
+     */
+    @Column(name = "user_id", nullable = false, length = 36)
+    private String userId;
 
-    @Column(name = "persona_id", nullable = false)
-    private String personaId; // The ID of the persona
+    /**
+     * The type of user (e.g., ADMIN, STAFF, TENANT, OWNER).
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "user_type", nullable = false, length = 20)
+    private UserType userType;
 
-    @Enumerated(EnumType.STRING) // Using Enum for user types
-    @Column(name = "user_type", nullable = false)
-    private UserType userType; // Enum for user types (e.g., TENANT, OWNER, etc.)
+    /**
+     * The building ID where this role applies (null for global roles).
+     */
+    @Column(name = "building_id", length = 36)
+    private String buildingId;
 
-    @Column(name = "role", nullable = false)
-    private String role; // e.g., "ROLE_USER", "ROLE_ADMIN", etc.
+    /**
+     * Whether this role assignment is currently active.
+     */
+    @Column(name = "is_active")
+    @Builder.Default
+    private Boolean isActive = true;
+
+    /**
+     * Additional role-specific data.
+     */
+    @Column(name = "role_data", columnDefinition = "TEXT")
+    private String roleData;
+
+    /**
+     * Persona ID for role-based access.
+     */
+    @Column(name = "persona_id", length = 36)
+    private String personaId;
+
+    /**
+     * Role name/type.
+     */
+    @Column(name = "role", length = 50)
+    private String role;
+
+    /**
+     * Sets the user ID for this role assignment.
+     * 
+     * @param userId the user ID
+     */
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    /**
+     * Sets the persona ID for this role assignment.
+     * 
+     * @param personaId the persona ID
+     */
+    public void setPersonaId(String personaId) {
+        this.personaId = personaId;
+    }
+
+    /**
+     * Sets the user type for this role assignment.
+     * 
+     * @param userType the user type
+     */
+    public void setUserType(UserType userType) {
+        this.userType = userType;
+    }
+
+    /**
+     * Sets the role name for this role assignment.
+     * 
+     * @param role the role name
+     */
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    /**
+     * Sets the identity ID for this role assignment (legacy method).
+     * This is an alias for setUserId to maintain compatibility.
+     * 
+     * @param identityId the identity/user ID
+     */
+    public void setIdentityId(String identityId) {
+        this.userId = identityId;
+    }
 }

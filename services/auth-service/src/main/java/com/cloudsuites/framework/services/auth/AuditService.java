@@ -1,8 +1,9 @@
 package com.cloudsuites.framework.services.auth;
 
-import com.cloudsuites.framework.services.auth.dto.AuditEventRequest;
-import com.cloudsuites.framework.services.auth.dto.AuditEventResponse;
-import com.cloudsuites.framework.services.auth.dto.AuditQueryRequest;
+import com.cloudsuites.framework.services.auth.entities.AuditEvent;
+import com.cloudsuites.framework.services.auth.entities.AuditEventRequest;
+import com.cloudsuites.framework.services.auth.entities.AuditEventResponse;
+import com.cloudsuites.framework.services.auth.entities.AuditQueryRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

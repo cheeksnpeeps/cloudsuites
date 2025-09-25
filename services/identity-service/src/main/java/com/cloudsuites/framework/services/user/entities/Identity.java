@@ -1,242 +1,235 @@
 package com.cloudsuites.framework.services.user.entities;
 
-import com.cloudsuites.framework.modules.common.utils.IdGenerator;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
-import java.net.InetAddress;
 import java.time.LocalDateTime;
-import java.util.Map;
 
-@Data
+/**
+ * Entity representing user identity in the system.
+ * Contains core user information and authentication details.
+ * 
+ * @author CloudSuites Platform Team
+ * @since 1.0.0
+ */
 @Entity
-@Table(name = "identity")
+@Table(name = "identities", indexes = {
+    @Index(name = "idx_identity_email", columnList = "email", unique = true),
+    @Index(name = "idx_identity_username", columnList = "username", unique = true),
+    @Index(name = "idx_identity_status", columnList = "status")
+})
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Identity {
 
-	private static final Logger logger = LoggerFactory.getLogger(Identity.class);
+    /**
+     * Unique identifier for the identity.
+     */
+    @Id
+    @Column(name = "identity_id", length = 36)
+    private String identityId;
 
-	@Id
-	@Column(name = "user_id", unique = true, nullable = false)
-	private String userId;
+    /**
+     * Unique username for login.
+     */
+    @NotBlank(message = "Username is required")
+    @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
+    @Column(name = "username", nullable = false, unique = true, length = 50)
+    private String username;
 
-	@Column
-	private Gender gender;
+    /**
+     * User's email address (unique).
+     */
+    @NotBlank(message = "Email is required")
+    @Email(message = "Email must be valid")
+    @Column(name = "email", nullable = false, unique = true, length = 100)
+    private String email;
 
-	@Column(name = "first_name")
-	private String firstName;
+    /**
+     * User's first name.
+     */
+    @NotBlank(message = "First name is required")
+    @Size(max = 50, message = "First name cannot exceed 50 characters")
+    @Column(name = "first_name", nullable = false, length = 50)
+    private String firstName;
 
-	@Column(name = "last_name")
-	private String lastName;
+    /**
+     * User's last name.
+     */
+    @NotBlank(message = "Last name is required")
+    @Size(max = 50, message = "Last name cannot exceed 50 characters")
+    @Column(name = "last_name", nullable = false, length = 50)
+    private String lastName;
 
-	@Column(name = "phone_number")
-	private String phoneNumber;
+    /**
+     * User's phone number.
+     */
+    @Size(max = 20, message = "Phone number cannot exceed 20 characters")
+    @Column(name = "phone_number", length = 20)
+    private String phoneNumber;
 
-	@NotNull(message = "Email is mandatory")
-	@Email(message = "Email should be valid")
-	@Column(name = "email", unique = true, nullable = false)
-	private String email;
+    /**
+     * User's gender.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "gender", length = 20)
+    private Gender gender;
 
-	@JoinColumn(name = "created_by")
-	@OneToOne(cascade = CascadeType.ALL)
-	private Identity createdBy;
+    /**
+     * Hashed password.
+     */
+    @NotBlank(message = "Password is required")
+    @Column(name = "password_hash", nullable = false)
+    private String passwordHash;
 
-	@JoinColumn(name = "last_modified_by")
-	@OneToOne(cascade = CascadeType.ALL)
-	private Identity lastModifiedBy;
+    /**
+     * Whether email has been verified.
+     */
+    @Column(name = "email_verified")
+    @Builder.Default
+    private Boolean emailVerified = false;
 
-	@Column(name = "created_at", nullable = false, updatable = false)
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
-	private LocalDateTime createdAt;
+    /**
+     * Whether phone has been verified.
+     */
+    @Column(name = "phone_verified")
+    @Builder.Default
+    private Boolean phoneVerified = false;
 
-	@Column(name = "last_modified_at")
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
-	private LocalDateTime lastModifiedAt;
+    /**
+     * Whether MFA is enabled.
+     */
+    @Column(name = "mfa_enabled")
+    @Builder.Default
+    private Boolean mfaEnabled = false;
 
-	// ============================================================================
-	// AUTHENTICATION FIELDS (Added in V5 migration)
-	// ============================================================================
-	
-	// Password authentication (fallback option)
-	@JsonIgnore
-	@Column(name = "password_hash")
-	private String passwordHash;
-	
-	@JsonIgnore
-	@Column(name = "password_salt")
-	private String passwordSalt;
-	
-	@Column(name = "password_changed_at")
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
-	private LocalDateTime passwordChangedAt;
-	
-	@Column(name = "password_expires_at")
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
-	private LocalDateTime passwordExpiresAt;
-	
-	@JsonIgnore
-	@Column(name = "password_reset_token")
-	private String passwordResetToken;
-	
-	@Column(name = "password_reset_expires_at")
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
-	private LocalDateTime passwordResetExpiresAt;
-	
-	@Column(name = "password_reset_attempts")
-	private Integer passwordResetAttempts = 0;
+    /**
+     * Account status.
+     */
+    @NotNull(message = "Status is required")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 20)
+    @Builder.Default
+    private IdentityStatus status = IdentityStatus.PENDING;
 
-	// Multi-factor authentication
-	@Column(name = "mfa_enabled")
-	private Boolean mfaEnabled = false;
-	
-	@JsonIgnore
-	@Column(name = "mfa_secret", length = 500)
-	private String mfaSecret;
-	
-	@JsonIgnore
-	@Column(name = "mfa_backup_codes", columnDefinition = "TEXT")
-	private String mfaBackupCodes; // JSON array as string
-	
-	@Column(name = "mfa_recovery_codes_used")
-	private Integer mfaRecoveryCodesUsed = 0;
-	
-	@Column(name = "mfa_enrolled_at")
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
-	private LocalDateTime mfaEnrolledAt;
+    /**
+     * When this identity was created.
+     */
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
 
-	// Account security
-	@Column(name = "failed_login_attempts")
-	private Integer failedLoginAttempts = 0;
-	
-	@Column(name = "account_locked_at")
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
-	private LocalDateTime accountLockedAt;
-	
-	@Column(name = "account_locked_until")
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
-	private LocalDateTime accountLockedUntil;
-	
-	@Column(name = "last_successful_login_at")
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
-	private LocalDateTime lastSuccessfulLoginAt;
-	
-	@Column(name = "last_failed_login_at")
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
-	private LocalDateTime lastFailedLoginAt;
-	
-	@Column(name = "last_password_change_ip")
-	private String lastPasswordChangeIp;
+    /**
+     * When this identity was last updated.
+     */
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
-	// Email/Phone verification for OTP channels
-	@Column(name = "email_verified")
-	private Boolean emailVerified = false;
-	
-	@Column(name = "email_verified_at")
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
-	private LocalDateTime emailVerifiedAt;
-	
-	@JsonIgnore
-	@Column(name = "email_verification_token")
-	private String emailVerificationToken;
-	
-	@Column(name = "email_verification_expires_at")
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
-	private LocalDateTime emailVerificationExpiresAt;
-	
-	@Column(name = "phone_verified")
-	private Boolean phoneVerified = false;
-	
-	@Column(name = "phone_verified_at")
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
-	private LocalDateTime phoneVerifiedAt;
+    /**
+     * Last login timestamp.
+     */
+    @Column(name = "last_login_at")
+    private LocalDateTime lastLoginAt;
 
-	// Security preferences
-	@Column(name = "security_questions_enabled")
-	private Boolean securityQuestionsEnabled = false;
-	
-	@Column(name = "biometric_enabled")
-	private Boolean biometricEnabled = false;
-	
-	@Column(name = "notification_preferences")
-	private String notificationPreferences; // JSON object as string
-	
-	@Column(name = "login_notification_enabled")
-	private Boolean loginNotificationEnabled = true;
-	
-	@Column(name = "security_notification_enabled")
-	private Boolean securityNotificationEnabled = true;
+    /**
+     * Who created this identity record.
+     */
+    @Column(name = "created_by", length = 36)
+    private String createdBy;
 
-	// Compliance and terms acceptance
-	@Column(name = "terms_accepted_at")
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
-	private LocalDateTime termsAcceptedAt;
-	
-	@Column(name = "terms_version", length = 20)
-	private String termsVersion;
-	
-	@Column(name = "privacy_policy_accepted_at")
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
-	private LocalDateTime privacyPolicyAcceptedAt;
-	
-	@Column(name = "privacy_policy_version", length = 20)
-	private String privacyPolicyVersion;
-	
-	@Column(name = "marketing_consent")
-	private Boolean marketingConsent = false;
-	
-	@Column(name = "marketing_consent_at")
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
-	private LocalDateTime marketingConsentAt;
+    /**
+     * Who last modified this identity record.
+     */
+    @Column(name = "last_modified_by", length = 36)
+    private String lastModifiedBy;
 
-	// Enhanced security metadata
-	@Column(name = "security_score")
-	private Integer securityScore = 50; // 0-100 range enforced by database constraint
-	
-	@Enumerated(EnumType.STRING)
-	@Column(name = "risk_profile", length = 20)
-	private RiskProfile riskProfile = RiskProfile.NORMAL;
-	
-	@Column(name = "timezone", length = 50)
-	private String timezone = "UTC";
-	
-	@Column(name = "locale", length = 10)
-	private String locale = "en_US";
+    /**
+     * Associated user ID for this identity.
+     */
+    @Column(name = "user_id", length = 36)
+    private String userId;
 
-	@PrePersist
-	protected void onCreate() {
-		this.userId = IdGenerator.generateULID("ID-");
-		logger.debug("Generated userId: {}", this.userId);
-		this.createdAt = LocalDateTime.now();
-	}
+    // Utility methods
+    public String getFullName() {
+        return firstName + " " + lastName;
+    }
 
-	@PreUpdate
-	protected void onUpdate() {
-		this.lastModifiedAt = LocalDateTime.now();
-	}
+    public boolean isActive() {
+        return status == IdentityStatus.ACTIVE;
+    }
 
-	public void updateIdentity(Identity identity) {
-		if (StringUtils.hasText(identity.getFirstName())) {
-			this.setFirstName(identity.getFirstName());
-		}
-		if (StringUtils.hasText(identity.getLastName())) {
-			this.setLastName(identity.getLastName());
-		}
-		if (StringUtils.hasText(identity.getEmail())) {
-			this.setEmail(identity.getEmail());
-		}
-		if (StringUtils.hasText(identity.getPhoneNumber())) {
-			this.setPhoneNumber(identity.getPhoneNumber());
-		}
-		if (identity.getGender() != null) {
-			this.setGender(identity.getGender());
-		}
-	}
+    public boolean isVerified() {
+        return emailVerified != null && emailVerified;
+    }
+
+    public void markEmailVerified() {
+        this.emailVerified = true;
+        if (this.status == IdentityStatus.PENDING) {
+            this.status = IdentityStatus.ACTIVE;
+        }
+    }
+
+    public void markPhoneVerified() {
+        this.phoneVerified = true;
+    }
+
+    /**
+     * Updates this identity with data from another identity instance.
+     */
+    public void updateIdentity(Identity other) {
+        if (other.getUsername() != null) {
+            this.username = other.getUsername();
+        }
+        if (other.getEmail() != null) {
+            this.email = other.getEmail();
+        }
+        if (other.getFirstName() != null) {
+            this.firstName = other.getFirstName();
+        }
+        if (other.getLastName() != null) {
+            this.lastName = other.getLastName();
+        }
+        if (other.getPhoneNumber() != null) {
+            this.phoneNumber = other.getPhoneNumber();
+        }
+        if (other.getStatus() != null) {
+            this.status = other.getStatus();
+        }
+    }
+
+    /**
+     * Enumeration for identity status.
+     */
+    public enum IdentityStatus {
+        PENDING("Pending Verification"),
+        ACTIVE("Active"),
+        SUSPENDED("Suspended"),
+        ARCHIVED("Archived");
+
+        private final String displayName;
+
+        IdentityStatus(String displayName) {
+            this.displayName = displayName;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        public boolean isActive() {
+            return this == ACTIVE;
+        }
+    }
 }
-

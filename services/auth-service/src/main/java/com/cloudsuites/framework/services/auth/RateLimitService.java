@@ -1,7 +1,7 @@
 package com.cloudsuites.framework.services.auth;
 
-import com.cloudsuites.framework.services.auth.dto.RateLimitResult;
-import com.cloudsuites.framework.services.auth.dto.RateLimitConfig;
+import com.cloudsuites.framework.services.auth.entities.RateLimitResult;
+import com.cloudsuites.framework.services.auth.entities.RateLimitConfig;
 
 import java.time.Duration;
 

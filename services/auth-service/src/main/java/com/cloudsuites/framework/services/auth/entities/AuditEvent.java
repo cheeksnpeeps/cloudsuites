@@ -83,7 +83,7 @@ public class AuditEvent {
     @Column(name = "device_type", length = 50)
     private String deviceType;
 
-    @Column(name = "metadata", columnDefinition = "jsonb")
+    @Column(name = "metadata", columnDefinition = "TEXT")
     private Map<String, Object> metadata;
 
     @Column(name = "created_at", nullable = false)

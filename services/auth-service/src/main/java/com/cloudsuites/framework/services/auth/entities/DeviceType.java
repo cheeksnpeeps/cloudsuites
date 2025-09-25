@@ -1,8 +1,11 @@
-package com.cloudsuites.framework.services.user.entities;
+package com.cloudsuites.framework.services.auth.entities;
 
 /**
- * Enumeration for device types in user sessions.
- * Matches the device_type check constraint in the database (V3 migration).
+ * Enumeration for device types used in device fingerprinting.
+ * Classifies devices for security and trust management purposes.
+ * 
+ * @author CloudSuites Platform Team
+ * @since 1.0.0
  */
 public enum DeviceType {
     /**

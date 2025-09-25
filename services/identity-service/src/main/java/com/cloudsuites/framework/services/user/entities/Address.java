@@ -1,59 +1,155 @@
 package com.cloudsuites.framework.services.user.entities;
 
-import com.cloudsuites.framework.modules.common.utils.IdGenerator;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
-@Data
+import java.time.LocalDateTime;
+
+/**
+ * Entity representing a physical address.
+ * 
+ * This entity stores address information for buildings, companies, and other entities
+ * that require location data within the property management system.
+ * 
+ * @author CloudSuites Development Team
+ * @since 1.0
+ */
 @Entity
-@Table(name = "address")
+@Table(name = "addresses")
+@Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Address {
 
-    private static final Logger logger = LoggerFactory.getLogger(Address.class);
-
+    /**
+     * Unique identifier for the address.
+     */
     @Id
-    @Column(name = "address_id", unique = true, nullable = false)
+    @Column(name = "address_id")
     private String addressId;
 
-    @Column(name = "apt_number")
-    private String aptNumber;
+    /**
+     * Street address line 1.
+     */
+    @NotBlank(message = "Street address is required")
+    @Size(max = 255, message = "Street address cannot exceed 255 characters")
+    @Column(name = "street", nullable = false, length = 255)
+    private String street;
 
-    @Column(name = "street_number")
-    private String streetNumber;
+    /**
+     * Street address line 2 (optional).
+     */
+    @Size(max = 255, message = "Street address 2 cannot exceed 255 characters")
+    @Column(name = "street2", length = 255)
+    private String street2;
 
-    @Column(name = "street_name")
-    private String streetName;
-
-    @Column(name = "address_line_2") // New field for additional address details
-    private String addressLine2;
-
-    @Column(name = "city")
+    /**
+     * City name.
+     */
+    @NotBlank(message = "City is required")
+    @Size(max = 100, message = "City cannot exceed 100 characters")
+    @Column(name = "city", nullable = false, length = 100)
     private String city;
 
-    @Column(name = "state_province_region") // Combined field for state, province, or region
-    private String stateProvinceRegion;
+    /**
+     * Province or state code.
+     */
+    @NotBlank(message = "Province is required")
+    @Size(max = 50, message = "Province cannot exceed 50 characters")
+    @Column(name = "province", nullable = false, length = 50)
+    private String province;
 
-    @Column(name = "postal_code")
+    /**
+     * Postal code or ZIP code.
+     */
+    @NotBlank(message = "Postal code is required")
+    @Size(max = 20, message = "Postal code cannot exceed 20 characters")
+    @Column(name = "postal_code", nullable = false, length = 20)
     private String postalCode;
 
-    @Column(name = "country")
+    /**
+     * Country name or code.
+     */
+    @NotBlank(message = "Country is required")
+    @Size(max = 100, message = "Country cannot exceed 100 characters")
+    @Column(name = "country", nullable = false, length = 100)
     private String country;
 
-    @Column(name = "latitude") // Optional latitude field
-    private Double latitude;
+    /**
+     * Timestamp when the address was created.
+     */
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
-    @Column(name = "longitude") // Optional longitude field
-    private Double longitude;
+    /**
+     * Timestamp when the address was last modified.
+     */
+    @UpdateTimestamp
+    @Column(name = "last_modified_at")
+    private LocalDateTime lastModifiedAt;
 
-    @PrePersist
-    protected void onCreate() {
-        this.addressId = IdGenerator.generateULID("ADR-");
-        logger.debug("Generated addressId: {}", this.addressId);
+    /**
+     * User ID who created this address.
+     */
+    @Column(name = "created_by", length = 255)
+    private String createdBy;
+
+    /**
+     * User ID who last modified this address.
+     */
+    @Column(name = "last_modified_by", length = 255)
+    private String lastModifiedBy;
+
+    /**
+     * Gets the full formatted address as a single string.
+     * 
+     * @return formatted address string
+     */
+    public String getFormattedAddress() {
+        StringBuilder address = new StringBuilder();
+        address.append(street);
+        
+        if (street2 != null && !street2.trim().isEmpty()) {
+            address.append(", ").append(street2);
+        }
+        
+        address.append(", ").append(city);
+        address.append(", ").append(province);
+        address.append(" ").append(postalCode);
+        address.append(", ").append(country);
+        
+        return address.toString();
+    }
+
+    /**
+     * Updates audit fields for address modifications.
+     * 
+     * @param modifiedBy the user ID who is modifying the address
+     */
+    public void updateAddress(String modifiedBy) {
+        this.lastModifiedBy = modifiedBy;
+        this.lastModifiedAt = LocalDateTime.now();
+    }
+
+    /**
+     * Checks if this is a complete address with all required fields.
+     * 
+     * @return true if all required fields are present
+     */
+    public boolean isComplete() {
+        return street != null && !street.trim().isEmpty() &&
+               city != null && !city.trim().isEmpty() &&
+               province != null && !province.trim().isEmpty() &&
+               postalCode != null && !postalCode.trim().isEmpty() &&
+               country != null && !country.trim().isEmpty();
     }
 }
