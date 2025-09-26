@@ -19,6 +19,13 @@ logging:
 # SPRING CONFIGURATION
 # =================================================================
 spring:
+  # Docker Compose Integration
+  docker:
+    compose:
+      file: ../../compose.yaml  # Point to root directory compose file
+      lifecycle-management: start-only  # Only start, don't stop
+      skip:
+        in-tests: true  # Skip Docker Compose integration in tests
   # Database Configuration (Docker PostgreSQL)
   datasource:
     url: ${SPRING_DATASOURCE_URL}

@@ -80,6 +80,17 @@ public class RateLimitResult {
         return result;
     }
 
+    public static RateLimitResult locked(String userId, LocalDateTime lockoutUntil, String reason) {
+        RateLimitResult result = new RateLimitResult(false);
+        result.reason = reason;
+        result.currentCount = 0;
+        result.maxAllowed = 0;
+        result.remaining = 0;
+        result.resetAt = lockoutUntil;
+        result.retryAfterSeconds = java.time.Duration.between(LocalDateTime.now(), lockoutUntil).getSeconds();
+        return result;
+    }
+
     // Getters and Setters
     public boolean isAllowed() { return allowed; }
     public void setAllowed(boolean allowed) { this.allowed = allowed; }

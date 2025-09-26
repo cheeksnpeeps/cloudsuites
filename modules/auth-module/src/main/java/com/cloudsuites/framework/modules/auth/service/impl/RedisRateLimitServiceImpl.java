@@ -1,8 +1,8 @@
  package com.cloudsuites.framework.modules.auth.service.impl;
 
 import com.cloudsuites.framework.services.auth.RateLimitService;
-import com.cloudsuites.framework.services.auth.dto.RateLimitResult;
-import com.cloudsuites.framework.services.auth.dto.RateLimitConfig;
+import com.cloudsuites.framework.services.auth.entities.RateLimitResult;
+import com.cloudsuites.framework.services.auth.entities.RateLimitConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -244,9 +244,9 @@ public class RedisRateLimitServiceImpl implements RateLimitService {
                 Duration resetTime = Duration.between(now, windowEnd.plusSeconds(windowSeconds));
                 
                 if (currentCount < limit) {
-                    return RateLimitResult.allowed(key, currentCount, limit, windowStart, windowEnd, resetTime);
+                    return RateLimitResult.allowed(currentCount, limit, windowEnd, windowSeconds);
                 } else {
-                    return RateLimitResult.denied(key, currentCount, limit, windowStart, windowEnd, resetTime);
+                    return RateLimitResult.denied("Rate limit exceeded", currentCount, limit, windowEnd, resetTime.getSeconds());
                 }
             } catch (Exception e) {
                 logger.error("Redis rate limit status check failed for key: {}, falling back to in-memory", key, e);
@@ -267,10 +267,10 @@ public class RedisRateLimitServiceImpl implements RateLimitService {
             // Store configuration in Redis for cluster environments
             String configKey = CONFIG_KEY_PREFIX + operation;
             String configValue = String.format("%d:%d:%s:%s", 
-                                              config.getLimit(), 
-                                              config.getWindow().getSeconds(),
-                                              config.isEnableLockout(),
-                                              config.getDescription());
+                                              config.getMaxOperations(), 
+                                              config.getWindowSeconds(),
+                                              config.isEnabled(),
+                                              config.getDescription() != null ? config.getDescription() : "");
             redisTemplate.opsForValue().set(configKey, configValue, Duration.ofDays(30));
         }
     }
@@ -314,9 +314,9 @@ public class RedisRateLimitServiceImpl implements RateLimitService {
             Duration resetTime = Duration.between(now, windowEnd.plusSeconds(windowSeconds));
             
             if (allowed) {
-                return RateLimitResult.allowed(key, currentCount, limit, windowStart, windowEnd, resetTime);
+                return RateLimitResult.allowed(currentCount, limit, windowEnd, windowSeconds);
             } else {
-                return RateLimitResult.denied(key, currentCount, limit, windowStart, windowEnd, resetTime);
+                return RateLimitResult.denied("Rate limit exceeded", currentCount, limit, windowEnd, resetTime.getSeconds());
             }
             
         } catch (Exception e) {
@@ -339,20 +339,20 @@ public class RedisRateLimitServiceImpl implements RateLimitService {
         
         if (resultCount > 0) {
             // Request was allowed, resultCount is the new count after recording
-            return RateLimitResult.allowed(key, resultCount, limit, 
-                                         now.minus(window), now, window);
+            long windowSecs = window.getSeconds();
+            return RateLimitResult.allowed(resultCount, limit, now.plus(window), windowSecs);
         } else {
             // Request was denied, resultCount is negative current count
-            int currentCount = Math.abs(resultCount);
-            return RateLimitResult.denied(key, currentCount, limit, 
-                                        now.minus(window), now, window);
+            long currentCount = Math.abs(resultCount);
+            long windowSecs = window.getSeconds();
+            return RateLimitResult.denied("Rate limit exceeded", currentCount, limit, now.plus(window), windowSecs);
         }
     }
     
     private RateLimitResult checkRateLimitStatusInMemory(String key, int limit, Duration window, LocalDateTime now) {
         RateLimitData data = inMemoryRateLimits.get(key);
         if (data == null) {
-            return RateLimitResult.allowed(key, 0, limit, now.minus(window), now, window);
+            return RateLimitResult.allowed(0, limit, now, window.getSeconds());
         }
         
         long nowSeconds = now.toEpochSecond(ZoneOffset.UTC);
@@ -362,11 +362,9 @@ public class RedisRateLimitServiceImpl implements RateLimitService {
             int currentCount = data.getCountInWindow(windowStart * 1000, nowSeconds * 1000);
             
             if (currentCount < limit) {
-                return RateLimitResult.allowed(key, currentCount, limit, 
-                                             now.minus(window), now, window);
+                return RateLimitResult.allowed(currentCount, limit, now, window.getSeconds());
             } else {
-                return RateLimitResult.denied(key, currentCount, limit, 
-                                            now.minus(window), now, window);
+                return RateLimitResult.denied("Rate limit exceeded", currentCount, limit, now, window.getSeconds());
             }
         }
     }
@@ -405,9 +403,10 @@ public class RedisRateLimitServiceImpl implements RateLimitService {
             boolean enableLockout = Boolean.parseBoolean(parts[2]);
             String description = parts[3];
             
-            return new RateLimitConfig(operation, limit, Duration.ofSeconds(windowSeconds),
-                                     enableLockout, 5, Duration.ofMinutes(15), false,
-                                     Duration.ofHours(24), description);
+            RateLimitConfig config = new RateLimitConfig(operation, limit, windowSeconds);
+            config.setDescription(description);
+            config.setEnabled(true);
+            return config;
         }
         return null;
     }
