@@ -79,6 +79,11 @@ public enum AdminRole {
     ALL_STAFF("Staff Member"),
 
     /**
+     * General user role (legacy compatibility).
+     */
+    USER("User"),
+
+    /**
      * Deleted admin role (soft delete marker).
      */
     DELETED("Deleted");

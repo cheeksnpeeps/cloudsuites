@@ -118,4 +118,14 @@ public class UserRole {
     public void setIdentityId(String identityId) {
         this.userId = identityId;
     }
+
+    /**
+     * Gets the identity ID for this role assignment (legacy method).
+     * This is an alias for getUserId to maintain compatibility.
+     * 
+     * @return the identity/user ID
+     */
+    public String getIdentityId() {
+        return this.userId;
+    }
 }
