@@ -1,4 +1,4 @@
-package com.cloudsuites.framework.modules.auth.converter;
+package com.cloudsuites.framework.services.auth.converter;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -19,7 +19,7 @@ import java.util.Map;
  * @author CloudSuites Platform Team
  * @since 1.0.0
  */
-@Converter
+@Converter(autoApply = false)
 public class JsonMapConverter implements AttributeConverter<Map<String, Object>, String> {
 
     private static final Logger logger = LoggerFactory.getLogger(JsonMapConverter.class);
@@ -48,8 +48,8 @@ public class JsonMapConverter implements AttributeConverter<Map<String, Object>,
         
         try {
             return objectMapper.readValue(dbData, MAP_TYPE_REF);
-        } catch (JsonProcessingException e) {
-            logger.error("Error converting JSON string to Map: {}", dbData, e);
+        } catch (Exception e) {
+            logger.error("Error converting JSON string to Map", e);
             return Map.of();
         }
     }
