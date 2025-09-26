@@ -1,6 +1,6 @@
 package com.cloudsuites.framework.modules.auth.repository;
 
-import com.cloudsuites.framework.modules.auth.entity.AuditEvent;
+import com.cloudsuites.framework.services.auth.entities.AuditEvent;
 import com.cloudsuites.framework.services.auth.AuthEventType;
 import com.cloudsuites.framework.services.auth.RiskLevel;
 import org.springframework.data.domain.Page;

@@ -84,6 +84,7 @@ public class AuditEvent {
     private String deviceType;
 
     @Column(name = "metadata", columnDefinition = "TEXT")
+    @Convert(converter = com.cloudsuites.framework.services.auth.converter.JsonMapConverter.class)
     private Map<String, Object> metadata;
 
     @Column(name = "created_at", nullable = false)
