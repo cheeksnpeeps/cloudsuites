@@ -47,9 +47,34 @@ public class OtpStatistics {
     private LocalDateTime lastSentAt;
 
     /**
+     * First OTP sent timestamp.
+     */
+    private LocalDateTime firstSentAt;
+
+    /**
      * Last successful verification timestamp.
      */
     private LocalDateTime lastVerifiedAt;
+
+    /**
+     * Current rate limit count.
+     */
+    private int currentRateLimitCount;
+
+    /**
+     * Rate limit reset time.
+     */
+    private LocalDateTime rateLimitResetTime;
+
+    /**
+     * Successful verifications count.
+     */
+    private long successfulVerifications;
+
+    /**
+     * Failed verifications count.
+     */
+    private long failedVerifications;
 
     /**
      * Whether user is currently rate limited.
@@ -99,9 +124,40 @@ public class OtpStatistics {
     public LocalDateTime getRateLimitResetAt() { return rateLimitResetAt; }
     public void setRateLimitResetAt(LocalDateTime rateLimitResetAt) { this.rateLimitResetAt = rateLimitResetAt; }
 
+    public LocalDateTime getFirstSentAt() { return firstSentAt; }
+    public void setFirstSentAt(LocalDateTime firstSentAt) { this.firstSentAt = firstSentAt; }
+
+    public LocalDateTime getFirstOtpSent() { return firstSentAt; }
+    public void setFirstOtpSent(LocalDateTime firstSentAt) { this.firstSentAt = firstSentAt; }
+
+    public LocalDateTime getLastOtpSent() { return lastSentAt; }
+    public void setLastOtpSent(LocalDateTime lastSentAt) { this.lastSentAt = lastSentAt; }
+
+    public int getCurrentRateLimitCount() { return currentRateLimitCount; }
+    public void setCurrentRateLimitCount(int currentRateLimitCount) { this.currentRateLimitCount = currentRateLimitCount; }
+
+    public LocalDateTime getRateLimitResetTime() { return rateLimitResetTime; }
+    public void setRateLimitResetTime(LocalDateTime rateLimitResetTime) { this.rateLimitResetTime = rateLimitResetTime; }
+
+    public long getSuccessfulVerifications() { return successfulVerifications; }
+    public void setSuccessfulVerifications(long successfulVerifications) { this.successfulVerifications = successfulVerifications; }
+
+    public long getFailedVerifications() { return failedVerifications; }
+    public void setFailedVerifications(long failedVerifications) { this.failedVerifications = failedVerifications; }
+
+    public long getTotalOtpsSent() { return totalSent; }
+    public void setTotalOtpsSent(long totalSent) { this.totalSent = totalSent; }
+
+    public long getTotalOtpsVerified() { return totalVerified; }
+    public void setTotalOtpsVerified(long totalVerified) { this.totalVerified = totalVerified; }
+
     // Utility methods
     public double getSuccessRate() {
         return totalSent > 0 ? (double) totalVerified / totalSent : 0.0;
+    }
+
+    public double calculateSuccessRate() {
+        return getSuccessRate();
     }
 
     public double getFailureRate() {

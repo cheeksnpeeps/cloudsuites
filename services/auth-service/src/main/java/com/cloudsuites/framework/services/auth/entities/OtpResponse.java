@@ -65,6 +65,15 @@ public class OtpResponse {
         return response;
     }
 
+    public static OtpResponse success(String message, String otpId, OtpChannel channel, String maskedDestination, LocalDateTime expiresAt) {
+        OtpResponse response = new OtpResponse(true, message);
+        response.channel = channel;
+        response.maskedDestination = maskedDestination;
+        response.expiresAt = expiresAt;
+        // Note: otpId is not stored in response for security reasons
+        return response;
+    }
+
     public static OtpResponse failure(String message) {
         return new OtpResponse(false, message);
     }

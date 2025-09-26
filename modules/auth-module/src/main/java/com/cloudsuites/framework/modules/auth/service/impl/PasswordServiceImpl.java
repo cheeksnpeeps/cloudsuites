@@ -2,8 +2,8 @@ package com.cloudsuites.framework.modules.auth.service.impl;
 
 import com.cloudsuites.framework.services.auth.PasswordService;
 import com.cloudsuites.framework.services.auth.PasswordValidator;
-import com.cloudsuites.framework.services.auth.dto.PasswordChangeRequest;
-import com.cloudsuites.framework.services.auth.dto.PasswordResetRequest;
+import com.cloudsuites.framework.services.auth.entities.PasswordChangeRequest;
+import com.cloudsuites.framework.services.auth.entities.PasswordResetRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -161,10 +161,10 @@ public class PasswordServiceImpl implements PasswordService {
             throw new IllegalArgumentException("Password change request cannot be null");
         }
         
-        logger.debug("Processing password change request for user: {}", request.getUserId());
+        logger.debug("Processing password change request for user: {}", request.getUserIdentifier());
         
         // Validate password confirmation
-        if (!request.isPasswordConfirmationValid()) {
+        if (!request.passwordsMatch()) {
             throw new SecurityException("New password and confirmation do not match");
         }
         
@@ -184,7 +184,7 @@ public class PasswordServiceImpl implements PasswordService {
         // TODO: Update password in database
         // This would require UserService integration to update the password hash
         
-        logger.debug("Password changed successfully for user: {}", request.getUserId());
+        logger.debug("Password changed successfully for user: {}", request.getUserIdentifier());
         return true;
     }
     

@@ -21,6 +21,11 @@ public class OtpRequest {
     private String userIdentifier;
 
     /**
+     * Recipient of the OTP (email, phone, etc).
+     */
+    private String recipient;
+
+    /**
      * Channel to send the OTP through.
      */
     @NotNull(message = "OTP channel is required")
@@ -65,4 +70,7 @@ public class OtpRequest {
 
     public String getUserAgent() { return userAgent; }
     public void setUserAgent(String userAgent) { this.userAgent = userAgent; }
+
+    public String getRecipient() { return recipient; }
+    public void setRecipient(String recipient) { this.recipient = recipient; }
 }
