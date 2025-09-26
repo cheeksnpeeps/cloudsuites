@@ -70,6 +70,31 @@ public class AuditEventRequest {
     private String details;
 
     /**
+     * Event description.
+     */
+    private String description;
+
+    /**
+     * Whether the operation was successful.
+     */
+    private Boolean success;
+
+    /**
+     * Reason for failure if the operation was unsuccessful.
+     */
+    private String failureReason;
+
+    /**
+     * Geographic location information.
+     */
+    private String geolocation;
+
+    /**
+     * Device type information.
+     */
+    private String deviceType;
+
+    /**
      * Additional metadata as key-value pairs.
      */
     private Map<String, Object> metadata;
@@ -81,6 +106,15 @@ public class AuditEventRequest {
         this.eventType = eventType;
         this.category = category;
         this.riskLevel = riskLevel;
+    }
+
+    public AuditEventRequest(AuthEventType eventType, AuthEventCategory category, String userId, String sessionId, String ipAddress) {
+        this.eventType = eventType;
+        this.category = category;
+        this.userId = userId;
+        this.sessionId = sessionId;
+        this.ipAddress = ipAddress;
+        this.riskLevel = RiskLevel.LOW; // default
     }
 
     // Getters and Setters
@@ -113,6 +147,21 @@ public class AuditEventRequest {
 
     public String getDetails() { return details; }
     public void setDetails(String details) { this.details = details; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
+    public Boolean getSuccess() { return success; }
+    public void setSuccess(Boolean success) { this.success = success; }
+
+    public String getFailureReason() { return failureReason; }
+    public void setFailureReason(String failureReason) { this.failureReason = failureReason; }
+
+    public String getGeolocation() { return geolocation; }
+    public void setGeolocation(String geolocation) { this.geolocation = geolocation; }
+
+    public String getDeviceType() { return deviceType; }
+    public void setDeviceType(String deviceType) { this.deviceType = deviceType; }
 
     public Map<String, Object> getMetadata() { return metadata; }
     public void setMetadata(Map<String, Object> metadata) { this.metadata = metadata; }
