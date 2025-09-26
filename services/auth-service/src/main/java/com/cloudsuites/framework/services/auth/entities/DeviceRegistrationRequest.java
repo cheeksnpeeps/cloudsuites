@@ -65,6 +65,31 @@ public class DeviceRegistrationRequest {
      */
     private String metadata;
 
+    /**
+     * Device information string (concatenated browser + OS info).
+     */
+    private String deviceInfo;
+
+    /**
+     * Trust expiration days.
+     */
+    private Integer trustExpirationDays;
+
+    /**
+     * Whether to trust this device.
+     */
+    private Boolean trustDevice;
+
+    /**
+     * Whether biometric authentication is supported.
+     */
+    private Boolean biometricSupported;
+
+    /**
+     * Device characteristics for fingerprinting.
+     */
+    private String deviceCharacteristics;
+
     // Constructors
     public DeviceRegistrationRequest() {}
 
@@ -102,4 +127,19 @@ public class DeviceRegistrationRequest {
 
     public String getMetadata() { return metadata; }
     public void setMetadata(String metadata) { this.metadata = metadata; }
+
+    public String getDeviceInfo() { return deviceInfo; }
+    public void setDeviceInfo(String deviceInfo) { this.deviceInfo = deviceInfo; }
+
+    public Integer getTrustExpirationDays() { return trustExpirationDays; }
+    public void setTrustExpirationDays(Integer trustExpirationDays) { this.trustExpirationDays = trustExpirationDays; }
+
+    public Boolean getTrustDevice() { return trustDevice; }
+    public void setTrustDevice(Boolean trustDevice) { this.trustDevice = trustDevice; }
+
+    public Boolean getBiometricSupported() { return biometricSupported; }
+    public void setBiometricSupported(Boolean biometricSupported) { this.biometricSupported = biometricSupported; }
+
+    public String getDeviceCharacteristics() { return deviceCharacteristics; }
+    public void setDeviceCharacteristics(String deviceCharacteristics) { this.deviceCharacteristics = deviceCharacteristics; }
 }
