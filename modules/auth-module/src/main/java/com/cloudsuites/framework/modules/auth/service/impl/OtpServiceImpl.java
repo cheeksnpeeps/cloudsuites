@@ -2,7 +2,7 @@ package com.cloudsuites.framework.modules.auth.service.impl;
 
 import com.cloudsuites.framework.services.auth.OtpService;
 import com.cloudsuites.framework.services.auth.OtpChannel;
-import com.cloudsuites.framework.services.auth.dto.*;
+import com.cloudsuites.framework.services.auth.entities.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -150,8 +150,9 @@ public class OtpServiceImpl implements OtpService {
             synchronized (this) {
                 if (isRateLimited(request.getRecipient())) {
                     long resetTime = getRateLimitResetTime(request.getRecipient());
+                    LocalDateTime resetDateTime = LocalDateTime.now().plusSeconds(resetTime);
                     return OtpResponse.rateLimited(
-                        "Too many OTP requests. Try again in " + resetTime + " seconds.", resetTime);
+                        "Too many OTP requests. Try again in " + resetTime + " seconds.", resetDateTime);
                 }
 
                 // Update rate limiting first to prevent race conditions
@@ -276,8 +277,9 @@ public class OtpServiceImpl implements OtpService {
             // Check rate limiting
             if (isRateLimited(recipient)) {
                 long resetTime = getRateLimitResetTime(recipient);
+                LocalDateTime resetDateTime = LocalDateTime.now().plusSeconds(resetTime);
                 return OtpResponse.rateLimited(
-                    "Too many requests. Try again in " + resetTime + " seconds.", resetTime);
+                    "Too many requests. Try again in " + resetTime + " seconds.", resetDateTime);
             }
 
             // Increment resend count
