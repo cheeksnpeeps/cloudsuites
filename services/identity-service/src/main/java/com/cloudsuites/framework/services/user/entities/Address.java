@@ -152,4 +152,107 @@ public class Address {
                postalCode != null && !postalCode.trim().isEmpty() &&
                country != null && !country.trim().isEmpty();
     }
+
+    // Legacy compatibility methods for test support
+    
+    /**
+     * Sets the apartment number (legacy method).
+     * Maps to street2 field for compatibility.
+     * 
+     * @param aptNumber the apartment number
+     */
+    public void setAptNumber(String aptNumber) {
+        this.street2 = aptNumber;
+    }
+
+    /**
+     * Sets the street number (legacy method).
+     * Prepends to existing street value.
+     * 
+     * @param streetNumber the street number
+     */
+    public void setStreetNumber(String streetNumber) {
+        if (this.street == null) {
+            this.street = streetNumber;
+        } else if (!this.street.startsWith(streetNumber)) {
+            this.street = streetNumber + " " + this.street;
+        }
+    }
+
+    /**
+     * Sets the street name (legacy method).
+     * Appends to existing street value or sets it if empty.
+     * 
+     * @param streetName the street name
+     */
+    public void setStreetName(String streetName) {
+        if (this.street == null || this.street.trim().isEmpty()) {
+            this.street = streetName;
+        } else if (!this.street.endsWith(streetName)) {
+            this.street = this.street + " " + streetName;
+        }
+    }
+
+    /**
+     * Sets the second address line (legacy method).
+     * Maps to street2 field for compatibility.
+     * 
+     * @param addressLine2 the second address line
+     */
+    public void setAddressLine2(String addressLine2) {
+        this.street2 = addressLine2;
+    }
+
+    /**
+     * Sets the state/province/region (legacy method).
+     * Maps to province field for compatibility.
+     * 
+     * @param stateProvinceRegion the state/province/region
+     */
+    public void setStateProvinceRegion(String stateProvinceRegion) {
+        this.province = stateProvinceRegion;
+    }
+
+    // Coordinate fields for geographic location
+    @Column(name = "latitude")
+    private Double latitude;
+
+    @Column(name = "longitude") 
+    private Double longitude;
+
+    /**
+     * Sets the latitude coordinate.
+     * 
+     * @param latitude the latitude value
+     */
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    /**
+     * Sets the longitude coordinate.
+     * 
+     * @param longitude the longitude value
+     */
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
+    }
+
+    /**
+     * Gets the latitude coordinate.
+     * 
+     * @return the latitude value
+     */
+    public Double getLatitude() {
+        return this.latitude;
+    }
+
+    /**
+     * Gets the longitude coordinate.
+     * 
+     * @return the longitude value
+     */
+    public Double getLongitude() {
+        return this.longitude;
+    }
 }
