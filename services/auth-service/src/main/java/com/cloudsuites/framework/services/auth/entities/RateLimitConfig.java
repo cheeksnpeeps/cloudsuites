@@ -89,4 +89,29 @@ public class RateLimitConfig {
     public long getBlockDurationMinutes() {
         return blockDurationSeconds / 60;
     }
+    
+    // Factory methods for common configurations
+    public static RateLimitConfig loginConfig() {
+        return new RateLimitConfig("login", 5, 300, 900); // 5 attempts per 5 minutes, 15 min block
+    }
+    
+    public static RateLimitConfig otpSendConfig() {
+        return new RateLimitConfig("otp_send", 3, 300, 600); // 3 OTPs per 5 minutes, 10 min block
+    }
+    
+    public static RateLimitConfig otpVerifyConfig() {
+        return new RateLimitConfig("otp_verify", 5, 300, 900); // 5 attempts per 5 minutes, 15 min block
+    }
+    
+    public static RateLimitConfig passwordResetConfig() {
+        return new RateLimitConfig("password_reset", 3, 3600, 3600); // 3 attempts per hour, 1 hour block
+    }
+    
+    public static RateLimitConfig apiAccessConfig() {
+        return new RateLimitConfig("api_access", 100, 60, 300); // 100 requests per minute, 5 min block
+    }
+    
+    public static RateLimitConfig registrationConfig() {
+        return new RateLimitConfig("registration", 3, 3600, 3600); // 3 attempts per hour, 1 hour block
+    }
 }
